@@ -1,0 +1,152 @@
+import org.apache.tools.ant.taskdefs.condition.Os
+
+buildscript {
+    repositories {
+        maven { url 'https://www.myget.org/F/rd-snapshots/maven/' }
+        mavenCentral()
+    }
+
+    dependencies { classpath "com.jetbrains.rd:rd-gen:0.1.18" }
+}
+
+plugins {
+    id 'java'
+    id 'org.jetbrains.kotlin.jvm' version '1.2.50'
+    id 'org.jetbrains.intellij' version '0.3.2'
+}
+
+ext {
+    repoRoot = new File(".").canonicalFile
+    isWindows = Os.isFamily(Os.FAMILY_WINDOWS)
+    sdkVersion = "2018.2"
+    rdLibDirectory = new File(repoRoot, "build/riderRD-$sdkVersion-SNAPSHOT/lib/rd")
+    dotNetDir = new File(repoRoot, "src/dotnet")
+    dotNetPluginId = "ReSharperPlugin.AvaloniaRider"
+}
+
+repositories {
+    maven { url 'https://repo.labs.intellij.net/central-proxy' }
+    maven { url 'https://repo.labs.intellij.net/rd-snapshots-maven' }
+//  maven { url 'https://repo.labs.intellij.net/jitpack.io' }
+//  mavenLocal()
+    flatDir { dirs rdLibDirectory.absolutePath }
+}
+
+wrapper {
+    gradleVersion = '4.9'
+    distributionType = Wrapper.DistributionType.ALL
+    distributionUrl = "https://cache-redirector.jetbrains.com/services.gradle.org/distributions/gradle-${gradleVersion}-all.zip"
+}
+
+if (!ext.has("BuildConfiguration"))
+    ext.BuildConfiguration = "Debug"
+
+if (ext.has("pluginVersion"))
+    ext.version = ext.pluginVersion
+else
+    ext.version = "1.3.3.7"
+
+if (ext.has("username"))
+    intellij.publish.username = ext.username
+
+if (ext.has("password"))
+    intellij.publish.password = ext.password
+
+version ext.version
+
+sourceSets {
+    main {
+        java.srcDir 'src/rider/main/kotlin'
+        resources.srcDir 'src/rider/main/resources'
+    }
+}
+
+compileKotlin {
+    kotlinOptions { jvmTarget = "1.8" }
+}
+
+task compileDotNet {
+    doLast {
+        exec {
+            executable "powershell"
+            args "-ExecutionPolicy","ByPass","-NoProfile","-File","$rootDir/buildPlugin.ps1"
+        }
+    }
+}
+
+buildPlugin {
+    dependsOn compileDotNet
+
+    copy {
+        from "$rootDir/build/distributions"
+        into "$rootDir/output"
+        include "*"
+    }
+}
+
+intellij {
+    type = 'RD'
+    version = "$sdkVersion-SNAPSHOT"
+    downloadSources = false
+}
+
+apply plugin: 'com.jetbrains.rdgen'
+
+rdgen {
+    def modelDir = new File(repoRoot, "protocol/src/main/kotlin/model")
+    def csOutput = new File(repoRoot, "src/dotnet/ReSharperPlugin.AvaloniaRider/Rider/Model")
+    def ktOutput = new File(repoRoot, "src/rider/main/kotlin/avaloniarider/model")
+
+    verbose = true
+    classpath "$rdLibDirectory/rider-model.jar"
+    sources "$modelDir/rider"
+    hashFolder = 'build/rdgen/rider'
+    packages = "model.rider"
+
+    generator {
+        language = "kotlin"
+        transform = "asis"
+        root = "com.jetbrains.rider.model.nova.ide.IdeRoot"
+        namespace = "com.jetbrains.rider.model"
+        directory = "$ktOutput"
+    }
+
+    generator {
+        language = "csharp"
+        transform = "reversed"
+        root = "com.jetbrains.rider.model.nova.ide.IdeRoot"
+        namespace = "JetBrains.Rider.Model"
+        directory = "$csOutput"
+    }
+}
+
+patchPluginXml {
+    def changelogText = file("$repoRoot/CHANGELOG.md").text
+    def changelogMatches = changelogText =~ /(?s)##(.+?)(.+?)(?=##|$)/
+
+    changeNotes = changelogMatches.collect {
+        def versionTitle = it[1]
+        def versionText = it[2].replaceAll(/(?s)\r?\n/, "<br />\n")
+        "<b>$versionTitle</b>$versionText"
+    }.take(10).join('')
+}
+
+prepareSandbox {
+    def outputFolder = "$dotNetDir/$dotNetPluginId/bin/${dotNetPluginId}.Rider/$BuildConfiguration"
+    def dllFiles = [
+            "$outputFolder/${dotNetPluginId}.Rider.dll",
+            "$outputFolder/${dotNetPluginId}.Rider.pdb"
+    ]
+
+    dllFiles.forEach({ f ->
+        def file = file(f)
+        from(file, { into "$intellij.pluginName/dotnet" })
+    })
+
+    doLast {
+        dllFiles.forEach({ f ->
+            def file = file(f)
+            if (!file.exists()) throw new RuntimeException("File $file does not exist")
+        })
+    }
+}

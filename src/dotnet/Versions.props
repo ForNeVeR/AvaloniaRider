@@ -1,0 +1,7 @@
+<Project>
+  <PropertyGroup>
+    <SdkVersion>2018.2.0-*</SdkVersion>
+    <WaveVersionBase>$(SdkVersion.Substring(2,2))$(SdkVersion.Substring(5,1))</WaveVersionBase>
+    <WaveVersion>$(WaveVersionBase).0.0$(SdkVersion.Substring(8))</WaveVersion>
+  </PropertyGroup>
+</Project>

@@ -1,0 +1,28 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  
+  <PropertyGroup>
+    <IsPackable>True</IsPackable>
+    <DefineConstants>$(DefineConstants);RESHARPER</DefineConstants>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+  </PropertyGroup>
+
+  <Import Project="..\Versions.props" />
+  
+  <ItemGroup>
+    <PackageReference Include="JetBrains.ReSharper.SDK" Version="$(SdkVersion)">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <!-- TODO: https://github.com/NuGet/Home/issues/7154 -->
+    <PackageReference Include="Wave" Version="$(WaveVersion)" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Compile Remove="Rider\**\*" />
+    <None Remove="Rider\**\*" />
+    <EmbeddedResource Remove="Rider\**\*" />
+    <Content Remove="Rider\**\*" />
+    
+    <Content Include="bin\ReSharperPlugin.AvaloniaRider\$(Configuration)\ReSharperPlugin.AvaloniaRider.*" PackagePath="dotFiles" Pack="true" />
+  </ItemGroup>
+  
+</Project>

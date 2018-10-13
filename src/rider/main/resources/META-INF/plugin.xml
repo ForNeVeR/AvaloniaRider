@@ -1,0 +1,22 @@
+<idea-plugin>
+  <id>avaloniarider-rider</id>
+  <name>AvaloniaRider</name>
+  <version>_PLACEHOLDER_</version>
+  <vendor url="https://avaloniarider.com">Me and You</vendor>
+  <idea-version since-build="_PLACEHOLDER_" until-build="_PLACEHOLDER_" />
+  <depends>com.intellij.modules.rider</depends>
+
+  <description>
+<![CDATA[
+<p>Paragraph</p>
+]]>
+  </description>
+  <change-notes>
+<![CDATA[
+<ul>
+  <li>Bullet point 1</li>
+  <li>Bullet point 2</li>
+</ul>
+]]>
+  </change-notes>
+</idea-plugin>
