@@ -1,18 +1,8 @@
-# Build artifacts
-[Bb]in/
-[Oo]bj/
-build
-output
-.gradle
+/.idea/
+/output/
 
-# User-specific files
-*.suo
-*.user
-*.sln.docstates
-*.cache
+bin/
+obj/
 
-# IDEs
-.idea
-.vs
-_ReSharper*
-_dotTrace*
+*.Generated.cs
+*.Generated.kt

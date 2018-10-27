@@ -6,7 +6,7 @@ buildscript {
         mavenCentral()
     }
 
-    dependencies { classpath "com.jetbrains.rd:rd-gen:0.1.18" }
+    dependencies { classpath "com.jetbrains.rd:rd-gen:0.183.78" }
 }
 
 plugins {
@@ -94,7 +94,7 @@ apply plugin: 'com.jetbrains.rdgen'
 
 rdgen {
     def modelDir = new File(repoRoot, "protocol/src/main/kotlin/model")
-    def csOutput = new File(repoRoot, "src/dotnet/AvaloniaRider/Rider/Model")
+    def csOutput = new File(repoRoot, "src/dotnet/AvaloniaRider.Plugin/Rider/Model")
     def ktOutput = new File(repoRoot, "src/rider/main/kotlin/avaloniarider/model")
 
     verbose = true
