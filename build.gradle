@@ -21,7 +21,7 @@ ext {
     sdkVersion = "2018.3"
     rdLibDirectory = new File(repoRoot, "build/riderRD-$sdkVersion-SNAPSHOT/lib/rd")
     dotNetDir = new File(repoRoot, "src/dotnet")
-    dotNetPluginId = "ReSharperPlugin.AvaloniaRider"
+    dotNetPluginId = "AvaloniaRider.Plugin"
 }
 
 repositories {
@@ -94,7 +94,7 @@ apply plugin: 'com.jetbrains.rdgen'
 
 rdgen {
     def modelDir = new File(repoRoot, "protocol/src/main/kotlin/model")
-    def csOutput = new File(repoRoot, "src/dotnet/ReSharperPlugin.AvaloniaRider/Rider/Model")
+    def csOutput = new File(repoRoot, "src/dotnet/AvaloniaRider/Rider/Model")
     def ktOutput = new File(repoRoot, "src/rider/main/kotlin/avaloniarider/model")
 
     verbose = true
@@ -132,10 +132,10 @@ patchPluginXml {
 }
 
 prepareSandbox {
-    def outputFolder = "$dotNetDir/$dotNetPluginId/bin/${dotNetPluginId}.Rider/$BuildConfiguration"
+    def outputFolder = "$dotNetDir/$dotNetPluginId/bin/${dotNetPluginId}/$BuildConfiguration"
     def dllFiles = [
-            "$outputFolder/${dotNetPluginId}.Rider.dll",
-            "$outputFolder/${dotNetPluginId}.Rider.pdb"
+            "$outputFolder/${dotNetPluginId}.dll",
+            "$outputFolder/${dotNetPluginId}.pdb"
     ]
 
     dllFiles.forEach({ f ->

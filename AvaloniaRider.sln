@@ -1,8 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReSharperPlugin.AvaloniaRider", "src\dotnet\ReSharperPlugin.AvaloniaRider\ReSharperPlugin.AvaloniaRider.csproj", "{05608FE6-4FD1-4E9D-9BE2-B13A0E370BA2}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReSharperPlugin.AvaloniaRider.Rider", "src\dotnet\ReSharperPlugin.AvaloniaRider\ReSharperPlugin.AvaloniaRider.Rider.csproj", "{084172D1-A9C6-46D0-96AD-05C5B09A5E5D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AvaloniaRider.Plugin", "src\dotnet\AvaloniaRider.Plugin\AvaloniaRider.Plugin.csproj", "{084172D1-A9C6-46D0-96AD-05C5B09A5E5D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -10,10 +8,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{05608FE6-4FD1-4E9D-9BE2-B13A0E370BA2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{05608FE6-4FD1-4E9D-9BE2-B13A0E370BA2}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{05608FE6-4FD1-4E9D-9BE2-B13A0E370BA2}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{05608FE6-4FD1-4E9D-9BE2-B13A0E370BA2}.Release|Any CPU.Build.0 = Release|Any CPU
 		{084172D1-A9C6-46D0-96AD-05C5B09A5E5D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{084172D1-A9C6-46D0-96AD-05C5B09A5E5D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{084172D1-A9C6-46D0-96AD-05C5B09A5E5D}.Release|Any CPU.ActiveCfg = Release|Any CPU
