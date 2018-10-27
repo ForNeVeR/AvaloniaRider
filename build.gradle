@@ -18,7 +18,7 @@ plugins {
 ext {
     repoRoot = new File(".").canonicalFile
     isWindows = Os.isFamily(Os.FAMILY_WINDOWS)
-    sdkVersion = "2018.2"
+    sdkVersion = "2018.3"
     rdLibDirectory = new File(repoRoot, "build/riderRD-$sdkVersion-SNAPSHOT/lib/rd")
     dotNetDir = new File(repoRoot, "src/dotnet")
     dotNetPluginId = "ReSharperPlugin.AvaloniaRider"
