@@ -19,7 +19,9 @@ Function Invoke-Exe {
     )
 
     Write-Host "> $Executable $Arguments"
-    $rc = Start-Process -FilePath $Executable -ArgumentList $Arguments -NoNewWindow -Wait -Passthru
+    $rc = Start-Process -FilePath $Executable -ArgumentList $Arguments -NoNewWindow -Passthru
+    $rc.Handle # to initialize handle according to https://stackoverflow.com/a/23797762/2684760
+    $rc.WaitForExit()
     if (-Not $ValidExitCodes.Contains($rc.ExitCode)) {
         throw "'$Executable $Arguments' failed with exit code $($rc.ExitCode), valid exit codes: $ValidExitCodes"
     }

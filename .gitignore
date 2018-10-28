@@ -1,8 +1,11 @@
 /.idea/
+/.gradle/
+/build/
 /output/
 
 bin/
 obj/
+out/
 
 *.Generated.cs
 *.Generated.kt
