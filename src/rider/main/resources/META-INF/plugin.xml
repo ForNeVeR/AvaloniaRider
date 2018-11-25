@@ -19,4 +19,8 @@
 </ul>
 ]]>
   </change-notes>
+  <actions>
+    <action id="me.fornever.avaloniarider.actions.StartAvaloniaPreviewerAction"
+            class="me.fornever.avaloniarider.actions.StartAvaloniaPreviewerAction" text="StartAvaloniaPreviewer"/>
+  </actions>
 </idea-plugin>
