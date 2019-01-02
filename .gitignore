@@ -9,3 +9,4 @@ out/
 
 *.Generated.cs
 *.Generated.kt
+*.user
