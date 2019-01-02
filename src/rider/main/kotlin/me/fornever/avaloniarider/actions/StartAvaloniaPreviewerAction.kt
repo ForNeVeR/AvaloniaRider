@@ -89,16 +89,20 @@ private fun startListening() = ServerSocket(0)
 private fun startListeningTask(logger: Logger, serverSocket: ServerSocket) = Thread {
     try {
         val socket = serverSocket.accept()
-        socket.getInputStream().use { input ->
-            while (!socket.isClosed) {
-                val buffer = ByteArray(128)
-                val size = input.read(buffer)
-                logger.info { "Data received: " + buffer.printToString() }
-                if (size == -1) return@Thread
+        serverSocket.close()
+        socket.use {
+            socket.getInputStream().use { input ->
+                while (!socket.isClosed) {
+                    val buffer = ByteArray(128)
+                    val size = input.read(buffer)
+                    logger.info { "Data received: " + buffer.printToString() }
+                    if (size == -1) return@Thread
+                }
             }
         }
     } catch (ex: Throwable) {
         logger.error("Error while listening to Avalonia designer socket", ex)
+        serverSocket.close()
     }
 }.apply { start() }
 
@@ -159,16 +163,21 @@ class StartAvaloniaPreviewerAction : AnAction("Start Avalonia Previewer") {
             val targetName = properties["TargetName"]!!
             val targetPath = Paths.get(properties["TargetPath"])
 
-            val serverSocket = startListening() // TODO[von Never]: close socket on error or anything
-            val commandLine = getDesignerCommandLine(
-                    runtime,
-                    previewerPath,
-                    targetDir,
-                    targetName,
-                    targetPath,
-                    serverSocket.localPort)
-            startListeningTask(logger, serverSocket)
-            startAndShowOutput(project, commandLine)
+            val serverSocket = startListening()
+            try {
+                val commandLine = getDesignerCommandLine(
+                        runtime,
+                        previewerPath,
+                        targetDir,
+                        targetName,
+                        targetPath,
+                        serverSocket.localPort)
+                startListeningTask(logger, serverSocket)
+                startAndShowOutput(project, commandLine)
+            } catch(t: Throwable) {
+                serverSocket.close()
+                throw t
+            }
         }.onError { logger.error(it) }
     }
 }
