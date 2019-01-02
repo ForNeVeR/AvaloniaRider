@@ -22,6 +22,7 @@ import com.jetbrains.rider.util.error
 import com.jetbrains.rider.util.getLogger
 import com.jetbrains.rider.util.info
 import com.jetbrains.rider.util.string.printToString
+import me.fornever.avaloniarider.AvaloniaRiderNotifications
 import java.net.ServerSocket
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -144,7 +145,16 @@ class StartAvaloniaPreviewerAction : AnAction("Start Avalonia Previewer") {
                 runnableProject.projectFilePath,
                 listOf(avaloniaPreviewerPathKey, "TargetDir", "TargetName", "TargetPath")
         ).then { properties ->
-            val previewerPath = Paths.get(properties[avaloniaPreviewerPathKey]) // TODO[von Never]: Handle errors if Avalonia not installed
+            val previewerPathValue = properties[avaloniaPreviewerPathKey]
+            if (previewerPathValue.isNullOrEmpty()) {
+                val notifications = AvaloniaRiderNotifications.getInstance()
+                notifications.showNotification(
+                        "Avalonia could not be found. Please ensure project ${runnableProject.name} includes package Avalonia version 0.7 or higher"
+                )
+                return@then
+            }
+
+            val previewerPath = Paths.get(previewerPathValue)
             val targetDir = Paths.get(properties["TargetDir"])
             val targetName = properties["TargetName"]!!
             val targetPath = Paths.get(properties["TargetPath"])
