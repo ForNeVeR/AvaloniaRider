@@ -6,21 +6,20 @@ buildscript {
         mavenCentral()
     }
 
-    dependencies { classpath "com.jetbrains.rd:rd-gen:0.183.78" }
+    dependencies { classpath "com.jetbrains.rd:rd-gen:0.183.101" }
 }
 
 plugins {
     id 'java'
     id 'org.jetbrains.kotlin.jvm' version '1.2.50'
-    id 'org.jetbrains.intellij' version '0.3.2'
+    id 'org.jetbrains.intellij' version '0.3.4'
 }
 
 ext {
-    repoRoot = new File(".").canonicalFile
     isWindows = Os.isFamily(Os.FAMILY_WINDOWS)
     sdkVersion = "2018.3"
-    rdLibDirectory = new File(repoRoot, "build/riderRD-$sdkVersion-SNAPSHOT/lib/rd")
-    dotNetDir = new File(repoRoot, "src/dotnet")
+    rdLibDirectory = new File(projectDir, "build/riderRD-$sdkVersion-SNAPSHOT/lib/rd")
+    dotNetDir = new File(projectDir, "src/dotnet")
     dotNetPluginId = "AvaloniaRider.Plugin"
 }
 
@@ -93,9 +92,9 @@ intellij {
 apply plugin: 'com.jetbrains.rdgen'
 
 rdgen {
-    def modelDir = new File(repoRoot, "protocol/src/main/kotlin/model")
-    def csOutput = new File(repoRoot, "src/dotnet/AvaloniaRider.Plugin/Rider/Model")
-    def ktOutput = new File(repoRoot, "src/rider/main/kotlin/avaloniarider/model")
+    def modelDir = new File(projectDir, "protocol/src/main/kotlin/model")
+    def csOutput = new File(projectDir, "src/dotnet/AvaloniaRider.Plugin/Rider/Model")
+    def ktOutput = new File(projectDir, "src/rider/main/kotlin/avaloniarider/model")
 
     verbose = true
     classpath "$rdLibDirectory/rider-model.jar"
@@ -121,7 +120,7 @@ rdgen {
 }
 
 patchPluginXml {
-    def changelogText = file("$repoRoot/CHANGELOG.md").text
+    def changelogText = file("$projectDir/CHANGELOG.md").text
     def changelogMatches = changelogText =~ /(?s)##(.+?)(.+?)(?=##|$)/
 
     changeNotes = changelogMatches.collect {
