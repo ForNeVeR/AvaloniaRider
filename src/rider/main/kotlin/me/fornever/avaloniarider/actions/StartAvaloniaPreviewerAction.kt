@@ -21,11 +21,14 @@ import com.jetbrains.rider.util.Logger
 import com.jetbrains.rider.util.error
 import com.jetbrains.rider.util.getLogger
 import com.jetbrains.rider.util.info
-import com.jetbrains.rider.util.string.printToString
+import me.fornever.avaloniarider.AvaloniaMessages
 import me.fornever.avaloniarider.AvaloniaRiderNotifications
+import me.fornever.avaloniarider.bson.BsonStreamReader
+import java.io.DataInputStream
 import java.net.ServerSocket
 import java.nio.file.Path
 import java.nio.file.Paths
+import java.util.*
 
 private fun getRuntime(
         runtimeHost: RiderDotNetActiveRuntimeHost,
@@ -86,17 +89,21 @@ private fun getDesignerCommandLine(
 
 private fun startListening() = ServerSocket(0)
 
-private fun startListeningTask(logger: Logger, serverSocket: ServerSocket) = Thread {
+private fun startListeningTask(logger: Logger, typeRegistry: Map<UUID, Class<*>>, serverSocket: ServerSocket) = Thread {
     try {
         val socket = serverSocket.accept()
         serverSocket.close()
         socket.use {
-            socket.getInputStream().use { input ->
-                while (!socket.isClosed) {
-                    val buffer = ByteArray(128)
-                    val size = input.read(buffer)
-                    logger.info { "Data received: " + buffer.printToString() }
-                    if (size == -1) return@Thread
+            socket.getInputStream().use {
+                DataInputStream(it).use { input ->
+                    val reader = BsonStreamReader(typeRegistry, input)
+                    while (!socket.isClosed) {
+                        val message = reader.readMessage()
+                        if (message == null) {
+                            logger.info { "Message == null received, terminating the connection" }
+                            return@Thread
+                        }
+                    }
                 }
             }
         }
@@ -143,6 +150,7 @@ class StartAvaloniaPreviewerAction : AnAction("Start Avalonia Previewer") {
         val project = e.project ?: return
         val runnableProject = project.solution.runnableProjectsModel.projects.valueOrNull?.firstOrNull() ?: return
         val msBuildEvaluator = MSBuildEvaluator.getInstance(project)
+        val avaloniaMessages = AvaloniaMessages.getInstance()
         val runtime = getRuntime(RiderDotNetActiveRuntimeHost.getInstance(project), runnableProject) ?: return
         val avaloniaPreviewerPathKey = getAvaloniaPreviewerPathKey(runtime)
         msBuildEvaluator.evaluateProperties(
@@ -172,9 +180,9 @@ class StartAvaloniaPreviewerAction : AnAction("Start Avalonia Previewer") {
                         targetName,
                         targetPath,
                         serverSocket.localPort)
-                startListeningTask(logger, serverSocket)
+                startListeningTask(logger, avaloniaMessages.typeRegistry, serverSocket)
                 startAndShowOutput(project, commandLine)
-            } catch(t: Throwable) {
+            } catch (t: Throwable) {
                 serverSocket.close()
                 throw t
             }

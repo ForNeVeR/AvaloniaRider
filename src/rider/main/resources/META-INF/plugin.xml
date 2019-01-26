@@ -21,6 +21,9 @@
     </change-notes>
     <application-components>
         <component>
+            <implementation-class>me.fornever.avaloniarider.AvaloniaMessages</implementation-class>
+        </component>
+        <component>
             <implementation-class>me.fornever.avaloniarider.AvaloniaRiderNotifications</implementation-class>
         </component>
     </application-components>
