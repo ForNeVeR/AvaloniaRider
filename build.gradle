@@ -18,7 +18,7 @@ plugins {
 ext {
     isWindows = Os.isFamily(Os.FAMILY_WINDOWS)
     sdkVersion = "2018.3"
-    rdLibDirectory = new File(projectDir, "build/riderRD-$sdkVersion-SNAPSHOT/lib/rd")
+    rdLibDirectory = new File(projectDir, "build/riderRD-$sdkVersion/lib/rd")
     dotNetDir = new File(projectDir, "src/dotnet")
     dotNetPluginId = "AvaloniaRider.Plugin"
 }
@@ -26,8 +26,6 @@ ext {
 repositories {
     maven { url 'https://repo.labs.intellij.net/central-proxy' }
     maven { url 'https://repo.labs.intellij.net/rd-snapshots-maven' }
-//  maven { url 'https://repo.labs.intellij.net/jitpack.io' }
-//  mavenLocal()
     flatDir { dirs rdLibDirectory.absolutePath }
 }
 
@@ -68,7 +66,7 @@ task compileDotNet {
     doLast {
         exec {
             executable "powershell"
-            args "-ExecutionPolicy","ByPass","-NoProfile","-File","$rootDir/buildPlugin.ps1"
+            args "-ExecutionPolicy", "ByPass", "-NoProfile", "-File", "$rootDir/buildPlugin.ps1"
         }
     }
 }
@@ -85,7 +83,7 @@ buildPlugin {
 
 intellij {
     type = 'RD'
-    version = "$sdkVersion-SNAPSHOT"
+    version = "$sdkVersion"
     downloadSources = false
 }
 
