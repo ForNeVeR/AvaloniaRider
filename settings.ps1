@@ -3,8 +3,14 @@ $PluginId = "ReSharperPlugin.AvaloniaRider"
 $SolutionPath = "$PSScriptRoot\AvaloniaRider.sln"
 $SourceBasePath = "$PSScriptRoot\src\dotnet"
 
-$VisualStudioBaseDirectory = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2017\*\"
-if (@(Get-ChildItem "$VisualStudioBaseDirectory").Count -ne 1) { throw "Could not find single VisualStudio base directory. Please adjust the search pattern. " }
+$VsWhereOutput = [xml] (& "$PSScriptRoot\tools\vswhere.exe" -format xml)
+$VisualStudio = $VsWhereOutput.instances.instance |
+    Where { $_.channelId -match "Release" } |
+    Select-Object -Last 1
+
+$VisualStudioBaseDirectory = $VisualStudio.installationPath
+$VisualStudioMajorVersion = ($VisualStudio.installationVersion -split '\.')[0]
+$VisualStudioInstanceId = $VisualStudio.instanceId
 $DevEnvPath = Get-ChildItem "$VisualStudioBaseDirectory\Common7\IDE\devenv.exe"
 $MSBuildPath = Get-ChildItem "$VisualStudioBaseDirectory\MSBuild\*\Bin\MSBuild.exe"
 
