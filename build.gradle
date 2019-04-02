@@ -2,11 +2,11 @@ import org.apache.tools.ant.taskdefs.condition.Os
 
 buildscript {
     repositories {
-        maven { url 'https://www.myget.org/F/rd-snapshots/maven/' }
+        maven { setUrl("https://cache-redirector.jetbrains.com/www.myget.org/F/rd-snapshots/maven") }
         mavenCentral()
     }
 
-    dependencies { classpath "com.jetbrains.rd:rd-gen:0.183.101" }
+    dependencies { classpath "com.jetbrains.rd:rd-gen:0.191.56" }
 }
 
 plugins {
@@ -29,8 +29,8 @@ ext {
 }
 
 repositories {
-    maven { url 'https://repo.labs.intellij.net/central-proxy' }
-    maven { url 'https://repo.labs.intellij.net/rd-snapshots-maven' }
+    mavenCentral()
+    maven { setUrl("https://cache-redirector.jetbrains.com/www.myget.org/F/rd-snapshots/maven") }
     flatDir { dirs rdLibDirectory.absolutePath }
 }
 
