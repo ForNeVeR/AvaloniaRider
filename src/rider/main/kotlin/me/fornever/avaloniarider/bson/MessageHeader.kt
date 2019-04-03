@@ -14,11 +14,11 @@ data class MessageHeader(val length: Int, val typeId: UUID) {
                 val a = buffer.order(ByteOrder.LITTLE_ENDIAN).int
                 val b = buffer.short
                 val c = buffer.short
-                val long1 = ByteBuffer.allocate(8).order(ByteOrder.BIG_ENDIAN).apply {
+                val long1 = (ByteBuffer.allocate(8).order(ByteOrder.BIG_ENDIAN).apply {
                     putInt(a)
                     putShort(b)
                     putShort(c)
-                }.position(0).long
+                }.position(0) as ByteBuffer).long
                 val long2 = buffer.order(ByteOrder.BIG_ENDIAN).long
                 return UUID(long1, long2)
             }
