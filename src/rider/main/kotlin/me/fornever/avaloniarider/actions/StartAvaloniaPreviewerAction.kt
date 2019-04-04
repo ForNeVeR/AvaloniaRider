@@ -26,10 +26,8 @@ import me.fornever.avaloniarider.bson.BsonStreamReader
 import me.fornever.avaloniarider.bson.BsonStreamWriter
 import java.io.DataInputStream
 import java.net.ServerSocket
-import java.net.Socket
 import java.nio.file.Path
 import java.nio.file.Paths
-import java.util.*
 
 private fun getRuntime(
         runtimeHost: RiderDotNetActiveRuntimeHost,
@@ -98,14 +96,17 @@ private fun startListeningTask(logger: Logger, avaloniaMessages: AvaloniaMessage
         socket.use {
             socket.getInputStream().use {
                 DataInputStream(it).use { input ->
-                    val reader = BsonStreamReader(avaloniaMessages.incomingTypeRegistry, input)
-                    while (!socket.isClosed) {
-                        val message = reader.readMessage()
-                        if (message == null) {
-                            logger.info { "Message == null received, terminating the connection" }
-                            return@Thread
+                    socket.getOutputStream().use { output ->
+                        val writer = BsonStreamWriter(avaloniaMessages.outgoingTypeRegistry, output)
+                        val reader = BsonStreamReader(avaloniaMessages.incomingTypeRegistry, input)
+                        while (!socket.isClosed) {
+                            val message = reader.readMessage()
+                            if (message == null) {
+                                logger.info { "Message == null received, terminating the connection" }
+                                return@Thread
+                            }
+                            handleMessage(writer, message as AvaloniaMessage, targetPath)
                         }
-                        handleMessage(avaloniaMessages.outgoingTypeRegistry, message as AvaloniaMessage, socket, targetPath)
                     }
                 }
             }
@@ -116,7 +117,7 @@ private fun startListeningTask(logger: Logger, avaloniaMessages: AvaloniaMessage
     }
 }.apply { start() }
 
-fun handleMessage(typeRegistry: Map<Class<*>, UUID>, message: AvaloniaMessage, socket: Socket, targetPath: Path) {
+fun handleMessage(writer: BsonStreamWriter, message: AvaloniaMessage, targetPath: Path) {
     if (message is StartDesignerSessionMessage) {
         // hardcoded some xaml
         val xaml = """
@@ -127,11 +128,8 @@ fun handleMessage(typeRegistry: Map<Class<*>, UUID>, message: AvaloniaMessage, s
             </Window>
         """.trimIndent()
 
-        socket.getOutputStream().use { output ->
-            val writer = BsonStreamWriter(typeRegistry, output)
-            val msg = UpdateXamlMessageBuilder.build(xaml, targetPath.toString())
-            writer.sendMessage(msg)
-        }
+        val msg = UpdateXamlMessageBuilder.build(xaml, targetPath.toString())
+        writer.sendMessage(msg)
     }
 }
 
