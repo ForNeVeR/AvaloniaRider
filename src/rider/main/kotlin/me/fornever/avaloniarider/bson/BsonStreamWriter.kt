@@ -6,19 +6,22 @@ import com.jetbrains.rider.util.info
 import de.undercouch.bson4jackson.BsonFactory
 import me.fornever.avaloniarider.AvaloniaMessage
 import java.io.OutputStream
+import java.util.*
 
-class BsonStreamWriter(private val output: OutputStream) {
+class BsonStreamWriter(private val typeRegistry: Map<Class<*>, UUID>, private val output: OutputStream) {
     companion object {
         private val logger = getLogger<BsonStreamWriter>()
         private val objectMapper = ObjectMapper(BsonFactory())
     }
 
     fun sendMessage(message: AvaloniaMessage) {
-        val header = MessageHeader(57, message.guid)
+        val body = objectMapper.writeValueAsBytes(message)
+        val header = MessageHeader(body.size, typeRegistry.getValue(message.javaClass))
         output.write(header.toByteArray())
         logger.info { "Sent header $header" }
 
-        output.write(objectMapper.writeValueAsBytes(message))
+        output.write(body)
+        output.flush()
         logger.info { "Sent message $message" }
     }
 }

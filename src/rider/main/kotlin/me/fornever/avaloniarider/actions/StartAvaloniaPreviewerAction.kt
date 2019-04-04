@@ -90,7 +90,7 @@ private fun getDesignerCommandLine(
 
 private fun startListening() = ServerSocket(0)
 
-private fun startListeningTask(logger: Logger, typeRegistry: Map<UUID, Class<*>>, serverSocket: ServerSocket,
+private fun startListeningTask(logger: Logger, avaloniaMessages: AvaloniaMessages, serverSocket: ServerSocket,
                                targetPath: Path) = Thread {
     try {
         val socket = serverSocket.accept()
@@ -98,14 +98,14 @@ private fun startListeningTask(logger: Logger, typeRegistry: Map<UUID, Class<*>>
         socket.use {
             socket.getInputStream().use {
                 DataInputStream(it).use { input ->
-                    val reader = BsonStreamReader(typeRegistry, input)
+                    val reader = BsonStreamReader(avaloniaMessages.incomingTypeRegistry, input)
                     while (!socket.isClosed) {
                         val message = reader.readMessage()
                         if (message == null) {
                             logger.info { "Message == null received, terminating the connection" }
                             return@Thread
                         }
-                        handleMessage(typeRegistry, message as AvaloniaMessage, socket, targetPath)
+                        handleMessage(avaloniaMessages.outgoingTypeRegistry, message as AvaloniaMessage, socket, targetPath)
                     }
                 }
             }
@@ -116,8 +116,8 @@ private fun startListeningTask(logger: Logger, typeRegistry: Map<UUID, Class<*>>
     }
 }.apply { start() }
 
-fun handleMessage(typeRegistry: Map<UUID, Class<*>>, message: AvaloniaMessage, socket: Socket, targetPath: Path) {
-    if (message.guid == StartDesignerSessionMessage().guid) {
+fun handleMessage(typeRegistry: Map<Class<*>, UUID>, message: AvaloniaMessage, socket: Socket, targetPath: Path) {
+    if (message is StartDesignerSessionMessage) {
         // hardcoded some xaml
         val xaml = """
             <Window xmlns="https://github.com/avaloniaui"
@@ -128,7 +128,7 @@ fun handleMessage(typeRegistry: Map<UUID, Class<*>>, message: AvaloniaMessage, s
         """.trimIndent()
 
         socket.getOutputStream().use { output ->
-            val writer = BsonStreamWriter(output)
+            val writer = BsonStreamWriter(typeRegistry, output)
             val msg = UpdateXamlMessageBuilder.build(xaml, targetPath.toString())
             writer.sendMessage(msg)
         }
@@ -208,7 +208,7 @@ class StartAvaloniaPreviewerAction : AnAction("Start Avalonia Previewer") {
                 logger.info { "targetName $targetName"}
                 logger.info { "targetPath $targetPath"}
 
-                startListeningTask(logger, avaloniaMessages.typeRegistry, serverSocket, targetPath)
+                startListeningTask(logger, avaloniaMessages, serverSocket, targetPath)
                 startAndShowOutput(project, commandLine)
             } catch (t: Throwable) {
                 serverSocket.close()
