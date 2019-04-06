@@ -20,10 +20,13 @@ import com.jetbrains.rider.runtime.dotNetCore.DotNetCoreRuntime
 import com.jetbrains.rider.util.Logger
 import com.jetbrains.rider.util.error
 import com.jetbrains.rider.util.getLogger
+import com.jetbrains.rider.util.idea.application
 import com.jetbrains.rider.util.info
 import me.fornever.avaloniarider.*
 import me.fornever.avaloniarider.bson.BsonStreamReader
 import me.fornever.avaloniarider.bson.BsonStreamWriter
+import me.fornever.avaloniarider.me.fornever.avaloniarider.AvaloniaPreviewerWindow
+import java.awt.Dimension
 import java.io.DataInputStream
 import java.net.ServerSocket
 import java.nio.file.Path
@@ -88,6 +91,8 @@ private fun getDesignerCommandLine(
 
 private fun startListening() = ServerSocket(0)
 
+var window = AvaloniaPreviewerWindow()
+
 private fun startListeningTask(logger: Logger, avaloniaMessages: AvaloniaMessages, serverSocket: ServerSocket,
                                targetPath: Path) = Thread {
     try {
@@ -136,10 +141,20 @@ fun handleMessage(logger: Logger, writer: BsonStreamWriter, message: AvaloniaMes
             logger.error { "Error from UpdateXamlResultMessage: $it" }
         }
         is RequestViewportResizeMessage -> {
-            val dpi = 92.0
+            window.size = Dimension(message.width.toInt(), message.height.toInt())
+
+            val dpi = 96.0
             writer.sendMessage(ClientRenderInfoMessage(dpi, dpi))
             writer.sendMessage(ClientViewportAllocatedMessage(message.width, message.height, 92.0, 92.0))
             writer.sendMessage(ClientSupportedPixelFormatsMessage(intArrayOf(1)))
+        }
+        is FrameMessage -> {
+            window.isVisible = true
+            window.size = Dimension(message.width, message.height)
+            application.invokeAndWait {
+                window.drawFrame(message)
+            }
+            writer.sendMessage(FrameReceivedMessage(message.sequenceId))
         }
     }
 }

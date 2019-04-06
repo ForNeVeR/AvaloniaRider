@@ -1,5 +1,6 @@
 package me.fornever.avaloniarider.bson
 
+import com.fasterxml.jackson.databind.MapperFeature
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.jetbrains.rider.util.getLogger
 import com.jetbrains.rider.util.info
@@ -14,7 +15,9 @@ import java.util.*
 class BsonStreamReader(private val typeRegistry: Map<UUID, Class<*>>, private val stream: DataInputStream) {
     companion object {
         private val logger = getLogger<BsonStreamReader>()
-        private val objectMapper = ObjectMapper(BsonFactory())
+        private val objectMapper = ObjectMapper(BsonFactory()).apply {
+            configure(MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES, true)
+        }
     }
 
     private fun readBytes(count: Int) = ByteBuffer.allocate(count).order(ByteOrder.nativeOrder()).apply {
