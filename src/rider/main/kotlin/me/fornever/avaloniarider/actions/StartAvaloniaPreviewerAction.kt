@@ -118,22 +118,29 @@ private fun startListeningTask(logger: Logger, avaloniaMessages: AvaloniaMessage
 }.apply { start() }
 
 fun handleMessage(logger: Logger, writer: BsonStreamWriter, message: AvaloniaMessage, targetPath: Path) {
-    if (message is StartDesignerSessionMessage) {
-        // hardcoded some xaml
-        val xaml = """
+    when (message) {
+        is StartDesignerSessionMessage -> {
+            // hardcoded some xaml
+            val xaml = """
             <Window xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     Title="AvaloniaTest">
                 Hello World!
             </Window>
-        """.trimIndent()
+            """.trimIndent()
 
-        val msg = UpdateXamlMessageBuilder.build(xaml, targetPath.toString())
-        writer.sendMessage(msg)
-    }
-    if (message is UpdateXamlResultMessage) {
-        if (message.error != null)
-            logger.info {"Error from UpdateXamlResultMessage: ${message.error}"}
+            val msg = UpdateXamlMessageBuilder.build(xaml, targetPath.toString())
+            writer.sendMessage(msg)
+        }
+        is UpdateXamlResultMessage -> message.error?.let {
+            logger.error { "Error from UpdateXamlResultMessage: $it" }
+        }
+        is RequestViewportResizeMessage -> {
+            val dpi = 92.0
+            writer.sendMessage(ClientRenderInfoMessage(dpi, dpi))
+            writer.sendMessage(ClientViewportAllocatedMessage(message.width, message.height, 92.0, 92.0))
+            writer.sendMessage(ClientSupportedPixelFormatsMessage(intArrayOf(1)))
+        }
     }
 }
 
@@ -190,7 +197,7 @@ class StartAvaloniaPreviewerAction : AnAction("Start Avalonia Previewer") {
                 return@then
             }
 
-            val previewerPath = Paths.get(previewerPathValue)
+            val previewerPath = Paths.get("D:\\X-Files\\Projects\\Avalonia\\src\\tools\\Avalonia.Designer.HostApp\\bin\\Debug\\netcoreapp2.0\\Avalonia.Designer.HostApp.dll")
             val targetDir = Paths.get(properties["TargetDir"])
             val targetName = properties["TargetName"]!!
             val targetPath = Paths.get(properties["TargetPath"])
