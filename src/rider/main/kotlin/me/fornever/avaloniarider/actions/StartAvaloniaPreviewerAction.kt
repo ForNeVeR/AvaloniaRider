@@ -105,7 +105,7 @@ private fun startListeningTask(logger: Logger, avaloniaMessages: AvaloniaMessage
                                 logger.info { "Message == null received, terminating the connection" }
                                 return@Thread
                             }
-                            handleMessage(writer, message as AvaloniaMessage, targetPath)
+                            handleMessage(logger, writer, message as AvaloniaMessage, targetPath)
                         }
                     }
                 }
@@ -117,7 +117,7 @@ private fun startListeningTask(logger: Logger, avaloniaMessages: AvaloniaMessage
     }
 }.apply { start() }
 
-fun handleMessage(writer: BsonStreamWriter, message: AvaloniaMessage, targetPath: Path) {
+fun handleMessage(logger: Logger, writer: BsonStreamWriter, message: AvaloniaMessage, targetPath: Path) {
     if (message is StartDesignerSessionMessage) {
         // hardcoded some xaml
         val xaml = """
@@ -130,6 +130,10 @@ fun handleMessage(writer: BsonStreamWriter, message: AvaloniaMessage, targetPath
 
         val msg = UpdateXamlMessageBuilder.build(xaml, targetPath.toString())
         writer.sendMessage(msg)
+    }
+    if (message is UpdateXamlResultMessage) {
+        if (message.error != null)
+            logger.info {"Error from UpdateXamlResultMessage: ${message.error}"}
     }
 }
 
