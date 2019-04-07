@@ -212,7 +212,7 @@ class StartAvaloniaPreviewerAction : AnAction("Start Avalonia Previewer") {
                 return@then
             }
 
-            val previewerPath = Paths.get("D:\\X-Files\\Projects\\Avalonia\\src\\tools\\Avalonia.Designer.HostApp\\bin\\Debug\\netcoreapp2.0\\Avalonia.Designer.HostApp.dll")
+            val previewerPath = Paths.get(previewerPathValue)
             val targetDir = Paths.get(properties["TargetDir"])
             val targetName = properties["TargetName"]!!
             val targetPath = Paths.get(properties["TargetPath"])
