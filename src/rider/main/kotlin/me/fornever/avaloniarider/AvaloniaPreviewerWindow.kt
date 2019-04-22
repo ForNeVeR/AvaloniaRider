@@ -8,10 +8,24 @@ import javax.swing.ImageIcon
 import javax.swing.JFrame
 import javax.swing.JLabel
 
+const val TOOL_WINDOW_WIDTH  = 250
+const val TOOL_WINDOW_HEIGHT = 70
+
 class AvaloniaPreviewerWindow : JFrame("Avalonia Previewer") {
 
     companion object {
+        @Suppress("UndesirableClassUsage")
+        val img = BufferedImage(TOOL_WINDOW_WIDTH, TOOL_WINDOW_HEIGHT, BufferedImage.TYPE_INT_RGB)
+
         private fun fromByte(b: Byte): Int = b.toInt() and 0xFF
+
+        private fun fillImage(img: BufferedImage, color: Color) {
+            for (y in 0 until img.height) {
+                for (x in 0 until img.width) {
+                    img.setRGB(x, y, color.rgb)
+                }
+            }
+        }
     }
 
     private val content = JLabel()
@@ -21,8 +35,7 @@ class AvaloniaPreviewerWindow : JFrame("Avalonia Previewer") {
     }
 
     fun drawFrame(frame: FrameMessage) {
-        @Suppress("UndesirableClassUsage")
-        val img = BufferedImage(frame.width, frame.height, BufferedImage.TYPE_INT_RGB)
+        fillImage(img, Color.WHITE)
 
         for (y in 0 until frame.height) {
             for (x in 0 until frame.width) {

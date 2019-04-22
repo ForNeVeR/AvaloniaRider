@@ -134,7 +134,7 @@ fun handleMessage(logger: Logger, writer: BsonStreamWriter, message: AvaloniaMes
             </Window>
             """.trimIndent()
 
-            val msg = UpdateXamlMessageBuilder.build(xaml, targetPath.toString())
+            val msg = UpdateXamlMessage(xaml, targetPath.toString())
             writer.sendMessage(msg)
         }
         is UpdateXamlResultMessage -> message.error?.let {
@@ -145,7 +145,7 @@ fun handleMessage(logger: Logger, writer: BsonStreamWriter, message: AvaloniaMes
 
             val dpi = 96.0
             writer.sendMessage(ClientRenderInfoMessage(dpi, dpi))
-            writer.sendMessage(ClientViewportAllocatedMessage(message.width, message.height, 92.0, 92.0))
+            writer.sendMessage(ClientViewportAllocatedMessage(message.width, message.height, dpi * 10, dpi * 10))
             writer.sendMessage(ClientSupportedPixelFormatsMessage(intArrayOf(1)))
         }
         is FrameMessage -> {

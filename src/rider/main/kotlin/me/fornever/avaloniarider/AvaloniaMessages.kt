@@ -21,9 +21,9 @@ class AvaloniaMessages {
             for (annotation in type.annotations) {
                 when (annotation) {
                     is AvaloniaIncomingMessage ->
-                        incomingTypeRegistry.put(annotation.uuid.toUUID(), type::class.java)
+                        incomingTypeRegistry.put(annotation.uuid.toUUID(), type.java)
                     is AvaloniaOutgoingMessage ->
-                        outgoingTypeRegistry.put(type::class.java, annotation.uuid.toUUID())
+                        outgoingTypeRegistry.put(type.java, annotation.uuid.toUUID())
                 }
             }
         }
@@ -38,42 +38,32 @@ class StartDesignerSessionMessage : AvaloniaMessage() {
 }
 
 @AvaloniaOutgoingMessage("9aec9a2e-6315-4066-b4ba-e9a9efd0f8cc")
-class UpdateXamlMessage : AvaloniaMessage() {
-    var xaml: String = ""
-    var assemblyPath: String = ""
-}
-
-class UpdateXamlMessageBuilder {
-    companion object {
-        fun build(xaml: String, assemblyPath: String) =
-                UpdateXamlMessage().apply {
-                    this.xaml = xaml
-                    this.assemblyPath = assemblyPath
-                }
-    }
-}
+class UpdateXamlMessage(
+        val xaml: String = "",
+        val assemblyPath: String = ""
+) : AvaloniaMessage()
 
 @AvaloniaIncomingMessage("b7a70093-0c5d-47fd-9261-22086d43a2e2")
-class UpdateXamlResultMessage : AvaloniaMessage() {
-    val error: String? = ""
-    val handle: String? = ""
-}
+class UpdateXamlResultMessage(
+        val error: String? = "",
+        val handle: String? = ""
+) : AvaloniaMessage()
 
 @AvaloniaIncomingMessage("F58313EE-FE69-4536-819D-F52EDF201A0E")
-class FrameMessage : AvaloniaMessage() {
-    var sequenceId: Long = 0L
-    var format: Int = 0
-    var data: ByteArray = byteArrayOf()
-    var width: Int = 0
-    var height: Int = 0
-    var stride: Int = 0
-}
+class FrameMessage(
+        val sequenceId: Long = 0L,
+        val format: Int = 0,
+        val data: ByteArray = byteArrayOf(),
+        val width: Int = 0,
+        val height: Int = 0,
+        val stride: Int = 0
+) : AvaloniaMessage()
 
 @AvaloniaIncomingMessage("9b47b3d8-61df-4c38-acd4-8c1bb72554ac")
-class RequestViewportResizeMessage : AvaloniaMessage() {
-    val width: Double = 0.0
-    val height: Double = 0.0
-}
+class RequestViewportResizeMessage(
+        val width: Double = 0.0,
+        val height: Double = 0.0
+) : AvaloniaMessage()
 
 @AvaloniaOutgoingMessage("63481025-7016-43FE-BADC-F2FD0F88609E")
 class ClientSupportedPixelFormatsMessage(
