@@ -14,9 +14,6 @@ const val TOOL_WINDOW_HEIGHT = 70
 class AvaloniaPreviewerWindow : JFrame("Avalonia Previewer") {
 
     companion object {
-        @Suppress("UndesirableClassUsage")
-        val img = BufferedImage(TOOL_WINDOW_WIDTH, TOOL_WINDOW_HEIGHT, BufferedImage.TYPE_INT_RGB)
-
         private fun fromByte(b: Byte): Int = b.toInt() and 0xFF
 
         private fun fillImage(img: BufferedImage, color: Color) {
@@ -27,6 +24,9 @@ class AvaloniaPreviewerWindow : JFrame("Avalonia Previewer") {
             }
         }
     }
+
+    @Suppress("UndesirableClassUsage")
+    val img = BufferedImage(TOOL_WINDOW_WIDTH, TOOL_WINDOW_HEIGHT, BufferedImage.TYPE_INT_RGB)
 
     private val content = JLabel()
     init {

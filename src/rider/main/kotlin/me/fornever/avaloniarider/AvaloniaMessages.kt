@@ -15,8 +15,7 @@ class AvaloniaMessages {
     val outgoingTypeRegistry = mutableMapOf<Class<*>, UUID>()
 
     init {
-        val declaredMessageTypes = AvaloniaMessage::class.nestedClasses
-        //val declaredMessageTypes = AvaloniaMessage::class.sealedSubclasses
+        val declaredMessageTypes = AvaloniaMessage::class.sealedSubclasses
         for (type in declaredMessageTypes) {
             for (annotation in type.annotations) {
                 when (annotation) {
