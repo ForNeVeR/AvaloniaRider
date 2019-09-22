@@ -9,7 +9,7 @@ Build
 ### Prerequisites
 
 - OpenJDK-compatible JDK version 8 or later
-- .NET Core SDK 
+- .NET Build Tools (from Visual Studio installation) 
 
 ### Build
 
