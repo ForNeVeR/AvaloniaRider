@@ -2,9 +2,9 @@ package me.fornever.avaloniarider.bson
 
 import com.fasterxml.jackson.databind.MapperFeature
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.jetbrains.rider.util.getLogger
-import com.jetbrains.rider.util.info
-import com.jetbrains.rider.util.warn
+import com.jetbrains.rd.util.getLogger
+import com.jetbrains.rd.util.info
+import com.jetbrains.rd.util.warn
 import de.undercouch.bson4jackson.BsonFactory
 import java.io.ByteArrayInputStream
 import java.io.DataInputStream

@@ -6,6 +6,36 @@
 Build
 -----
 
-1. Open the `AvaloniaRider.sln` in Rider and build.
-2. Open the `AvaloniaRider` directory in IntelliJ IDEA and invoke Gradle →
-   avaloniarider → Tasks → intellij → runIde. 
+### Prerequisites
+
+- OpenJDK-compatible JDK version 8 or later
+- .NET Core SDK 
+
+### Build
+
+To build from terminal, execute this command:
+
+```console
+$ ./gradlew buildPlugin
+```
+
+After that, the plugin ZIP distribution will be created in the 
+`build/distributions` directory.
+
+### Run
+
+The following command will build the plugin and run it using a sandboxed
+instance of Rider (set the required version via `build.gradle`).
+
+```console
+$ ./gradlew runIde
+```
+
+Development
+-----------
+
+This plugin consists of two parts: the backend one (written in C#) and the
+frontend one (written in Kotlin). Each part requires a corresponding IDE. To
+develop a backend, it's recommended to open `AvaloniaRider.sln` with JetBrains
+Rider. To develop a frontend, it's recommended to use IntelliJ IDEA (Community
+edition should be enough). 

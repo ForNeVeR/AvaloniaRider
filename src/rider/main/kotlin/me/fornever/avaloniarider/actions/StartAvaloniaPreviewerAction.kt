@@ -9,19 +9,18 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.ToolWindow
 import com.intellij.openapi.wm.ToolWindowAnchor
 import com.intellij.openapi.wm.ToolWindowManager
+import com.jetbrains.rd.util.Logger
+import com.jetbrains.rd.util.error
+import com.jetbrains.rd.util.getLogger
+import com.jetbrains.rd.util.info
 import com.jetbrains.rider.model.RunnableProject
 import com.jetbrains.rider.model.runnableProjectsModel
 import com.jetbrains.rider.projectView.solution
 import com.jetbrains.rider.run.environment.MSBuildEvaluator
-import com.jetbrains.rider.runtime.DotNetExecutable
 import com.jetbrains.rider.runtime.DotNetRuntime
 import com.jetbrains.rider.runtime.RiderDotNetActiveRuntimeHost
 import com.jetbrains.rider.runtime.dotNetCore.DotNetCoreRuntime
-import com.jetbrains.rider.util.Logger
-import com.jetbrains.rider.util.error
-import com.jetbrains.rider.util.getLogger
 import com.jetbrains.rider.util.idea.application
-import com.jetbrains.rider.util.info
 import me.fornever.avaloniarider.*
 import me.fornever.avaloniarider.bson.BsonStreamReader
 import me.fornever.avaloniarider.bson.BsonStreamWriter
@@ -36,20 +35,13 @@ private fun getRuntime(
         runtimeHost: RiderDotNetActiveRuntimeHost,
         runnableProject: RunnableProject): DotNetRuntime? {
     val output = runnableProject.projectOutputs.firstOrNull() ?: return null
-    val executable = DotNetExecutable(
+    return DotNetRuntime.detectRuntimeForProjectOrThrow(
+            runnableProject.kind,
+            runtimeHost,
+            false,
             output.exePath,
-            output.tfm,
-            "",
-            emptyList(),
-            false,
-            false,
-            emptyMap(),
-            false,
-            { _, _ -> },
-            null,
-            "",
-            false)
-    return DotNetRuntime.getSuitableRuntime(runnableProject.kind, runtimeHost, executable)
+            output.tfm
+    )
 }
 
 private fun getAvaloniaPreviewerPathKey(runtime: DotNetRuntime): String = when (runtime) {

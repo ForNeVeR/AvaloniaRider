@@ -1,10 +1,9 @@
 package model.rider
 
+import com.jetbrains.rd.generator.nova.*
+import com.jetbrains.rd.generator.nova.PredefinedType.bool
+import com.jetbrains.rd.generator.nova.PredefinedType.string
 import com.jetbrains.rider.model.nova.ide.SolutionModel
-import com.jetbrains.rider.generator.nova.*
-import com.jetbrains.rider.generator.nova.PredefinedType.*
-import com.jetbrains.rider.generator.nova.csharp.CSharp50Generator
-import com.jetbrains.rider.generator.nova.kotlin.Kotlin11Generator
 
 @Suppress("unused")
 object AvaloniaRiderModel : Ext(SolutionModel.Solution) {
