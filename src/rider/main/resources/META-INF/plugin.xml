@@ -31,4 +31,8 @@
         <action id="me.fornever.avaloniarider.actions.StartAvaloniaPreviewerAction"
                 class="me.fornever.avaloniarider.actions.StartAvaloniaPreviewerAction" text="StartAvaloniaPreviewer"/>
     </actions>
+    <extensions defaultExtensionNs="com.intellij">
+        <projectService serviceImplementation="me.fornever.avaloniarider.AvaloniaPreviewer"/>
+        <projectService serviceImplementation="me.fornever.avaloniarider.AvaloniaToolWindowManager"/>
+    </extensions>
 </idea-plugin>

@@ -1,17 +1,9 @@
 package me.fornever.avaloniarider.actions
 
-import com.intellij.execution.configurations.GeneralCommandLine
-import com.intellij.execution.filters.TextConsoleBuilderFactory
-import com.intellij.execution.process.ProcessHandlerFactory
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
-import com.intellij.openapi.actionSystem.IdeActions
-import com.intellij.openapi.project.Project
-import com.intellij.openapi.wm.ToolWindow
-import com.intellij.openapi.wm.ToolWindowAnchor
-import com.intellij.openapi.wm.ToolWindowManager
-import com.jetbrains.rd.util.Logger
+import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.jetbrains.rd.util.error
 import com.jetbrains.rd.util.getLogger
 import com.jetbrains.rd.util.info
@@ -21,20 +13,12 @@ import com.jetbrains.rider.projectView.solution
 import com.jetbrains.rider.run.environment.MSBuildEvaluator
 import com.jetbrains.rider.runtime.DotNetRuntime
 import com.jetbrains.rider.runtime.RiderDotNetActiveRuntimeHost
-import com.jetbrains.rider.runtime.dotNetCore.DotNetCoreRuntime
-import com.jetbrains.rider.util.idea.application
-import me.fornever.avaloniarider.*
-import me.fornever.avaloniarider.bson.BsonStreamReader
-import me.fornever.avaloniarider.bson.BsonStreamWriter
-import me.fornever.avaloniarider.me.fornever.avaloniarider.AvaloniaPreviewerWindow
-import java.awt.Dimension
-import java.io.DataInputStream
+import me.fornever.avaloniarider.AvaloniaMessages
+import me.fornever.avaloniarider.AvaloniaPreviewer
+import me.fornever.avaloniarider.AvaloniaPreviewerSession
+import me.fornever.avaloniarider.AvaloniaRiderNotifications
 import java.net.ServerSocket
-import java.nio.file.Path
 import java.nio.file.Paths
-import com.intellij.openapi.editor.actionSystem.EditorActionManager
-import me.fornever.avaloniarider.me.fornever.avaloniarider.actions.TypedToFileActionHandler
-
 
 private fun getRuntime(
         runtimeHost: RiderDotNetActiveRuntimeHost,
@@ -49,101 +33,24 @@ private fun getRuntime(
     )
 }
 
-private fun getAvaloniaPreviewerPathKey(runtime: DotNetRuntime): String = when (runtime) {
-    is DotNetCoreRuntime -> "AvaloniaPreviewerNetCoreToolPath"
-    else -> "AvaloniaPreviewerNetFullToolPath"
-}
-
-private fun getDesignerCommandLine(
-        runtime: DotNetRuntime,
-        previewerBinary: Path,
-        targetDir: Path,
-        targetName: String,
-        targetPath: Path,
-        bsonPort: Int
-): GeneralCommandLine {
-    val runtimeConfig = targetDir.resolve("$targetName.runtimeconfig.json")
-    val depsFile = targetDir.resolve("$targetName.deps.json")
-    return when (runtime) {
-        is DotNetCoreRuntime -> GeneralCommandLine().withExePath(runtime.cliExePath)
-                .withParameters(
-                        "exec",
-                        "--runtimeconfig",
-                        runtimeConfig.toAbsolutePath().toString(),
-                        "--depsfile",
-                        depsFile.toAbsolutePath().toString(),
-                        previewerBinary.toAbsolutePath().toString(),
-                        "--transport",
-                        "tcp-bson://127.0.0.1:$bsonPort/",
-                        targetPath.toAbsolutePath().toString()
-                )
-        else -> GeneralCommandLine().withExePath(previewerBinary.toAbsolutePath().toString())
-                .withParameters(
-                        "--transport",
-                        "tcp-bson://127.0.0.1:$bsonPort/",
-                        targetPath.toAbsolutePath().toString()
-                )
-    }
-}
-
-private fun startListening() = ServerSocket(0)
-
-var window = AvaloniaPreviewerWindow()
-
-private var toolWindow: ToolWindow? = null
-
-private fun initToolWindow(project: Project): ToolWindow {
-    if (toolWindow == null) {
-        toolWindow = ToolWindowManager.getInstance(project).registerToolWindow("Commands", true, ToolWindowAnchor.BOTTOM)
-    }
-    return toolWindow!!
-}
-
-private fun startAndShowOutput(project: Project, commandLine: GeneralCommandLine) {
-    val processHandlerFactory = ProcessHandlerFactory.getInstance()
-    val processHandler = processHandlerFactory.createProcessHandler(commandLine)
-
-    val toolWindow = initToolWindow(project)
-    val consoleView = TextConsoleBuilderFactory.getInstance().createBuilder(project).console
-    val content = toolWindow.contentManager.factory.createContent(consoleView.component, "Avalonia Designer", true)
-    toolWindow.contentManager.addContent(content)
-
-    processHandler.startNotify()
-    consoleView.attachToProcess(processHandler)
-}
-
-private fun startWaitingForActions(e: AnActionEvent) {
-    val editor = e.getRequiredData(CommonDataKeys.EDITOR)
-    val actionManager = EditorActionManager.getInstance()
-    val actionHandler = actionManager.getActionHandler(IdeActions.ACTION_EDITOR_CLONE_CARET_BELOW)
-    actionHandler.execute(editor, editor.caretModel.currentCaret, e.dataContext)
-}
-
 class StartAvaloniaPreviewerAction : AnAction("Start Avalonia Previewer") {
-
-    companion object
-    {
+    companion object {
         private val logger = getLogger<StartAvaloniaPreviewerAction>()
     }
-
-    private lateinit var reader: BsonStreamReader
-    private lateinit var writer: BsonStreamWriter
-    private lateinit var targetPath: Path
-    private val avaloniaMessages = AvaloniaMessages.getInstance()
 
     override fun update(e: AnActionEvent) {
         e.presentation.isEnabled = e.project?.solution?.isLoaded?.valueOrNull == true
     }
 
     override fun actionPerformed(e: AnActionEvent) {
-        val actionManager = EditorActionManager.getInstance()
-        actionManager.typedAction.setupHandler(TypedToFileActionHandler(this))
-
         val project = e.project ?: return
         val runnableProject = project.solution.runnableProjectsModel.projects.valueOrNull?.firstOrNull() ?: return
+        val currentDocument = e.getRequiredData(CommonDataKeys.EDITOR).document
+        val currentFile = FileDocumentManager.getInstance().getFile(currentDocument) ?: return
+
         val msBuildEvaluator = MSBuildEvaluator.getInstance(project)
         val runtime = getRuntime(RiderDotNetActiveRuntimeHost.getInstance(project), runnableProject) ?: return
-        val avaloniaPreviewerPathKey = getAvaloniaPreviewerPathKey(runtime)
+        val avaloniaPreviewerPathKey = AvaloniaPreviewer.getAvaloniaPreviewerPathKey(runtime)
         msBuildEvaluator.evaluateProperties(
                 runnableProject.projectFilePath,
                 listOf(avaloniaPreviewerPathKey, "TargetDir", "TargetName", "TargetPath")
@@ -158,13 +65,13 @@ class StartAvaloniaPreviewerAction : AnAction("Start Avalonia Previewer") {
             }
 
             val previewerPath = Paths.get(previewerPathValue)
-            val targetDir = Paths.get(properties["TargetDir"])
-            val targetName = properties["TargetName"]!!
-            targetPath = Paths.get(properties["TargetPath"])
+            val targetDir = Paths.get(properties.getValue("TargetDir"))
+            val targetName = properties.getValue("TargetName")
+            val targetPath = Paths.get(properties.getValue("TargetPath"))
 
-            val serverSocket = startListening()
+            val serverSocket = ServerSocket(0)
             try {
-                val commandLine = getDesignerCommandLine(
+                val commandLine = AvaloniaPreviewer.getPreviewerCommandLine(
                         runtime,
                         previewerPath,
                         targetDir,
@@ -177,84 +84,19 @@ class StartAvaloniaPreviewerAction : AnAction("Start Avalonia Previewer") {
                 logger.info { "targetName $targetName"}
                 logger.info { "targetPath $targetPath"}
 
-                startListeningTask(serverSocket)
-                startAndShowOutput(project, commandLine)
-                startWaitingForActions(e)
-
+                val session = AvaloniaPreviewerSession(
+                        project,
+                        AvaloniaMessages.getInstance(),
+                        serverSocket,
+                        commandLine,
+                        targetPath,
+                        currentFile
+                )
+                session.start()
             } catch (t: Throwable) {
                 serverSocket.close()
                 throw t
             }
         }.onError { logger.error(it) }
-    }
-
-    private fun startListeningTask(serverSocket: ServerSocket) = Thread {
-        try {
-            val socket = serverSocket.accept()
-            serverSocket.close()
-            socket.use {
-                socket.getInputStream().use {
-                    DataInputStream(it).use { input ->
-                        socket.getOutputStream().use { output ->
-                            writer = BsonStreamWriter(avaloniaMessages.outgoingTypeRegistry, output)
-                            reader = BsonStreamReader(avaloniaMessages.incomingTypeRegistry, input)
-                            while (!socket.isClosed) {
-                                val message = reader.readMessage()
-                                if (message == null) {
-                                    logger.info { "Message == null received, terminating the connection" }
-                                    return@Thread
-                                }
-                                handleMessage(message as AvaloniaMessage)
-                            }
-                        }
-                    }
-                }
-            }
-        } catch (ex: Throwable) {
-            logger.error("Error while listening to Avalonia designer socket", ex)
-            serverSocket.close()
-        }
-    }.apply { start() }
-
-
-    private fun handleMessage(message: AvaloniaMessage) {
-        when (message) {
-            is StartDesignerSessionMessage -> {
-                // hardcoded some xaml
-                val xaml = """
-            <Window xmlns="https://github.com/avaloniaui"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    Title="AvaloniaTest">
-                Hello World!
-            </Window>
-            """.trimIndent()
-
-                writer.sendMessage(UpdateXamlMessage(xaml, targetPath.toString()))
-            }
-            is UpdateXamlResultMessage -> message.error?.let {
-                logger.error { "Error from UpdateXamlResultMessage: $it" }
-            }
-            is RequestViewportResizeMessage -> {
-                window.size = Dimension(message.width.toInt(), message.height.toInt())
-
-                val dpi = 96.0
-                writer.sendMessage(ClientRenderInfoMessage(dpi, dpi))
-                writer.sendMessage(ClientViewportAllocatedMessage(message.width, message.height, dpi, dpi))
-                writer.sendMessage(ClientSupportedPixelFormatsMessage(intArrayOf(1)))
-            }
-            is FrameMessage -> {
-                window.isVisible = true
-                window.size = Dimension(message.width, message.height)
-                application.invokeAndWait {
-                    window.drawFrame(message)
-                }
-                writer.sendMessage(FrameReceivedMessage(message.sequenceId))
-            }
-        }
-    }
-
-
-    fun updateView(xaml: String) {
-        writer.sendMessage(UpdateXamlMessage(xaml, targetPath.toString()))
     }
 }
