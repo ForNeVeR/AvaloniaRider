@@ -37,10 +37,10 @@ set DEFAULT_JVM_OPTS="-Xmx64m" "-Xms64m"
 setlocal
 
 set BUILD_DIR=%APP_HOME%build\
-set JVM_TARGET_DIR=%BUILD_DIR%gradle-jvm\amazon-corretto-11.0.6.10.1-1-windows-x64-jdk-9e1583\
+set JVM_TARGET_DIR=%BUILD_DIR%gradle-jvm\jbrsdk-11_0_6-windows-x64-b765.15-db78df\
 
-set JVM_TEMP_FILE=jvm-windows-x64.zip
-set JVM_URL=https://corretto.aws/downloads/resources/11.0.6.10.1/amazon-corretto-11.0.6.10.1-1-windows-x64-jdk.zip
+set JVM_TEMP_FILE=jvm-windows-x64.tar.gz
+set JVM_URL=https://bintray.com/jetbrains/intellij-jbr/download_file?file_path=jbrsdk-11_0_6-windows-x64-b765.15.tar.gz
 
 set POWERSHELL=%SystemRoot%\system32\WindowsPowerShell\v1.0\powershell.exe
 
@@ -71,7 +71,7 @@ CD "%JVM_TARGET_DIR%"
 if errorlevel 1 goto fail
 
 echo Extracting %BUILD_DIR%%JVM_TEMP_FILE% to %JVM_TARGET_DIR%
-"%POWERSHELL%" -nologo -noprofile -command "Set-StrictMode -Version 3.0; $ErrorActionPreference = \"Stop\"; Add-Type -A 'System.IO.Compression.FileSystem'; [IO.Compression.ZipFile]::ExtractToDirectory('..\\..\\%JVM_TEMP_FILE%', '.');"
+tar -x -f "..\..\%JVM_TEMP_FILE%" -C "%JVM_TARGET_DIR%\"
 if errorlevel 1 goto fail
 
 DEL /F "..\..\%JVM_TEMP_FILE%"

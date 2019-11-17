@@ -87,16 +87,16 @@ BUILD_DIR=$APP_HOME/build
 
 if [ "$darwin" = "true" ]; then
     JVM_TEMP_FILE=$BUILD_DIR/jvm-macosx-x64.tar.gz
-    JVM_URL=https://corretto.aws/downloads/resources/11.0.6.10.1/amazon-corretto-11.0.6.10.1-2-macosx-x64.tar.gz
-    JVM_TARGET_DIR=$BUILD_DIR/gradle-jvm/amazon-corretto-11.0.6.10.1-2-macosx-x64-59b2c4
+    JVM_URL=https://bintray.com/jetbrains/intellij-jbr/download_file?file_path=jbrsdk-11_0_6-osx-x64-b765.15.tar.gz
+    JVM_TARGET_DIR=$BUILD_DIR/gradle-jvm/jbrsdk-11_0_6-osx-x64-b765.15-59b17d
 elif [ "$cygwin" = "true" ] || [ "$msys" = "true" ]; then
     JVM_TEMP_FILE=$BUILD_DIR/jvm-windows-x64.zip
     JVM_URL=https://d3pxv6yz143wms.cloudfront.net/11.0.4.11.1/amazon-corretto-11.0.4.11.1-windows-x64.zip
-    JVM_TARGET_DIR=$BUILD_DIR/amazon-corretto-11.0.6.10.1-1-windows-x64-jdk-9e1583
+    JVM_TARGET_DIR=$BUILD_DIR/jbrsdk-11_0_6-windows-x64-b765.15-db78df
 else
     JVM_TEMP_FILE=$BUILD_DIR/jvm-linux-x64.tar.gz
-    JVM_URL=https://d3pxv6yz143wms.cloudfront.net/11.0.4.11.1/amazon-corretto-11.0.4.11.1-linux-x64.tar.gz
-    JVM_TARGET_DIR=$BUILD_DIR/gradle-jvm/amazon-corretto-11.0.4.11.1-linux-x64-a8fc5f
+    JVM_URL=https://bintray.com/jetbrains/intellij-jbr/download_file?file_path=jbrsdk-11_0_6-linux-x64-b765.15.tar.gz
+    JVM_TARGET_DIR=$BUILD_DIR/gradle-jvm/jbrsdk-11_0_6-linux-x64-b765.15-935c6a
 fi
 
 set -e
@@ -112,7 +112,7 @@ else
   if command -v curl >/dev/null 2>&1; then
       if [ -t 1 ]; then CURL_PROGRESS="--progress-bar"; else CURL_PROGRESS="--silent --show-error"; fi
       # shellcheck disable=SC2086
-      curl $CURL_PROGRESS --output "${JVM_TEMP_FILE}" "$JVM_URL"
+      curl $CURL_PROGRESS --location --output "${JVM_TEMP_FILE}" "$JVM_URL"
   elif command -v wget >/dev/null 2>&1; then
       if [ -t 1 ]; then WGET_PROGRESS=""; else WGET_PROGRESS="-nv"; fi
       wget $WGET_PROGRESS -O "${JVM_TEMP_FILE}" "$JVM_URL"

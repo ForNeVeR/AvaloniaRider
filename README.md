@@ -8,7 +8,7 @@ Build
 ### Prerequisites
 
 - OpenJDK-compatible JDK version 8 or later (will be downloaded automatically
-  during build)
+  during build), should include JavaFX
 - .NET Core SDK 3.1 or later
 
 ### Build
@@ -39,10 +39,18 @@ $ ./gradlew runIde
 Development
 -----------
 
+## Architecture
+
 This plugin consists of two parts: the backend one (written in C#) and the
 frontend one (written in Kotlin). Each part requires a corresponding IDE. To
 develop a backend, it's recommended to open `AvaloniaRider.sln` with JetBrains
 Rider. To develop a frontend, it's recommended to use IntelliJ IDEA (Community
 edition should be enough).
+
+## IDE Setup
+
+After running `./gradlew` at least once, set up your project SDK to the folder
+`build/gradle-jvm/<sdk-name>/<subdirectory>`. This JDK is guaranteed to contain
+all the components necessary to build the plugin.
 
 [gradle-jvm-wrapper]: https://github.com/mfilippov/gradle-jvm-wrapper

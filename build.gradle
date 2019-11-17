@@ -40,10 +40,10 @@ wrapper {
 }
 
 jvmWrapper {
-    // https://github.com/corretto/corretto-11/releases
-    linuxJvmUrl = 'https://corretto.aws/downloads/resources/11.0.6.10.1/amazon-corretto-11.0.6.10.1-linux-x64.tar.gz'
-    macJvmUrl = 'https://corretto.aws/downloads/resources/11.0.6.10.1/amazon-corretto-11.0.6.10.1-2-macosx-x64.tar.gz'
-    windowsJvmUrl = 'https://corretto.aws/downloads/resources/11.0.6.10.1/amazon-corretto-11.0.6.10.1-1-windows-x64-jdk.zip'
+    // https://confluence.jetbrains.com/display/JBR/Release+notes
+    linuxJvmUrl = 'https://bintray.com/jetbrains/intellij-jbr/download_file?file_path=jbrsdk-11_0_6-linux-x64-b765.15.tar.gz'
+    macJvmUrl = 'https://bintray.com/jetbrains/intellij-jbr/download_file?file_path=jbrsdk-11_0_6-osx-x64-b765.15.tar.gz'
+    windowsJvmUrl = 'https://bintray.com/jetbrains/intellij-jbr/download_file?file_path=jbrsdk-11_0_6-windows-x64-b765.15.tar.gz'
 }
 
 if (!ext.has("BuildConfiguration"))
