@@ -6,6 +6,11 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v2
+      - name: Cache .NET dependencies
+        uses: actions/cache@v1.1.0
+        with:
+          path: ~/.nuget
+          key: .nuget-${{ hashFiles('src/dotnet/**/*.csproj') }}+${{ hashFiles('src/dotnet/**/*.props') }}
       - name: Cache Gradle executables
         uses: actions/cache@v1.1.0
         with:
@@ -16,5 +21,7 @@ jobs:
         with:
           path: ~/.gradle/cache
           key: .gradle-cache-${{ hashFiles('build.gradle') }}
-      - name: Gradle Build
+      - name: Build Backend
+        run: powershell -ExecutionPolicy ByPass -File ./buildPlugin.ps1
+      - name: Build Frontend
         run: ./gradlew assemble
