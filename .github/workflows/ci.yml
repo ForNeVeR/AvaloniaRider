@@ -25,3 +25,5 @@ jobs:
         run: powershell -ExecutionPolicy Bypass -File ./buildPlugin.ps1
       - name: Build Frontend
         run: ./gradlew assemble
+      - name: Test
+        run: ./gradlew build
