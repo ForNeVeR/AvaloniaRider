@@ -71,7 +71,7 @@ task compileDotNet {
     doLast {
         exec {
             executable "powershell"
-            args "-ExecutionPolicy", "ByPass", "-NoProfile", "-File", "$rootDir/buildPlugin.ps1"
+            args "-ExecutionPolicy", "Bypass", "-NoProfile", "-File", "$rootDir/buildPlugin.ps1"
         }
     }
 }

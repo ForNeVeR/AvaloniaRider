@@ -22,6 +22,6 @@ jobs:
           path: ~/.gradle/cache
           key: .gradle-cache-${{ hashFiles('build.gradle') }}
       - name: Build Backend
-        run: powershell -ExecutionPolicy ByPass -File ./buildPlugin.ps1
+        run: powershell -ExecutionPolicy Bypass -File ./buildPlugin.ps1
       - name: Build Frontend
         run: ./gradlew assemble
