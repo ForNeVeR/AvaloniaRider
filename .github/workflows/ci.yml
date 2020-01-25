@@ -19,8 +19,8 @@ jobs:
       - name: Cache Java dependencies
         uses: actions/cache@v1.1.0
         with:
-          path: ~/.gradle/cache
-          key: .gradle-cache-${{ hashFiles('build.gradle') }}
+          path: ~/.gradle/caches
+          key: .gradle-caches-${{ hashFiles('build.gradle') }}
       - name: Build Backend
         run: powershell -ExecutionPolicy Bypass -File ./buildPlugin.ps1
       - name: Build Frontend
