@@ -23,14 +23,14 @@ jobs:
           key: .gradle-caches-${{ hashFiles('build.gradle') }}
       - name: Build Backend
         run: powershell -ExecutionPolicy Bypass -File ./buildPlugin.ps1
-      - name: Build Frontend
-        run: ./gradlew --no-daemon assemble
       - name: Test
         run: ./gradlew --no-daemon test
       - name: Build Plugin
         run: ./gradlew --no-daemon buildPlugin
+      - name: Prepare Upload
+        run: pwsh -Command "Move-Item build/distributions/avaloniarider-*.zip build/distributions/avaloniarider.zip"
       - name: Upload Build
         uses: actions/upload-artifact@v1.0.0
         with:
-          name: plugin-distribution
-          path: build/distributions/*.zip
+          name: distribution
+          path: build/distributions/avaloniarider.zip
