@@ -11,12 +11,12 @@ jobs:
         with:
           path: ~/.nuget
           key: .nuget-${{ hashFiles('src/dotnet/**/*.csproj') }}+${{ hashFiles('src/dotnet/**/*.props') }}
-      - name: Cache Gradle executables
+      - name: Gradle Wrapper Cache
         uses: actions/cache@v1.1.0
         with:
           path: ~/.gradle/wrapper
           key: .gradle-wrapper-${{ hashFiles('gradle/**') }}
-      - name: Cache Java dependencies
+      - name: Gradle Cache
         uses: actions/cache@v1.1.0
         with:
           path: ~/.gradle/caches
