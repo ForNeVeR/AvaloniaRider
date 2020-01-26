@@ -9,7 +9,7 @@ Build
 ### Prerequisites
 
 - OpenJDK-compatible JDK version 8 or later
-- .NET Build Tools (from Visual Studio installation) 
+- .NET Core SDK 3.1 or later
 
 ### Build
 
@@ -19,7 +19,7 @@ To build from terminal, execute this command:
 $ ./gradlew buildPlugin
 ```
 
-After that, the plugin ZIP distribution will be created in the 
+After that, the plugin ZIP distribution will be created in the
 `build/distributions` directory.
 
 ### Run
@@ -38,4 +38,4 @@ This plugin consists of two parts: the backend one (written in C#) and the
 frontend one (written in Kotlin). Each part requires a corresponding IDE. To
 develop a backend, it's recommended to open `AvaloniaRider.sln` with JetBrains
 Rider. To develop a frontend, it's recommended to use IntelliJ IDEA (Community
-edition should be enough). 
+edition should be enough).

@@ -28,16 +28,16 @@ jobs:
           path: ~/.gradle/caches
           key: .gradle-caches-${{ hashFiles('**/*.gradle') }}
       - name: Build Backend
-        run: powershell -ExecutionPolicy Bypass -File ./buildPlugin.ps1
+        run: dotnet build -c Release
       - name: Test
-        run: ./gradlew --no-daemon test
+        run: ./gradlew -PBuildConfiguration=Release --no-daemon test
       - name: Upload Test Results
         uses: actions/upload-artifact@v1.0.0
         with:
           name: test-results
           path: build/reports/tests
       - name: Build Plugin
-        run: ./gradlew --no-daemon buildPlugin
+        run: ./gradlew -PBuildConfiguration=Release --no-daemon buildPlugin
       - name: Upload Build
         uses: actions/upload-artifact@v1.0.0
         with:

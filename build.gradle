@@ -1,5 +1,3 @@
-import org.apache.tools.ant.taskdefs.condition.Os
-
 buildscript {
     repositories {
         maven { setUrl("https://cache-redirector.jetbrains.com/www.myget.org/F/rd-snapshots/maven") }
@@ -21,7 +19,6 @@ dependencies {
 }
 
 ext {
-    isWindows = Os.isFamily(Os.FAMILY_WINDOWS)
     sdkVersion = "2019.2"
     rdLibDirectory = new File(projectDir, "build/riderRD-$sdkVersion/lib/rd")
     dotNetDir = new File(projectDir, "src/dotnet")
@@ -70,8 +67,8 @@ compileKotlin {
 task compileDotNet {
     doLast {
         exec {
-            executable "powershell"
-            args "-ExecutionPolicy", "Bypass", "-NoProfile", "-File", "$rootDir/buildPlugin.ps1"
+            executable "dotnet"
+            args "build", "-c", BuildConfiguration
         }
     }
 }
