@@ -12,7 +12,7 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Cache .NET dependencies
+      - name: NuGet Cache
         uses: actions/cache@v1.1.0
         with:
           path: ~/.nuget
