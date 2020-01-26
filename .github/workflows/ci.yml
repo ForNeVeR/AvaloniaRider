@@ -26,7 +26,7 @@ jobs:
         uses: actions/cache@v1.1.0
         with:
           path: ~/.gradle/caches
-          key: .gradle-caches-${{ hashFiles('build.gradle') }}
+          key: .gradle-caches-${{ hashFiles('**/*.gradle') }}
       - name: Build Backend
         run: powershell -ExecutionPolicy Bypass -File ./buildPlugin.ps1
       - name: Test
