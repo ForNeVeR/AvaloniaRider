@@ -9,7 +9,10 @@ on:
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: ${{ matrix.image }}
+    strategy:
+      matrix:
+        image: [macos-latest, windows-latest]
     steps:
       - uses: actions/checkout@v2
 
@@ -18,7 +21,7 @@ jobs:
         uses: actions/cache@v1.1.0
         with:
           path: ~/.nuget
-          key: .nuget-${{ hashFiles('src/dotnet/**/*.csproj') }}+${{ hashFiles('src/dotnet/**/*.props') }}
+          key: ${{ runner.os }}-.nuget-${{ hashFiles('src/dotnet/**/*.csproj') }}+${{ hashFiles('src/dotnet/**/*.props') }}
       - name: Setup .NET Core SDK
         uses: actions/setup-dotnet@v1.4.0
         with:
@@ -31,24 +34,26 @@ jobs:
         uses: actions/cache@v1.1.0
         with:
           path: ~/.gradle/wrapper
-          key: .gradle-wrapper-${{ hashFiles('gradle/**') }}
+          key: ${{ runner.os }}-.gradle-wrapper-${{ hashFiles('gradle/**') }}
       - name: Gradle Cache
         uses: actions/cache@v1.1.0
         with:
           path: ~/.gradle/caches
-          key: .gradle-caches-${{ hashFiles('**/*.gradle') }}
+          key: ${{ runner.os }}-.gradle-caches-${{ hashFiles('**/*.gradle') }}
       - name: Test
         run: ./gradlew -PBuildConfiguration=Release --no-daemon test
       - name: Upload Test Results
         uses: actions/upload-artifact@v1.0.0
         with:
-          name: test-results
+          name: ${{ runner.os }}.test-results
           path: build/reports/tests
 
       # Distribution
       - name: Build Distribution
+        if: runner.os == 'windows-latest'
         run: ./gradlew -PBuildConfiguration=Release --no-daemon buildPlugin
       - name: Upload Distribution
+        if: runner.os == 'windows-latest'
         uses: actions/upload-artifact@v1.0.0
         with:
           name: distribution
