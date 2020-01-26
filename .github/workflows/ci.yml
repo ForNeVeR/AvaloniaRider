@@ -50,10 +50,10 @@ jobs:
 
       # Distribution
       - name: Build Distribution
-        if: runner.os == 'windows-latest'
+        if: matrix.image == 'windows-latest'
         run: ./gradlew -PBuildConfiguration=Release --no-daemon buildPlugin
       - name: Upload Distribution
-        if: runner.os == 'windows-latest'
+        if: matrix.image == 'windows-latest'
         uses: actions/upload-artifact@v1.0.0
         with:
           name: distribution
