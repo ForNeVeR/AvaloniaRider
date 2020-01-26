@@ -48,7 +48,7 @@ jobs:
       # Distribution
       - name: Build Distribution
         run: ./gradlew -PBuildConfiguration=Release --no-daemon buildPlugin
-      - name: Upload Build
+      - name: Upload Distribution
         uses: actions/upload-artifact@v1.0.0
         with:
           name: distribution
