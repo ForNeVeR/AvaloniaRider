@@ -12,11 +12,21 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v2
+
+      # Backend
       - name: NuGet Cache
         uses: actions/cache@v1.1.0
         with:
           path: ~/.nuget
           key: .nuget-${{ hashFiles('src/dotnet/**/*.csproj') }}+${{ hashFiles('src/dotnet/**/*.props') }}
+      - name: Setup .NET Core SDK
+        uses: actions/setup-dotnet@v1.4.0
+        with:
+          dotnet-version: '3.1.101'
+      - name: Build Backend
+        run: dotnet build -c Release
+
+      # Frontend
       - name: Gradle Wrapper Cache
         uses: actions/cache@v1.1.0
         with:
@@ -27,8 +37,6 @@ jobs:
         with:
           path: ~/.gradle/caches
           key: .gradle-caches-${{ hashFiles('**/*.gradle') }}
-      - name: Build Backend
-        run: dotnet build -c Release
       - name: Test
         run: ./gradlew -PBuildConfiguration=Release --no-daemon test
       - name: Upload Test Results
@@ -36,7 +44,9 @@ jobs:
         with:
           name: test-results
           path: build/reports/tests
-      - name: Build Plugin
+
+      # Distribution
+      - name: Build Distribution
         run: ./gradlew -PBuildConfiguration=Release --no-daemon buildPlugin
       - name: Upload Build
         uses: actions/upload-artifact@v1.0.0
