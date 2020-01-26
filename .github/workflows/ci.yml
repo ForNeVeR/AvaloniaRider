@@ -38,10 +38,8 @@ jobs:
           path: build/reports/tests
       - name: Build Plugin
         run: ./gradlew --no-daemon buildPlugin
-      - name: Prepare Upload
-        run: pwsh -Command "Move-Item build/distributions/avaloniarider-*.zip build/distributions/avaloniarider.zip"
       - name: Upload Build
         uses: actions/upload-artifact@v1.0.0
         with:
           name: distribution
-          path: build/distributions/avaloniarider.zip
+          path: build/distributions
