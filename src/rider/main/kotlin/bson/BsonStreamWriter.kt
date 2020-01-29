@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.jetbrains.rd.util.getLogger
 import com.jetbrains.rd.util.info
 import de.undercouch.bson4jackson.BsonFactory
-import me.fornever.avaloniarider.AvaloniaMessage
+import me.fornever.avaloniarider.controlmessages.AvaloniaMessage
 import java.io.OutputStream
 import java.util.*
 

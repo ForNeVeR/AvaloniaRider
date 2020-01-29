@@ -1,4 +1,4 @@
-package me.fornever.avaloniarider
+package me.fornever.avaloniarider.idea
 
 import com.intellij.notification.NotificationDisplayType
 import com.intellij.notification.NotificationGroup

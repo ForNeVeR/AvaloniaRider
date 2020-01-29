@@ -1,4 +1,4 @@
-package me.fornever.avaloniarider
+package me.fornever.avaloniarider.controlmessages
 
 @Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.RUNTIME)

@@ -13,10 +13,10 @@ import com.jetbrains.rider.projectView.solution
 import com.jetbrains.rider.run.environment.MSBuildEvaluator
 import com.jetbrains.rider.runtime.DotNetRuntime
 import com.jetbrains.rider.runtime.RiderDotNetActiveRuntimeHost
-import me.fornever.avaloniarider.AvaloniaMessages
-import me.fornever.avaloniarider.AvaloniaPreviewer
-import me.fornever.avaloniarider.AvaloniaPreviewerSession
-import me.fornever.avaloniarider.AvaloniaRiderNotifications
+import me.fornever.avaloniarider.controlmessages.AvaloniaMessages
+import me.fornever.avaloniarider.idea.AvaloniaRiderNotifications
+import me.fornever.avaloniarider.previewer.AvaloniaPreviewer
+import me.fornever.avaloniarider.previewer.AvaloniaPreviewerSession
 import java.net.ServerSocket
 import java.nio.file.Paths
 

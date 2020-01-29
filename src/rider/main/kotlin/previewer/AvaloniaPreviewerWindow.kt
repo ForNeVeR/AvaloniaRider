@@ -1,5 +1,6 @@
-package me.fornever.avaloniarider
+package me.fornever.avaloniarider.previewer
 
+import me.fornever.avaloniarider.controlmessages.FrameMessage
 import java.awt.Color
 import java.awt.FlowLayout
 import java.awt.image.BufferedImage

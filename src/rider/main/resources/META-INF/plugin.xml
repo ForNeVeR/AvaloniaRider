@@ -21,10 +21,10 @@
     </change-notes>
     <application-components>
         <component>
-            <implementation-class>me.fornever.avaloniarider.AvaloniaMessages</implementation-class>
+            <implementation-class>me.fornever.avaloniarider.controlmessages.AvaloniaMessages</implementation-class>
         </component>
         <component>
-            <implementation-class>me.fornever.avaloniarider.AvaloniaRiderNotifications</implementation-class>
+            <implementation-class>me.fornever.avaloniarider.idea.AvaloniaRiderNotifications</implementation-class>
         </component>
     </application-components>
     <actions>
@@ -32,7 +32,7 @@
                 class="me.fornever.avaloniarider.actions.StartAvaloniaPreviewerAction" text="StartAvaloniaPreviewer"/>
     </actions>
     <extensions defaultExtensionNs="com.intellij">
-        <projectService serviceImplementation="me.fornever.avaloniarider.AvaloniaPreviewer"/>
-        <projectService serviceImplementation="me.fornever.avaloniarider.AvaloniaToolWindowManager"/>
+        <projectService serviceImplementation="me.fornever.avaloniarider.previewer.AvaloniaPreviewer"/>
+        <projectService serviceImplementation="me.fornever.avaloniarider.idea.AvaloniaToolWindowManager"/>
     </extensions>
 </idea-plugin>

@@ -1,4 +1,4 @@
-package me.fornever.avaloniarider
+package me.fornever.avaloniarider.previewer
 
 import com.intellij.execution.configurations.GeneralCommandLine
 import com.intellij.execution.filters.TextConsoleBuilderFactory
@@ -19,6 +19,8 @@ import com.jetbrains.rd.util.lifetime.onTermination
 import com.jetbrains.rider.util.idea.application
 import me.fornever.avaloniarider.bson.BsonStreamReader
 import me.fornever.avaloniarider.bson.BsonStreamWriter
+import me.fornever.avaloniarider.controlmessages.*
+import me.fornever.avaloniarider.idea.AvaloniaToolWindowManager
 import java.awt.Dimension
 import java.io.DataInputStream
 import java.net.ServerSocket

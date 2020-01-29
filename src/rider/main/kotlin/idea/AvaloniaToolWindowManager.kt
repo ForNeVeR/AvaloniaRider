@@ -1,4 +1,4 @@
-package me.fornever.avaloniarider
+package me.fornever.avaloniarider.idea
 
 import com.intellij.openapi.components.ServiceManager
 import com.intellij.openapi.project.Project

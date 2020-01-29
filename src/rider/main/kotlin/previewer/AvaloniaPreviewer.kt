@@ -1,4 +1,4 @@
-package me.fornever.avaloniarider
+package me.fornever.avaloniarider.previewer
 
 import com.intellij.execution.configurations.GeneralCommandLine
 import com.jetbrains.rider.runtime.DotNetRuntime
