@@ -2,8 +2,6 @@ package me.fornever.avaloniarider
 
 import com.jetbrains.rider.util.idea.application
 import com.jetbrains.rider.util.idea.getComponent
-import me.fornever.avaloniarider.me.fornever.avaloniarider.AvaloniaIncomingMessage
-import me.fornever.avaloniarider.me.fornever.avaloniarider.AvaloniaOutgoingMessage
 import java.util.*
 
 class AvaloniaMessages {

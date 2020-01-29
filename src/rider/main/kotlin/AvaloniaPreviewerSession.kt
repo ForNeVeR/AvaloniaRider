@@ -19,7 +19,6 @@ import com.jetbrains.rd.util.lifetime.onTermination
 import com.jetbrains.rider.util.idea.application
 import me.fornever.avaloniarider.bson.BsonStreamReader
 import me.fornever.avaloniarider.bson.BsonStreamWriter
-import me.fornever.avaloniarider.me.fornever.avaloniarider.AvaloniaPreviewerWindow
 import java.awt.Dimension
 import java.io.DataInputStream
 import java.net.ServerSocket

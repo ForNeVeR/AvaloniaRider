@@ -1,4 +1,4 @@
-package me.fornever.avaloniarider.me.fornever.avaloniarider
+package me.fornever.avaloniarider
 
 @Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.RUNTIME)
