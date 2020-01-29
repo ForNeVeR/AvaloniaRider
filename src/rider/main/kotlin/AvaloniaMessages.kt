@@ -37,13 +37,22 @@ class StartDesignerSessionMessage : AvaloniaMessage() {
 @AvaloniaOutgoingMessage("9aec9a2e-6315-4066-b4ba-e9a9efd0f8cc")
 class UpdateXamlMessage(
         val xaml: String = "",
-        val assemblyPath: String = ""
+        val assemblyPath: String = "",
+        val xamlFileProjectPath: String = ""
 ) : AvaloniaMessage()
+
+class ExceptionDetails(
+        val exceptionType: String? = "",
+        val message: String? = "",
+        val lineNumber: Int? = null,
+        val linePosition: Int? = null
+)
 
 @AvaloniaIncomingMessage("b7a70093-0c5d-47fd-9261-22086d43a2e2")
 class UpdateXamlResultMessage(
         val error: String? = "",
-        val handle: String? = ""
+        val handle: String? = "",
+        val exception: ExceptionDetails? = null
 ) : AvaloniaMessage()
 
 @AvaloniaIncomingMessage("F58313EE-FE69-4536-819D-F52EDF201A0E")
