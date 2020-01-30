@@ -15,6 +15,7 @@ jobs:
         image: [macos-latest, windows-latest]
     env:
       NUGET_PACKAGES: ${{ github.workspace }}/.github/nuget-packages
+      GRADLE_USER_HOME: ${{ github.workspace }}/.github/gradle
     steps:
       - uses: actions/checkout@v2
 
@@ -35,13 +36,13 @@ jobs:
       - name: Gradle Wrapper Cache
         uses: actions/cache@v1.1.0
         with:
-          path: ~/.gradle/wrapper
-          key: ${{ runner.os }}-.gradle-wrapper-${{ hashFiles('gradle/**') }}
+          path: ${{ env.GRADLE_USER_HOME }}/wrapper
+          key: ${{ runner.os }}.gradle-wrapper.${{ hashFiles('gradle/**') }}
       - name: Gradle Cache
         uses: actions/cache@v1.1.0
         with:
-          path: ~/.gradle/caches
-          key: ${{ runner.os }}-.gradle-caches-${{ hashFiles('**/*.gradle') }}
+          path: ${{ env.GRADLE_USER_HOME }}/caches/modules-2
+          key: ${{ runner.os }}.gradle.${{ hashFiles('**/*.gradle') }}
       - name: Test
         run: ./gradlew -PBuildConfiguration=Release --no-daemon test
       - name: Upload Test Results
