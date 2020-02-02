@@ -14,8 +14,8 @@ plugins {
 }
 
 dependencies {
-    compile 'de.undercouch:bson4jackson:2.9.2'
-    testCompile 'org.testng:testng:6.14.3'
+    implementation 'de.undercouch:bson4jackson:2.9.2'
+    testImplementation 'org.testng:testng:6.14.3'
 }
 
 ext {
