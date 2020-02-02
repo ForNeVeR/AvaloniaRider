@@ -52,8 +52,11 @@ class StartAvaloniaPreviewerAction : AnAction("Start Avalonia Previewer") {
         val runtime = getRuntime(RiderDotNetActiveRuntimeHost.getInstance(project), runnableProject) ?: return
         val avaloniaPreviewerPathKey = AvaloniaPreviewer.getAvaloniaPreviewerPathKey(runtime)
         msBuildEvaluator.evaluateProperties(
-                runnableProject.projectFilePath,
-                listOf(avaloniaPreviewerPathKey, "TargetDir", "TargetName", "TargetPath")
+                MSBuildEvaluator.PropertyRequest(
+                        runnableProject.projectFilePath,
+                        null,
+                        listOf(avaloniaPreviewerPathKey, "TargetDir", "TargetName", "TargetPath")
+                )
         ).then { properties ->
             val previewerPathValue = properties[avaloniaPreviewerPathKey]
             if (previewerPathValue.isNullOrEmpty()) {
