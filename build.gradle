@@ -158,3 +158,5 @@ prepareSandbox {
         })
     }
 }
+
+buildSearchableOptions.enabled = false
