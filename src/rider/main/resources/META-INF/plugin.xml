@@ -34,5 +34,7 @@
     <extensions defaultExtensionNs="com.intellij">
         <projectService serviceImplementation="me.fornever.avaloniarider.previewer.AvaloniaPreviewer"/>
         <projectService serviceImplementation="me.fornever.avaloniarider.idea.AvaloniaToolWindowManager"/>
+
+        <fileEditorProvider implementation="me.fornever.avaloniarider.idea.editor.AvaloniaPreviewEditorProvider"/>
     </extensions>
 </idea-plugin>
