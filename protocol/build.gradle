@@ -12,6 +12,6 @@ dependencies {
 repositories {
     mavenCentral()
     flatDir {
-        dirs rdLibDirectory.absolutePath
+        dirs rdLibDirectory().absolutePath
     }
 }

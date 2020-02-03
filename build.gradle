@@ -21,15 +21,15 @@ dependencies {
 
 ext {
     sdkVersion = "2019.3.1"
-    rdLibDirectory = new File(projectDir, "build/riderRD-$sdkVersion/lib/rd")
+    rdLibDirectory = {
+        new File(intellij.ideaDependency.classes, "lib/rd")
+    }
     dotNetDir = new File(projectDir, "src/dotnet")
     dotNetPluginId = "AvaloniaRider.Plugin"
 }
 
 repositories {
     mavenCentral()
-    maven { setUrl("https://cache-redirector.jetbrains.com/www.myget.org/F/rd-snapshots/maven") }
-    flatDir { dirs rdLibDirectory.absolutePath }
 }
 
 wrapper {
@@ -62,10 +62,12 @@ sourceSets {
 }
 
 compileKotlin {
+    dependsOn 'rdgen'
     kotlinOptions { jvmTarget = "1.8" }
 }
 
 task compileDotNet {
+    dependsOn 'rdgen'
     doLast {
         exec {
             executable "dotnet"
@@ -106,7 +108,9 @@ rdgen {
     def ktOutput = new File(projectDir, "src/rider/main/kotlin/avaloniarider/model")
 
     verbose = true
-    classpath "$rdLibDirectory/rider-model.jar"
+    classpath {
+        "${rdLibDirectory()}/rider-model.jar"
+    }
     sources "$modelDir/rider"
     hashFolder = 'build/rdgen/rider'
     packages = "model.rider"
