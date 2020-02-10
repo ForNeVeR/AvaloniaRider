@@ -8,7 +8,7 @@ import javax.swing.ImageIcon
 import javax.swing.JFrame
 import javax.swing.JLabel
 
-const val TOOL_WINDOW_WIDTH  = 250
+const val TOOL_WINDOW_WIDTH = 250
 const val TOOL_WINDOW_HEIGHT = 70
 
 class AvaloniaPreviewerWindow : JFrame("Avalonia Previewer") {
@@ -29,6 +29,7 @@ class AvaloniaPreviewerWindow : JFrame("Avalonia Previewer") {
     val img = BufferedImage(TOOL_WINDOW_WIDTH, TOOL_WINDOW_HEIGHT, BufferedImage.TYPE_INT_RGB)
 
     private val content = JLabel()
+
     init {
         layout = FlowLayout()
         contentPane.add(content)

@@ -13,10 +13,11 @@ class AvaloniaRiderNotifications {
     }
 
     private val notificationGroup = NotificationGroup(
-            "me.fornever.avaloniarider",
-            NotificationDisplayType.BALLOON,
-            true
+        "me.fornever.avaloniarider",
+        NotificationDisplayType.BALLOON,
+        true
     )
+
     fun showNotification(text: String) {
         val notification = notificationGroup.createNotification(text, NotificationType.ERROR)
         Notifications.Bus.notify(notification)

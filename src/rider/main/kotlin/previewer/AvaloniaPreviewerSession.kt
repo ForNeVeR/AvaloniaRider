@@ -33,13 +33,13 @@ import java.nio.file.Path
  * by the session (i.e. it will manage the socket lifetime).
  */
 class AvaloniaPreviewerSession(
-        private val project: Project,
-        private val avaloniaMessages: AvaloniaMessages,
+    private val project: Project,
+    private val avaloniaMessages: AvaloniaMessages,
 
-        private val serverSocket: ServerSocket,
-        private val previewerCommandLine: GeneralCommandLine,
-        private val outputBinaryPath: Path,
-        private val xamlFile: VirtualFile) {
+    private val serverSocket: ServerSocket,
+    private val previewerCommandLine: GeneralCommandLine,
+    private val outputBinaryPath: Path,
+    private val xamlFile: VirtualFile) {
 
     companion object {
         private val logger = getLogger<AvaloniaPreviewerSession>()
@@ -113,13 +113,13 @@ class AvaloniaPreviewerSession(
 
     private fun attachVfsListener() {
         VirtualFileManager.getInstance().addAsyncFileListener(
-                AsyncFileListener { events ->
-                    if (events.any { it.file == xamlFile && it is VFileContentChangeEvent }) {
-                        onXamlChanged()
-                    }
-                    null
-                },
-                lifetime.createNestedDisposable("AvaloniaPreviewerSession"))
+            AsyncFileListener { events ->
+                if (events.any { it.file == xamlFile && it is VFileContentChangeEvent }) {
+                    onXamlChanged()
+                }
+                null
+            },
+            lifetime.createNestedDisposable("AvaloniaPreviewerSession"))
     }
 
     private fun onXamlChanged() {

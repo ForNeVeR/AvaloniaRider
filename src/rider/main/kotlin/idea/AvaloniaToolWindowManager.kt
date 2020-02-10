@@ -8,13 +8,13 @@ import com.intellij.openapi.wm.ToolWindowManager
 class AvaloniaToolWindowManager(private val project: Project) {
     companion object {
         fun getInstance(project: Project): AvaloniaToolWindowManager =
-                ServiceManager.getService(project, AvaloniaToolWindowManager::class.java)
+            ServiceManager.getService(project, AvaloniaToolWindowManager::class.java)
     }
 
     val toolWindow = lazy {
         ToolWindowManager.getInstance(project).registerToolWindow(
-                "Avalonia",
-                true,
-                ToolWindowAnchor.BOTTOM)
+            "Avalonia",
+            true,
+            ToolWindowAnchor.BOTTOM)
     }
 }

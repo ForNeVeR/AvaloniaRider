@@ -21,15 +21,15 @@ import java.net.ServerSocket
 import java.nio.file.Paths
 
 private fun getRuntime(
-        runtimeHost: RiderDotNetActiveRuntimeHost,
-        runnableProject: RunnableProject): DotNetRuntime? {
+    runtimeHost: RiderDotNetActiveRuntimeHost,
+    runnableProject: RunnableProject): DotNetRuntime? {
     val output = runnableProject.projectOutputs.firstOrNull() ?: return null
     return DotNetRuntime.detectRuntimeForProjectOrThrow(
-            runnableProject.kind,
-            runtimeHost,
-            false,
-            output.exePath,
-            output.tfm
+        runnableProject.kind,
+        runtimeHost,
+        false,
+        output.exePath,
+        output.tfm
     )
 }
 
@@ -52,17 +52,17 @@ class StartAvaloniaPreviewerAction : AnAction("Start Avalonia Previewer") {
         val runtime = getRuntime(RiderDotNetActiveRuntimeHost.getInstance(project), runnableProject) ?: return
         val avaloniaPreviewerPathKey = AvaloniaPreviewer.getAvaloniaPreviewerPathKey(runtime)
         msBuildEvaluator.evaluateProperties(
-                MSBuildEvaluator.PropertyRequest(
-                        runnableProject.projectFilePath,
-                        null,
-                        listOf(avaloniaPreviewerPathKey, "TargetDir", "TargetName", "TargetPath")
-                )
+            MSBuildEvaluator.PropertyRequest(
+                runnableProject.projectFilePath,
+                null,
+                listOf(avaloniaPreviewerPathKey, "TargetDir", "TargetName", "TargetPath")
+            )
         ).then { properties ->
             val previewerPathValue = properties[avaloniaPreviewerPathKey]
             if (previewerPathValue.isNullOrEmpty()) {
                 val notifications = AvaloniaRiderNotifications.getInstance()
                 notifications.showNotification(
-                        "Avalonia could not be found. Please ensure project ${runnableProject.name} includes package Avalonia version 0.7 or higher"
+                    "Avalonia could not be found. Please ensure project ${runnableProject.name} includes package Avalonia version 0.7 or higher"
                 )
                 return@then
             }
@@ -75,25 +75,25 @@ class StartAvaloniaPreviewerAction : AnAction("Start Avalonia Previewer") {
             val serverSocket = ServerSocket(0)
             try {
                 val commandLine = AvaloniaPreviewer.getPreviewerCommandLine(
-                        runtime,
-                        previewerPath,
-                        targetDir,
-                        targetName,
-                        targetPath,
-                        serverSocket.localPort)
+                    runtime,
+                    previewerPath,
+                    targetDir,
+                    targetName,
+                    targetPath,
+                    serverSocket.localPort)
 
-                logger.info { "previewerPath $previewerPath"}
-                logger.info { "targetDir $targetDir"}
-                logger.info { "targetName $targetName"}
-                logger.info { "targetPath $targetPath"}
+                logger.info { "previewerPath $previewerPath" }
+                logger.info { "targetDir $targetDir" }
+                logger.info { "targetName $targetName" }
+                logger.info { "targetPath $targetPath" }
 
                 val session = AvaloniaPreviewerSession(
-                        project,
-                        AvaloniaMessages.getInstance(),
-                        serverSocket,
-                        commandLine,
-                        targetPath,
-                        currentFile
+                    project,
+                    AvaloniaMessages.getInstance(),
+                    serverSocket,
+                    commandLine,
+                    targetPath,
+                    currentFile
                 )
                 session.start()
             } catch (t: Throwable) {
