@@ -2,10 +2,11 @@ package me.fornever.avaloniarider.idea.editor
 
 import com.intellij.openapi.fileEditor.*
 import com.intellij.openapi.fileEditor.impl.text.TextEditorProvider
+import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 
-class AvaloniaPreviewEditorProvider : FileEditorProvider {
+class AvaloniaPreviewEditorProvider : FileEditorProvider, DumbAware {
     override fun getEditorTypeId() = "AvaloniaPreviewerEditor"
     override fun getPolicy() = FileEditorPolicy.HIDE_DEFAULT_EDITOR
 
