@@ -13,6 +13,7 @@ import com.jetbrains.rider.projectView.solution
 import com.jetbrains.rider.run.environment.MSBuildEvaluator
 import com.jetbrains.rider.runtime.DotNetRuntime
 import com.jetbrains.rider.runtime.RiderDotNetActiveRuntimeHost
+import com.jetbrains.rider.util.idea.lifetime
 import me.fornever.avaloniarider.controlmessages.AvaloniaMessages
 import me.fornever.avaloniarider.idea.AvaloniaRiderNotifications
 import me.fornever.avaloniarider.previewer.AvaloniaPreviewer
@@ -33,6 +34,7 @@ private fun getRuntime(
     )
 }
 
+// TODO[F]: Delete this class
 class StartAvaloniaPreviewerAction : AnAction("Start Avalonia Previewer") {
     companion object {
         private val logger = getLogger<StartAvaloniaPreviewerAction>()
@@ -72,6 +74,7 @@ class StartAvaloniaPreviewerAction : AnAction("Start Avalonia Previewer") {
             val targetName = properties.getValue("TargetName")
             val targetPath = Paths.get(properties.getValue("TargetPath"))
 
+            // TODO[F]: Move socket management into the Avalonia previewer session
             val serverSocket = ServerSocket(0)
             try {
                 val commandLine = AvaloniaPreviewer.getPreviewerCommandLine(
@@ -88,14 +91,14 @@ class StartAvaloniaPreviewerAction : AnAction("Start Avalonia Previewer") {
                 logger.info { "targetPath $targetPath" }
 
                 val session = AvaloniaPreviewerSession(
-                    project,
+                    project.lifetime,
                     AvaloniaMessages.getInstance(),
                     serverSocket,
-                    commandLine,
                     targetPath,
                     currentFile
                 )
                 session.start()
+                AvaloniaPreviewer.startDesignerProcess(project, commandLine)
             } catch (t: Throwable) {
                 serverSocket.close()
                 throw t

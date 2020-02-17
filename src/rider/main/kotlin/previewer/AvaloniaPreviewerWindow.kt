@@ -11,6 +11,7 @@ import javax.swing.JLabel
 const val TOOL_WINDOW_WIDTH = 250
 const val TOOL_WINDOW_HEIGHT = 70
 
+// TODO[F]: Delete this class with all usages
 class AvaloniaPreviewerWindow : JFrame("Avalonia Previewer") {
 
     companion object {
@@ -40,10 +41,12 @@ class AvaloniaPreviewerWindow : JFrame("Avalonia Previewer") {
 
         for (y in 0 until frame.height) {
             for (x in 0 until frame.width) {
-                val pixelIndex = y * frame.width * 4 + x * 4 // 4 bytes per px
-                val bytes = frame.data.slice(pixelIndex..pixelIndex + 3)
-                val color = Color(fromByte(bytes[0]), fromByte(bytes[1]), fromByte(bytes[2]))
-                img.setRGB(x, y, color.rgb)
+                if (y < img.height && x < img.width) {
+                    val pixelIndex = y * frame.width * 4 + x * 4 // 4 bytes per px
+                    val bytes = frame.data.slice(pixelIndex..pixelIndex + 3)
+                    val color = Color(fromByte(bytes[0]), fromByte(bytes[1]), fromByte(bytes[2]))
+                    img.setRGB(x, y, color.rgb)
+                }
             }
         }
 

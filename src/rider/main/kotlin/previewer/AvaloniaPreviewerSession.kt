@@ -1,10 +1,6 @@
 package me.fornever.avaloniarider.previewer
 
-import com.intellij.execution.configurations.GeneralCommandLine
-import com.intellij.execution.filters.TextConsoleBuilderFactory
-import com.intellij.execution.process.ProcessHandlerFactory
 import com.intellij.openapi.fileEditor.FileDocumentManager
-import com.intellij.openapi.project.Project
 import com.intellij.openapi.rd.createNestedDisposable
 import com.intellij.openapi.vfs.AsyncFileListener
 import com.intellij.openapi.vfs.VirtualFile
@@ -14,13 +10,13 @@ import com.intellij.util.ui.UIUtil
 import com.jetbrains.rd.util.error
 import com.jetbrains.rd.util.getLogger
 import com.jetbrains.rd.util.info
-import com.jetbrains.rd.util.lifetime.LifetimeDefinition
+import com.jetbrains.rd.util.lifetime.Lifetime
 import com.jetbrains.rd.util.lifetime.onTermination
+import com.jetbrains.rd.util.reactive.Signal
 import com.jetbrains.rider.util.idea.application
 import me.fornever.avaloniarider.bson.BsonStreamReader
 import me.fornever.avaloniarider.bson.BsonStreamWriter
 import me.fornever.avaloniarider.controlmessages.*
-import me.fornever.avaloniarider.idea.AvaloniaToolWindowManager
 import java.awt.Dimension
 import java.io.DataInputStream
 import java.net.ServerSocket
@@ -33,11 +29,10 @@ import java.nio.file.Path
  * by the session (i.e. it will manage the socket lifetime).
  */
 class AvaloniaPreviewerSession(
-    private val project: Project,
+    parentLifetime: Lifetime,
     private val avaloniaMessages: AvaloniaMessages,
-
     private val serverSocket: ServerSocket,
-    private val previewerCommandLine: GeneralCommandLine,
+
     private val outputBinaryPath: Path,
     private val xamlFile: VirtualFile) {
 
@@ -45,15 +40,17 @@ class AvaloniaPreviewerSession(
         private val logger = getLogger<AvaloniaPreviewerSession>()
     }
 
-    private val lifetimeDefinition = LifetimeDefinition()
+    private val lifetimeDefinition = parentLifetime.createNested()
     private val lifetime = lifetimeDefinition.lifetime
     private lateinit var window: AvaloniaPreviewerWindow
+
+    val requestViewportSize = Signal<RequestViewportResizeMessage>()
+    val frame = Signal<FrameMessage>()
 
     fun start() {
         // TODO[F]: Properly declare the scheduler for all the socket actions
         startListeningThread()
         window = createWindow()
-        startDesignerProcess()
     }
 
     private lateinit var reader: BsonStreamReader
@@ -97,20 +94,6 @@ class AvaloniaPreviewerSession(
         }
     }
 
-    private fun startDesignerProcess() {
-        val processHandlerFactory = ProcessHandlerFactory.getInstance()
-        val processHandler = processHandlerFactory.createProcessHandler(previewerCommandLine)
-
-        val toolWindowManager = AvaloniaToolWindowManager.getInstance(project)
-        val toolWindow = toolWindowManager.toolWindow.value
-        val consoleView = TextConsoleBuilderFactory.getInstance().createBuilder(project).console
-        val content = toolWindow.contentManager.factory.createContent(consoleView.component, "Avalonia Designer", true)
-        toolWindow.contentManager.addContent(content)
-
-        processHandler.startNotify()
-        consoleView.attachToProcess(processHandler)
-    }
-
     private fun attachVfsListener() {
         VirtualFileManager.getInstance().addAsyncFileListener(
             AsyncFileListener { events ->
@@ -138,19 +121,25 @@ class AvaloniaPreviewerSession(
                 onXamlChanged()
             }
             is UpdateXamlResultMessage -> message.error?.let {
+                // TODO[F]: Show error message in the editor control
                 logger.error { "Error from UpdateXamlResultMessage: $it" }
             }
             is RequestViewportResizeMessage -> {
+                requestViewportSize.fire(message)
+
                 UIUtil.invokeLaterIfNeeded {
                     window.size = Dimension(message.width.toInt(), message.height.toInt())
                 }
 
+                // TODO[F]: Properly send these from the editor control
                 val dpi = 96.0
                 writer.sendMessage(ClientRenderInfoMessage(dpi, dpi))
                 writer.sendMessage(ClientViewportAllocatedMessage(message.width, message.height, dpi, dpi))
                 writer.sendMessage(ClientSupportedPixelFormatsMessage(intArrayOf(1)))
             }
             is FrameMessage -> {
+                frame.fire(message)
+
                 UIUtil.invokeAndWaitIfNeeded(Runnable {
                     window.isVisible = true
                     window.size = Dimension(message.width, message.height)
