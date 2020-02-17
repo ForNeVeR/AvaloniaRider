@@ -25,8 +25,7 @@ class AvaloniaPreviewEditorComponent(lifetime: Lifetime, session: AvaloniaPrevie
         application.assertIsDispatchThread()
 
         // TODO[F]: Properly calculate width and height, or delay the initialization if they're zero
-        image = UIUtil.createImage(this, max(width, 100), max(height, 100), BufferedImage.TYPE_INT_RGB)
-        content.icon = ImageIcon(image)
+        image = UIUtil.createImage(this, 250, 100, BufferedImage.TYPE_INT_RGB)
     }
 
     init {
@@ -50,15 +49,15 @@ class AvaloniaPreviewEditorComponent(lifetime: Lifetime, session: AvaloniaPrevie
         }
 
         session.frame.advise(lifetime) { frame ->
-            UIUtil.invokeAndWaitIfNeeded(Runnable {
-                drawFrame(frame)
-            })
+            drawFrame(frame)
         }
     }
 
     fun drawFrame(frame: FrameMessage) {
         application.assertIsDispatchThread()
 
+        image = UIUtil.createImage(this, 250, 100, BufferedImage.TYPE_INT_RGB)
         image.renderFrame(frame)
+        content.icon = ImageIcon(image) // TODO[F]: Find a clever way to update that
     }
 }

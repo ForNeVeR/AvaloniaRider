@@ -12,6 +12,7 @@ import com.jetbrains.rd.util.getLogger
 import com.jetbrains.rd.util.info
 import com.jetbrains.rd.util.lifetime.Lifetime
 import com.jetbrains.rd.util.lifetime.onTermination
+import com.jetbrains.rd.util.reactive.ISignal
 import com.jetbrains.rd.util.reactive.Signal
 import com.jetbrains.rider.util.idea.application
 import me.fornever.avaloniarider.bson.BsonStreamReader
@@ -28,6 +29,7 @@ import java.nio.file.Path
  * @param serverSocket server socket to connect to the previewer. Will be owned
  * by the session (i.e. it will manage the socket lifetime).
  */
+// TODO[F]: Add a session controller that will store the lifetime root and control all the downstream resources?
 class AvaloniaPreviewerSession(
     parentLifetime: Lifetime,
     private val avaloniaMessages: AvaloniaMessages,
@@ -42,7 +44,6 @@ class AvaloniaPreviewerSession(
 
     private val lifetimeDefinition = parentLifetime.createNested()
     private val lifetime = lifetimeDefinition.lifetime
-    private lateinit var window: AvaloniaPreviewerWindow
 
     val requestViewportSize = Signal<RequestViewportResizeMessage>()
     val frame = Signal<FrameMessage>()
@@ -50,7 +51,6 @@ class AvaloniaPreviewerSession(
     fun start() {
         // TODO[F]: Properly declare the scheduler for all the socket actions
         startListeningThread()
-        window = createWindow()
     }
 
     private lateinit var reader: BsonStreamReader
@@ -88,12 +88,6 @@ class AvaloniaPreviewerSession(
         }
     }.apply { start() }
 
-    private fun createWindow() = AvaloniaPreviewerWindow().apply {
-        lifetime.onTermination {
-            dispose()
-        }
-    }
-
     private fun attachVfsListener() {
         VirtualFileManager.getInstance().addAsyncFileListener(
             AsyncFileListener { events ->
@@ -127,10 +121,6 @@ class AvaloniaPreviewerSession(
             is RequestViewportResizeMessage -> {
                 requestViewportSize.fire(message)
 
-                UIUtil.invokeLaterIfNeeded {
-                    window.size = Dimension(message.width.toInt(), message.height.toInt())
-                }
-
                 // TODO[F]: Properly send these from the editor control
                 val dpi = 96.0
                 writer.sendMessage(ClientRenderInfoMessage(dpi, dpi))
@@ -138,14 +128,9 @@ class AvaloniaPreviewerSession(
                 writer.sendMessage(ClientSupportedPixelFormatsMessage(intArrayOf(1)))
             }
             is FrameMessage -> {
-                frame.fire(message)
-
                 UIUtil.invokeAndWaitIfNeeded(Runnable {
-                    window.isVisible = true
-                    window.size = Dimension(message.width, message.height)
-                    window.drawFrame(message)
+                    frame.fire(message)
                 })
-
                 writer.sendMessage(FrameReceivedMessage(message.sequenceId))
             }
         }
