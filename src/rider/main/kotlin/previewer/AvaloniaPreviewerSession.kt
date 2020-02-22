@@ -11,14 +11,11 @@ import com.jetbrains.rd.util.error
 import com.jetbrains.rd.util.getLogger
 import com.jetbrains.rd.util.info
 import com.jetbrains.rd.util.lifetime.Lifetime
-import com.jetbrains.rd.util.lifetime.onTermination
-import com.jetbrains.rd.util.reactive.ISignal
 import com.jetbrains.rd.util.reactive.Signal
 import com.jetbrains.rider.util.idea.application
 import me.fornever.avaloniarider.bson.BsonStreamReader
 import me.fornever.avaloniarider.bson.BsonStreamWriter
 import me.fornever.avaloniarider.controlmessages.*
-import java.awt.Dimension
 import java.io.DataInputStream
 import java.net.ServerSocket
 import java.nio.file.Path
@@ -32,11 +29,11 @@ import java.nio.file.Path
 // TODO[F]: Add a session controller that will store the lifetime root and control all the downstream resources?
 class AvaloniaPreviewerSession(
     parentLifetime: Lifetime,
-    private val avaloniaMessages: AvaloniaMessages,
+    private val avaloniaMessages: AvaloniaMessages, // TODO[F]: Get rid of
     private val serverSocket: ServerSocket,
 
     private val outputBinaryPath: Path,
-    private val xamlFile: VirtualFile) {
+    private val xamlFile: VirtualFile) { // TODO[F]: Get rid of this; receive signals from outside
 
     companion object {
         private val logger = getLogger<AvaloniaPreviewerSession>()
@@ -45,7 +42,7 @@ class AvaloniaPreviewerSession(
     private val lifetimeDefinition = parentLifetime.createNested()
     private val lifetime = lifetimeDefinition.lifetime
 
-    val requestViewportSize = Signal<RequestViewportResizeMessage>()
+    val requestViewportResize = Signal<RequestViewportResizeMessage>()
     val frame = Signal<FrameMessage>()
 
     fun start() {
@@ -54,7 +51,7 @@ class AvaloniaPreviewerSession(
     }
 
     private lateinit var reader: BsonStreamReader
-    private lateinit var writer: BsonStreamWriter
+    private lateinit var writer: BsonStreamWriter // TODO[F]: Separate writer thread for this socket
 
     private fun startListeningThread() = Thread {
         try {
@@ -88,6 +85,11 @@ class AvaloniaPreviewerSession(
         }
     }.apply { start() }
 
+    fun sendFrameAcknowledgement(frame: FrameMessage) {
+        // TODO[F]: Should be asynchronous and on the common writer thread
+        writer.sendMessage(FrameReceivedMessage(frame.sequenceId))
+    }
+
     private fun attachVfsListener() {
         VirtualFileManager.getInstance().addAsyncFileListener(
             AsyncFileListener { events ->
@@ -119,7 +121,7 @@ class AvaloniaPreviewerSession(
                 logger.error { "Error from UpdateXamlResultMessage: $it" }
             }
             is RequestViewportResizeMessage -> {
-                requestViewportSize.fire(message)
+                requestViewportResize.fire(message)
 
                 // TODO[F]: Properly send these from the editor control
                 val dpi = 96.0
@@ -131,7 +133,6 @@ class AvaloniaPreviewerSession(
                 UIUtil.invokeAndWaitIfNeeded(Runnable {
                     frame.fire(message)
                 })
-                writer.sendMessage(FrameReceivedMessage(message.sequenceId))
             }
         }
     }

@@ -5,6 +5,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.ToolWindowAnchor
 import com.intellij.openapi.wm.ToolWindowManager
 
+// TODO[F]: Register the tool window factory in the plugin.xml
 class AvaloniaToolWindowManager(private val project: Project) {
     companion object {
         fun getInstance(project: Project): AvaloniaToolWindowManager =

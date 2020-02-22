@@ -27,12 +27,8 @@
             <implementation-class>me.fornever.avaloniarider.idea.AvaloniaRiderNotifications</implementation-class>
         </component>
     </application-components>
-    <actions>
-        <action id="me.fornever.avaloniarider.actions.StartAvaloniaPreviewerAction"
-                class="me.fornever.avaloniarider.actions.StartAvaloniaPreviewerAction" text="StartAvaloniaPreviewer"/>
-    </actions>
     <extensions defaultExtensionNs="com.intellij">
-        <projectService serviceImplementation="me.fornever.avaloniarider.previewer.AvaloniaPreviewer"/>
+        <projectService serviceImplementation="me.fornever.avaloniarider.previewer.AvaloniaPreviewerProcess"/>
         <projectService serviceImplementation="me.fornever.avaloniarider.idea.AvaloniaToolWindowManager"/>
 
         <fileEditorProvider implementation="me.fornever.avaloniarider.idea.editor.AvaloniaPreviewEditorProvider"/>
