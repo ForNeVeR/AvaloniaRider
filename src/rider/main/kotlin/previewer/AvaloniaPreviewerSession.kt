@@ -1,18 +1,11 @@
 package me.fornever.avaloniarider.previewer
 
-import com.intellij.openapi.fileEditor.FileDocumentManager
-import com.intellij.openapi.rd.createNestedDisposable
-import com.intellij.openapi.vfs.AsyncFileListener
-import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.openapi.vfs.VirtualFileManager
-import com.intellij.openapi.vfs.newvfs.events.VFileContentChangeEvent
-import com.intellij.util.ui.UIUtil
 import com.jetbrains.rd.util.error
 import com.jetbrains.rd.util.getLogger
 import com.jetbrains.rd.util.info
 import com.jetbrains.rd.util.lifetime.Lifetime
+import com.jetbrains.rd.util.reactive.ISource
 import com.jetbrains.rd.util.reactive.Signal
-import com.jetbrains.rider.util.idea.application
 import me.fornever.avaloniarider.bson.BsonStreamReader
 import me.fornever.avaloniarider.bson.BsonStreamWriter
 import me.fornever.avaloniarider.controlmessages.*
@@ -26,14 +19,10 @@ import java.nio.file.Path
  * @param serverSocket server socket to connect to the previewer. Will be owned
  * by the session (i.e. it will manage the socket lifetime).
  */
-// TODO[F]: Add a session controller that will store the lifetime root and control all the downstream resources?
 class AvaloniaPreviewerSession(
     parentLifetime: Lifetime,
-    private val avaloniaMessages: AvaloniaMessages, // TODO[F]: Get rid of
     private val serverSocket: ServerSocket,
-
-    private val outputBinaryPath: Path,
-    private val xamlFile: VirtualFile) { // TODO[F]: Get rid of this; receive signals from outside
+    private val outputBinaryPath: Path) {
 
     companion object {
         private val logger = getLogger<AvaloniaPreviewerSession>()
@@ -42,8 +31,15 @@ class AvaloniaPreviewerSession(
     private val lifetimeDefinition = parentLifetime.createNested()
     private val lifetime = lifetimeDefinition.lifetime
 
-    val requestViewportResize = Signal<RequestViewportResizeMessage>()
-    val frame = Signal<FrameMessage>()
+    private val sessionStartedSignal = Signal<StartDesignerSessionMessage>()
+    private val requestViewportResizeSignal = Signal<RequestViewportResizeMessage>()
+    private val frameSignal = Signal<FrameMessage>()
+    private val updateXamlResultSignal = Signal<UpdateXamlResultMessage>() // TODO[F]: Show error message in the editor control
+
+    val sessionStarted: ISource<StartDesignerSessionMessage> = sessionStartedSignal
+    val requestViewportResize: ISource<RequestViewportResizeMessage> = requestViewportResizeSignal
+    val frame: ISource<FrameMessage> = frameSignal
+    val updateXamlResult: ISource<UpdateXamlResultMessage> = updateXamlResultSignal
 
     fun start() {
         // TODO[F]: Properly declare the scheduler for all the socket actions
@@ -55,6 +51,8 @@ class AvaloniaPreviewerSession(
 
     private fun startListeningThread() = Thread {
         try {
+            val avaloniaMessages = AvaloniaMessages.getInstance()
+
             serverSocket.use { serverSocket ->
                 val socket = serverSocket.accept()
                 serverSocket.close()
@@ -62,7 +60,6 @@ class AvaloniaPreviewerSession(
                     socket.getInputStream().use {
                         DataInputStream(it).use { input ->
                             socket.getOutputStream().use { output ->
-                                attachVfsListener()
                                 writer = BsonStreamWriter(avaloniaMessages.outgoingTypeRegistry, output)
                                 reader = BsonStreamReader(avaloniaMessages.incomingTypeRegistry, input)
                                 while (!socket.isClosed) {
@@ -85,43 +82,28 @@ class AvaloniaPreviewerSession(
         }
     }.apply { start() }
 
+    fun sendXamlUpdate(content: String) {
+        // TODO[F]: Make sure writer is used in a thread-safe manner
+        writer.sendMessage(UpdateXamlMessage(content, outputBinaryPath.toString()))
+    }
+
     fun sendFrameAcknowledgement(frame: FrameMessage) {
         // TODO[F]: Should be asynchronous and on the common writer thread
         writer.sendMessage(FrameReceivedMessage(frame.sequenceId))
     }
 
-    private fun attachVfsListener() {
-        VirtualFileManager.getInstance().addAsyncFileListener(
-            AsyncFileListener { events ->
-                if (events.any { it.file == xamlFile && it is VFileContentChangeEvent }) {
-                    onXamlChanged()
-                }
-                null
-            },
-            lifetime.createNestedDisposable("AvaloniaPreviewerSession"))
-    }
-
-    private fun onXamlChanged() {
-        application.runReadAction {
-            val document = FileDocumentManager.getInstance().getDocument(xamlFile) ?: return@runReadAction
-            val xaml = document.text
-
-            // TODO[F]: Make sure writer is used in a thread-safe manner
-            writer.sendMessage(UpdateXamlMessage(xaml, outputBinaryPath.toString()))
-        }
-    }
-
     private fun handleMessage(message: AvaloniaMessage) {
         when (message) {
-            is StartDesignerSessionMessage -> {
-                onXamlChanged()
-            }
-            is UpdateXamlResultMessage -> message.error?.let {
-                // TODO[F]: Show error message in the editor control
-                logger.error { "Error from UpdateXamlResultMessage: $it" }
+            is StartDesignerSessionMessage ->
+                sessionStartedSignal.fire(message)
+            is UpdateXamlResultMessage -> {
+                updateXamlResultSignal.fire(message)
+                message.error?.let {
+                    logger.error { "Error from UpdateXamlResultMessage: $it" }
+                }
             }
             is RequestViewportResizeMessage -> {
-                requestViewportResize.fire(message)
+                requestViewportResizeSignal.fire(message)
 
                 // TODO[F]: Properly send these from the editor control
                 val dpi = 96.0
@@ -130,9 +112,7 @@ class AvaloniaPreviewerSession(
                 writer.sendMessage(ClientSupportedPixelFormatsMessage(intArrayOf(1)))
             }
             is FrameMessage -> {
-                UIUtil.invokeAndWaitIfNeeded(Runnable {
-                    frame.fire(message)
-                })
+                frameSignal.fire(message)
             }
         }
     }

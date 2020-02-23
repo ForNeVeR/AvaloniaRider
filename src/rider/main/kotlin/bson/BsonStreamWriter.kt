@@ -18,10 +18,11 @@ class BsonStreamWriter(private val typeRegistry: Map<Class<*>, UUID>, private va
         val body = objectMapper.writeValueAsBytes(message)
         val header = MessageHeader(body.size, typeRegistry.getValue(message.javaClass))
         output.write(header.toByteArray())
-        logger.info { "Sent header $header" }
+        val threadInfo = Thread.currentThread().id
+        logger.info { "<$threadInfo> Sent header $header" }
 
         output.write(body)
         output.flush()
-        logger.info { "Sent message $message" }
+        logger.info { "<$threadInfo> Sent message $message" }
     }
 }

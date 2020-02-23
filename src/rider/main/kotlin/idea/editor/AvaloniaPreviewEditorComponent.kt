@@ -4,10 +4,10 @@ import com.intellij.util.ui.UIUtil
 import com.jetbrains.rd.util.lifetime.Lifetime
 import com.jetbrains.rider.util.idea.application
 import me.fornever.avaloniarider.controlmessages.FrameMessage
+import me.fornever.avaloniarider.idea.concurrency.adviseOn
+import me.fornever.avaloniarider.idea.concurrency.adviseOnUiThread
 import me.fornever.avaloniarider.previewer.*
 import java.awt.FlowLayout
-import java.awt.event.ComponentAdapter
-import java.awt.event.ComponentEvent
 import java.awt.image.BufferedImage
 import javax.swing.ImageIcon
 import javax.swing.JLabel
@@ -24,7 +24,7 @@ class AvaloniaPreviewEditorComponent(lifetime: Lifetime, controller: AvaloniaPre
             // TODO: Calculate UI scale
         }
 
-        controller.frameReceived.advise(lifetime) { frame ->
+        controller.frame.adviseOnUiThread(lifetime) { frame ->
             drawFrame(frame)
             controller.acknowledgeFrame(frame)
         }
