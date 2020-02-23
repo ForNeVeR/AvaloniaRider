@@ -6,7 +6,7 @@ import java.awt.image.BufferedImage
 
 private fun fromByte(b: Byte): Int = b.toInt() and 0xFF
 
-// TODO[F]: This is very suboptimal
+// TODO[F]: This is very suboptimal (#40)
 private fun BufferedImage.fillWithColor(color: Color) {
     for (y in 0 until height) {
         for (x in 0 until width) {
@@ -15,7 +15,7 @@ private fun BufferedImage.fillWithColor(color: Color) {
     }
 }
 
-// TODO[F]: This is very suboptimal
+// TODO[F]: This is very suboptimal (#40)
 fun BufferedImage.renderFrame(frame: FrameMessage) {
     this.fillWithColor(Color.WHITE)
 

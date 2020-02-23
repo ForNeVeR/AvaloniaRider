@@ -22,7 +22,7 @@ class AvaloniaPreviewEditorComponent(lifetime: Lifetime, controller: AvaloniaPre
         add(content)
 
         controller.requestViewportResize.advise(lifetime) {
-            // TODO[F]: Calculate UI scale
+            // TODO[F]: Update the image size for the renderer (#40)
         }
 
         controller.frame.adviseOnUiThread(lifetime) { frame ->
@@ -38,6 +38,6 @@ class AvaloniaPreviewEditorComponent(lifetime: Lifetime, controller: AvaloniaPre
 
         val image = UIUtil.createImage(this, frame.width, frame.height, BufferedImage.TYPE_INT_RGB)
         image.renderFrame(frame)
-        content.icon = ImageIcon(image) // TODO[F]: Find a clever way to update that
+        content.icon = ImageIcon(image) // TODO[F]: Find a clever way to update that (#40)
     }
 }
