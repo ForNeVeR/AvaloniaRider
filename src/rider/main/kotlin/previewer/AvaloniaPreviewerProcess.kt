@@ -69,8 +69,10 @@ object AvaloniaPreviewerProcess {
     }
 
     private fun startProcess(lifetime: Lifetime, commandLine: GeneralCommandLine, consoleView: ConsoleView): OSProcessHandler {
-        val processHandlerFactory = ProcessHandlerFactory.getInstance()
-        val processHandler = processHandlerFactory.createProcessHandler(commandLine)
+        val processHandler = object : OSProcessHandler(commandLine) {
+            override fun readerOptions() =
+                BaseOutputReader.Options.forMostlySilentProcess()
+        }
 
         processHandler.startNotify()
         lifetime.onTermination { processHandler.destroyProcess() }
