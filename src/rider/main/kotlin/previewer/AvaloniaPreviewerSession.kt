@@ -6,6 +6,7 @@ import com.jetbrains.rd.util.info
 import com.jetbrains.rd.util.lifetime.Lifetime
 import com.jetbrains.rd.util.reactive.ISource
 import com.jetbrains.rd.util.reactive.Signal
+import com.jetbrains.rd.util.trace
 import me.fornever.avaloniarider.bson.BsonStreamReader
 import me.fornever.avaloniarider.bson.BsonStreamWriter
 import me.fornever.avaloniarider.controlmessages.*
@@ -93,6 +94,7 @@ class AvaloniaPreviewerSession(
     }
 
     private fun handleMessage(message: AvaloniaMessage) {
+        logger.trace { "Received message: $message" }
         when (message) {
             is StartDesignerSessionMessage ->
                 sessionStartedSignal.fire(message)

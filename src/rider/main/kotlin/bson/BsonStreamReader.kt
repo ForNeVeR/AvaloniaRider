@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.MapperFeature
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.jetbrains.rd.util.getLogger
 import com.jetbrains.rd.util.info
+import com.jetbrains.rd.util.trace
 import com.jetbrains.rd.util.warn
 import de.undercouch.bson4jackson.BsonFactory
 import java.io.ByteArrayInputStream
@@ -27,14 +28,14 @@ class BsonStreamReader(private val typeRegistry: Map<UUID, Class<*>>, private va
     fun readMessage(): Any? {
         val infoBuffer = readBytes(20)
         val header = MessageHeader.fromBytes(infoBuffer.array())
-        logger.info { "Received header: $header" }
+        logger.trace { "Received header: $header" }
 
         val body = readBytes(header.length)
         val type = typeRegistry[header.typeId] ?: run {
             logger.warn { "Cannot find type with id ${header.typeId}" }
             return null
         }
-        logger.info { "Received message type: ${type.simpleName}" }
+        logger.trace { "Received message type: ${type.simpleName}" }
         ByteArrayInputStream(body.array()).use { bodyStream ->
             return objectMapper.readValue(bodyStream, type)
         }
