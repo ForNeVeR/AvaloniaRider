@@ -3,6 +3,7 @@ package me.fornever.avaloniarider.previewer
 import com.intellij.application.ApplicationThreadPool
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.debug
+import com.intellij.openapi.diagnostic.trace
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
@@ -17,6 +18,7 @@ import com.jetbrains.rider.ui.SwingScheduler
 import com.jetbrains.rider.ui.components.utils.documentChanged
 import com.jetbrains.rider.util.idea.application
 import kotlinx.coroutines.*
+import kotlinx.coroutines.selects.select
 import me.fornever.avaloniarider.controlmessages.FrameMessage
 import me.fornever.avaloniarider.controlmessages.RequestViewportResizeMessage
 import me.fornever.avaloniarider.idea.concurrency.ApplicationAnyModality
@@ -89,7 +91,6 @@ class AvaloniaPreviewerSessionController(private val project: Project, outerLife
         parameters: AvaloniaPreviewerParameters,
         xamlFile: VirtualFile
     ) = AvaloniaPreviewerSession(
-        lifetime,
         socket,
         parameters.targetPath
     ).apply {
@@ -122,25 +123,45 @@ class AvaloniaPreviewerSessionController(private val project: Project, outerLife
 
     private suspend fun executePreviewerAsync(xamlFile: VirtualFile) {
         statusProperty.set(Status.Connecting)
+        logger.info("Receiving a containing project for the file $xamlFile")
         val containingProject = withContext(Dispatchers.ApplicationAnyModality) { getContainingProject(xamlFile) }
 
+        logger.info("Calculating a project output for the project ${containingProject.name}")
         val riderProjectOutputHost = RiderProjectOutputHost.getInstance(project)
         val projectOutput = riderProjectOutputHost.getProjectOutput(lifetime, containingProject)
 
+        logger.info("Calculating previewer start parameters for the project ${containingProject.name}, output $projectOutput")
         val msBuild = MsBuildParameterCollector.getInstance(project)
         val parameters = msBuild.getAvaloniaPreviewerParameters(containingProject, projectOutput)
 
-        val socket = withContext(Dispatchers.IO) { ServerSocket(0) }
+        val socket = withContext(Dispatchers.IO) {
+            ServerSocket(0).apply {
+                lifetime.onTermination { close() }
+            }
+        }
         val process = AvaloniaPreviewerProcess(lifetime, parameters, socket.localPort)
         session = createSession(socket, parameters, xamlFile)
 
-        statusProperty.set(Status.Working) // TODO[F]: Should be set after starting session and process, not before
-        session.start() // TODO[F]: Session should run asynchronously as a suspend fun; await for either session or process termination
+        val sessionJob = GlobalScope.async {
+            logger.info("Starting socket listener")
+            session.processSocketMessages()
+        }
+        val processJob = GlobalScope.async {
+            logger.info("Starting previewer process")
+            process.run(project)
+        }
+        statusProperty.set(Status.Working)
 
-        process.run(project)
+        val result = select<String> {
+            sessionJob.onAwait { "Socket listener" }
+            processJob.onAwait { "Process" }
+        }
+
+        logger.info("$result has been terminated first")
     }
 
     fun start(xamlFile: VirtualFile) {
+        @Suppress("UnstableApiUsage")
         GlobalScope.launch(Dispatchers.ApplicationThreadPool) {
             try {
                 executePreviewerAsync(xamlFile)
