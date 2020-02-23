@@ -2,10 +2,9 @@ package me.fornever.avaloniarider.previewer
 
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.Logger
-import com.intellij.openapi.editor.Document
 import com.intellij.openapi.project.Project
-import com.jetbrains.rider.model.ProjectOutput
-import com.jetbrains.rider.model.RunnableProject
+import com.jetbrains.rider.model.*
+import com.jetbrains.rider.projectView.nodes.ProjectModelNode
 import com.jetbrains.rider.run.environment.MSBuildEvaluator
 import com.jetbrains.rider.runtime.DotNetRuntime
 import com.jetbrains.rider.runtime.RiderDotNetActiveRuntimeHost
@@ -30,7 +29,7 @@ class MsBuildParameterCollector(private val project: Project) {
 
     private fun createParameters(
         runtime: DotNetRuntime,
-        runnableProject: RunnableProject,
+        runnableProject: ProjectModelNode,
         avaloniaPreviewerPathKey: String,
         properties: Map<String, String>): AvaloniaPreviewerParameters {
         fun getProperty(key: String, errorMessage: String? = null): String {
@@ -58,28 +57,34 @@ class MsBuildParameterCollector(private val project: Project) {
     }
 
     suspend fun getAvaloniaPreviewerParameters(
-        runnableProject: RunnableProject,
-        projectOutput: ProjectOutput): AvaloniaPreviewerParameters {
-        val runtimeHost = RiderDotNetActiveRuntimeHost.getInstance(project)
-        val msBuildEvaluator = MSBuildEvaluator.getInstance(project)
+        project: ProjectModelNode,
+        projectOutput: RdProjectOutput): AvaloniaPreviewerParameters {
+        val runtimeHost = RiderDotNetActiveRuntimeHost.getInstance(this.project)
+        val msBuildEvaluator = MSBuildEvaluator.getInstance(this.project)
+
+        val projectFilePath = project.getVirtualFile()!!.path
+        val projectKind = if ((project.descriptor as RdProjectDescriptor).isDotNetCore)
+            RunnableProjectKind.DotNetCore
+        else
+            RunnableProjectKind.Console
 
         val runtime = DotNetRuntime.detectRuntimeForProjectOrThrow(
-            runnableProject.kind,
+            projectKind,
             runtimeHost,
             false,
-            projectOutput.exePath,
+            projectOutput.outputPath,
             projectOutput.tfm
         )
         val avaloniaPreviewerPathKey = getPathKey(runtime)
 
         val properties = msBuildEvaluator.evaluateProperties(
             MSBuildEvaluator.PropertyRequest(
-                runnableProject.projectFilePath,
+                projectFilePath,
                 null,
                 listOf(avaloniaPreviewerPathKey, "TargetDir", "TargetName", "TargetPath")
             )
         ).await()
 
-        return createParameters(runtime, runnableProject, avaloniaPreviewerPathKey, properties)
+        return createParameters(runtime, project, avaloniaPreviewerPathKey, properties)
     }
 }

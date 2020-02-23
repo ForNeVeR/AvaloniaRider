@@ -2,23 +2,23 @@ package me.fornever.avaloniarider.previewer
 
 import com.intellij.application.ApplicationThreadPool
 import com.intellij.openapi.diagnostic.Logger
+import com.intellij.openapi.diagnostic.debug
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.jetbrains.rd.util.lifetime.Lifetime
 import com.jetbrains.rd.util.lifetime.onTermination
 import com.jetbrains.rd.util.reactive.*
-import com.jetbrains.rider.model.RunnableProject
-import com.jetbrains.rider.model.runnableProjectsModel
 import com.jetbrains.rider.projectView.ProjectModelViewHost
 import com.jetbrains.rider.projectView.nodes.ProjectModelNode
-import com.jetbrains.rider.projectView.solution
+import com.jetbrains.rider.projectView.nodes.containingProject
 import com.jetbrains.rider.ui.components.utils.documentChanged
 import com.jetbrains.rider.util.idea.application
 import kotlinx.coroutines.*
 import me.fornever.avaloniarider.controlmessages.FrameMessage
 import me.fornever.avaloniarider.controlmessages.RequestViewportResizeMessage
 import me.fornever.avaloniarider.idea.concurrency.ApplicationAnyModality
+import me.fornever.avaloniarider.rider.RiderProjectOutputHost
 import me.fornever.avaloniarider.rider.projectRelativeVirtualPath
 import java.net.ServerSocket
 
@@ -57,10 +57,24 @@ class AvaloniaPreviewerSessionController(private val project: Project, outerLife
         lifetime.onTermination { statusProperty.set(Status.Terminated) }
     }
 
-    private suspend fun getRunnableProject(xamlFile: VirtualFile): RunnableProject {
-        val result = CompletableDeferred<RunnableProject>()
-        project.solution.runnableProjectsModel.projects.adviseNotNullOnce(lifetime) {
-            result.complete(it.first()) // TODO[F]: Actually extract the runnable project for the current file
+    private suspend fun getContainingProject(xamlFile: VirtualFile): ProjectModelNode {
+        val result = CompletableDeferred<ProjectModelNode>()
+        val projectModelViewHost = ProjectModelViewHost.getInstance(project)
+        projectModelViewHost.view.sync.adviseNotNullOnce(lifetime) {
+            try {
+                logger.debug { "Project model view synchronized" }
+                val projectModelNodes = projectModelViewHost.getItemsByVirtualFile(xamlFile)
+                logger.debug {
+                    "Project model nodes for file $xamlFile: " + projectModelNodes.joinToString(", ")
+                }
+                val containingProject = projectModelNodes.asSequence()
+                    .map { it.containingProject() }
+                    .filterNotNull()
+                    .first()
+                result.complete(containingProject)
+            } catch (t: Throwable) {
+                result.completeExceptionally(t)
+            }
         }
         return result.await()
     }
@@ -101,11 +115,13 @@ class AvaloniaPreviewerSessionController(private val project: Project, outerLife
 
     private suspend fun executePreviewerAsync(xamlFile: VirtualFile) {
         statusProperty.set(Status.Connecting)
-        val runnableProject = withContext(Dispatchers.ApplicationAnyModality) { getRunnableProject(xamlFile) }
-        val projectOutput = runnableProject.projectOutputs.first() // TODO[F]: Get the project output for the current solution configuration/scope, not just the first one
+        val containingProject = withContext(Dispatchers.ApplicationAnyModality) { getContainingProject(xamlFile) }
+
+        val riderProjectOutputHost = RiderProjectOutputHost.getInstance(project)
+        val projectOutput = riderProjectOutputHost.getProjectOutput(lifetime, containingProject)
 
         val msBuild = MsBuildParameterCollector.getInstance(project)
-        val parameters = msBuild.getAvaloniaPreviewerParameters(runnableProject, projectOutput)
+        val parameters = msBuild.getAvaloniaPreviewerParameters(containingProject, projectOutput)
 
         val socket = withContext(Dispatchers.IO) { ServerSocket(0) }
         val process = AvaloniaPreviewerProcess(lifetime, parameters, socket.localPort)
