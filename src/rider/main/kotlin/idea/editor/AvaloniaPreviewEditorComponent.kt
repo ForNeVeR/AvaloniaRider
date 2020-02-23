@@ -36,8 +36,7 @@ class AvaloniaPreviewEditorComponent(lifetime: Lifetime, controller: AvaloniaPre
     fun drawFrame(frame: FrameMessage) {
         application.assertIsDispatchThread()
 
-        // TODO[F]: Remove hardcoded size from here
-        val image = UIUtil.createImage(this, 250, 100, BufferedImage.TYPE_INT_RGB)
+        val image = UIUtil.createImage(this, frame.width, frame.height, BufferedImage.TYPE_INT_RGB)
         image.renderFrame(frame)
         content.icon = ImageIcon(image) // TODO[F]: Find a clever way to update that
     }
