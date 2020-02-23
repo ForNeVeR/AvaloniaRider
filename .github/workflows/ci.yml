@@ -19,6 +19,20 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      # RdGen
+      - name: Gradle Wrapper Cache
+        uses: actions/cache@v1.1.0
+        with:
+          path: ${{ env.GRADLE_USER_HOME }}/wrapper
+          key: ${{ runner.os }}.gradle-wrapper.${{ hashFiles('gradle/**') }}
+      - name: Gradle Cache
+        uses: actions/cache@v1.1.0
+        with:
+          path: ${{ env.GRADLE_USER_HOME }}/caches/modules-2
+          key: ${{ runner.os }}.gradle.${{ hashFiles('**/*.gradle') }}
+      - name: RdGen
+        run: ./gradlew --no-daemon rdgen
+
       # Backend
       - name: NuGet Cache
         uses: actions/cache@v1.1.0
@@ -33,16 +47,6 @@ jobs:
         run: dotnet build -c Release
 
       # Frontend
-      - name: Gradle Wrapper Cache
-        uses: actions/cache@v1.1.0
-        with:
-          path: ${{ env.GRADLE_USER_HOME }}/wrapper
-          key: ${{ runner.os }}.gradle-wrapper.${{ hashFiles('gradle/**') }}
-      - name: Gradle Cache
-        uses: actions/cache@v1.1.0
-        with:
-          path: ${{ env.GRADLE_USER_HOME }}/caches/modules-2
-          key: ${{ runner.os }}.gradle.${{ hashFiles('**/*.gradle') }}
       - name: Test
         run: ./gradlew -PBuildConfiguration=Release --no-daemon test
       - name: Upload Test Results
