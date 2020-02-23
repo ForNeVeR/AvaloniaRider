@@ -10,14 +10,16 @@ import com.jetbrains.rd.util.lifetime.onTermination
 import com.jetbrains.rd.util.reactive.*
 import com.jetbrains.rider.model.RunnableProject
 import com.jetbrains.rider.model.runnableProjectsModel
+import com.jetbrains.rider.projectView.ProjectModelViewHost
+import com.jetbrains.rider.projectView.nodes.ProjectModelNode
 import com.jetbrains.rider.projectView.solution
 import com.jetbrains.rider.ui.components.utils.documentChanged
 import com.jetbrains.rider.util.idea.application
 import kotlinx.coroutines.*
-import me.fornever.avaloniarider.controlmessages.ClientViewportAllocatedMessage
 import me.fornever.avaloniarider.controlmessages.FrameMessage
 import me.fornever.avaloniarider.controlmessages.RequestViewportResizeMessage
 import me.fornever.avaloniarider.idea.concurrency.ApplicationAnyModality
+import me.fornever.avaloniarider.rider.projectRelativeVirtualPath
 import java.net.ServerSocket
 
 /**
@@ -78,10 +80,18 @@ class AvaloniaPreviewerSessionController(private val project: Project, outerLife
 
             application.runReadAction {
                 val document = FileDocumentManager.getInstance().getDocument(xamlFile)!!
-                document.documentChanged().advise(lifetime) {
-                    sendXamlUpdate(document.text) // TODO[F]: Add throttling
+
+                fun getDocumentPathInProject(): String {
+                    val projectModelViewHost = ProjectModelViewHost.getInstance(project)
+                    val projectModelItems = projectModelViewHost.getItemsByVirtualFile(xamlFile)
+                    val item = projectModelItems.firstOrNull()
+                    return item?.projectRelativeVirtualPath?.let { "/$it" } ?: ""
                 }
-                sendXamlUpdate(document.text)
+
+                document.documentChanged().advise(lifetime) {
+                    sendXamlUpdate(document.text, getDocumentPathInProject()) // TODO[F]: Add throttling
+                }
+                sendXamlUpdate(document.text, getDocumentPathInProject())
             }
         }
 

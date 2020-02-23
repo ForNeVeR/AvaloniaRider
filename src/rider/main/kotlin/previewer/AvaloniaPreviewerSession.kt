@@ -88,9 +88,9 @@ class AvaloniaPreviewerSession(
         writer.startSendMessage(ClientRenderInfoMessage(dpi, dpi))
     }
 
-    fun sendXamlUpdate(content: String) {
-        // TODO[F]: Send the proper XAML file path inside of the project
-        writer.startSendMessage(UpdateXamlMessage(content, outputBinaryPath.toString()))
+    fun sendXamlUpdate(content: String, xamlFilePathInsideProject: String) {
+        val message = UpdateXamlMessage(content, outputBinaryPath.toString(), xamlFilePathInsideProject)
+        writer.startSendMessage(message)
     }
 
     fun sendFrameAcknowledgement(frame: FrameMessage) {
