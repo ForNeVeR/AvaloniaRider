@@ -1,18 +1,16 @@
 package me.fornever.avaloniarider.previewer
 
-import com.jetbrains.rd.util.error
-import com.jetbrains.rd.util.getLogger
-import com.jetbrains.rd.util.info
+import com.jetbrains.rd.util.*
 import com.jetbrains.rd.util.lifetime.Lifetime
 import com.jetbrains.rd.util.reactive.ISource
 import com.jetbrains.rd.util.reactive.Signal
-import com.jetbrains.rd.util.trace
 import me.fornever.avaloniarider.bson.BsonStreamReader
 import me.fornever.avaloniarider.bson.BsonStreamWriter
 import me.fornever.avaloniarider.controlmessages.*
 import java.io.DataInputStream
 import java.net.ServerSocket
 import java.nio.file.Path
+import kotlin.io.use
 
 /**
  * Avalonia previewer session.
@@ -90,10 +88,6 @@ class AvaloniaPreviewerSession(
         writer.startSendMessage(ClientRenderInfoMessage(dpi, dpi))
     }
 
-    fun sendViewportAllocated(message: ClientViewportAllocatedMessage) {
-        writer.startSendMessage(message)
-    }
-
     fun sendXamlUpdate(content: String) {
         writer.startSendMessage(UpdateXamlMessage(content, outputBinaryPath.toString()))
     }
@@ -105,21 +99,16 @@ class AvaloniaPreviewerSession(
     private fun handleMessage(message: AvaloniaMessage) {
         logger.trace { "Received message: $message" }
         when (message) {
-            is StartDesignerSessionMessage -> {
-                sessionStartedSignal.fire(message)
-            }
+            is StartDesignerSessionMessage -> sessionStartedSignal.fire(message)
             is UpdateXamlResultMessage -> {
                 updateXamlResultSignal.fire(message)
                 message.error?.let {
-                    logger.error { "Error from UpdateXamlResultMessage: $it" }
+                    logger.warn { "Error from UpdateXamlResultMessage: $it" }
                 }
             }
-            is RequestViewportResizeMessage -> {
-                requestViewportResizeSignal.fire(message)
-            }
-            is FrameMessage -> {
-                frameSignal.fire(message)
-            }
+            is RequestViewportResizeMessage -> requestViewportResizeSignal.fire(message)
+            is FrameMessage -> frameSignal.fire(message)
+            else -> logger.warn { "Message ignored: $message" }
         }
     }
 }
