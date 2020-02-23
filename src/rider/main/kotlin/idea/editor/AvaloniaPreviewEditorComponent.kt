@@ -30,7 +30,7 @@ class AvaloniaPreviewEditorComponent(lifetime: Lifetime, controller: AvaloniaPre
             controller.acknowledgeFrame(frame)
         }
 
-        // TODO[F]: Handle controller.status and controller.errorMessage
+        // TODO[F]: Handle controller.status and controller.errorMessage (#41)
     }
 
     fun drawFrame(frame: FrameMessage) {

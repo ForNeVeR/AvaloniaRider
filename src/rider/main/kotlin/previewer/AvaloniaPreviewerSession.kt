@@ -33,7 +33,7 @@ class AvaloniaPreviewerSession(
     private val sessionStartedSignal = Signal<StartDesignerSessionMessage>()
     private val requestViewportResizeSignal = Signal<RequestViewportResizeMessage>()
     private val frameSignal = Signal<FrameMessage>()
-    private val updateXamlResultSignal = Signal<UpdateXamlResultMessage>() // TODO[F]: Show error message in the editor control
+    private val updateXamlResultSignal = Signal<UpdateXamlResultMessage>() // TODO[F]: Show error message in the editor control (#41)
 
     val sessionStarted: ISource<StartDesignerSessionMessage> = sessionStartedSignal
     val requestViewportResize: ISource<RequestViewportResizeMessage> = requestViewportResizeSignal
@@ -104,6 +104,7 @@ class AvaloniaPreviewerSession(
             is UpdateXamlResultMessage -> {
                 updateXamlResultSignal.fire(message)
                 message.error?.let {
+                    // TODO[F]: Lower the priority to INFO since these errors are part of standard workflow (#41)
                     logger.warn { "Error from UpdateXamlResultMessage: $it" }
                 }
             }

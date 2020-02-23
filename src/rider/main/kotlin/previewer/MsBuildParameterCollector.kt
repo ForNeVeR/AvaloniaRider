@@ -36,7 +36,7 @@ class MsBuildParameterCollector(private val project: Project) {
         fun getProperty(key: String, errorMessage: String? = null): String {
             val property = properties[key]
             if (property.isNullOrEmpty()) {
-                // TODO[F]: Catch that in the session controller layer and show a notification
+                // TODO[F]: Catch that in the session controller layer and show a notification (#41)
                 throw AvaloniaPreviewerInitializationException(
                     errorMessage ?: "Cannot determine value of property \"$key\" from MSBuild")
             }
