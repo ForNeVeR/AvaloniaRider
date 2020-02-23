@@ -14,6 +14,7 @@ import com.jetbrains.rider.projectView.solution
 import com.jetbrains.rider.ui.components.utils.documentChanged
 import com.jetbrains.rider.util.idea.application
 import kotlinx.coroutines.*
+import me.fornever.avaloniarider.controlmessages.ClientViewportAllocatedMessage
 import me.fornever.avaloniarider.controlmessages.FrameMessage
 import me.fornever.avaloniarider.controlmessages.RequestViewportResizeMessage
 import me.fornever.avaloniarider.idea.concurrency.ApplicationAnyModality
@@ -72,6 +73,9 @@ class AvaloniaPreviewerSessionController(private val project: Project, outerLife
         parameters.targetPath
     ).apply {
         sessionStarted.advise(lifetime) {
+            sendClientSupportedPixelFormat()
+            sendDpi(96.0) // TODO[F]: Properly acquire from the UI side
+
             application.runReadAction {
                 val document = FileDocumentManager.getInstance().getDocument(xamlFile)!!
                 document.documentChanged().advise(lifetime) {

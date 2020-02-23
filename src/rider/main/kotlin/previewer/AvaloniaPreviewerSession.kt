@@ -43,12 +43,11 @@ class AvaloniaPreviewerSession(
     val updateXamlResult: ISource<UpdateXamlResultMessage> = updateXamlResultSignal
 
     fun start() {
-        // TODO[F]: Properly declare the scheduler for all the socket actions
         startListeningThread()
     }
 
     private lateinit var reader: BsonStreamReader
-    private lateinit var writer: BsonStreamWriter // TODO[F]: Separate writer thread for this socket
+    private lateinit var writer: BsonStreamWriter
 
     private fun startListeningThread() = Thread {
         try {
@@ -61,7 +60,7 @@ class AvaloniaPreviewerSession(
                     socket.getInputStream().use {
                         DataInputStream(it).use { input ->
                             socket.getOutputStream().use { output ->
-                                writer = BsonStreamWriter(avaloniaMessages.outgoingTypeRegistry, output)
+                                writer = BsonStreamWriter(lifetime, avaloniaMessages.outgoingTypeRegistry, output)
                                 reader = BsonStreamReader(avaloniaMessages.incomingTypeRegistry, input)
                                 while (!socket.isClosed) {
                                     val message = reader.readMessage()
@@ -83,21 +82,32 @@ class AvaloniaPreviewerSession(
         }
     }.apply { start() }
 
+    fun sendClientSupportedPixelFormat() {
+        writer.startSendMessage(ClientSupportedPixelFormatsMessage(intArrayOf(1)))
+    }
+
+    fun sendDpi(dpi: Double) {
+        writer.startSendMessage(ClientRenderInfoMessage(dpi, dpi))
+    }
+
+    fun sendViewportAllocated(message: ClientViewportAllocatedMessage) {
+        writer.startSendMessage(message)
+    }
+
     fun sendXamlUpdate(content: String) {
-        // TODO[F]: Make sure writer is used in a thread-safe manner
-        writer.sendMessage(UpdateXamlMessage(content, outputBinaryPath.toString()))
+        writer.startSendMessage(UpdateXamlMessage(content, outputBinaryPath.toString()))
     }
 
     fun sendFrameAcknowledgement(frame: FrameMessage) {
-        // TODO[F]: Should be asynchronous and on the common writer thread
-        writer.sendMessage(FrameReceivedMessage(frame.sequenceId))
+        writer.startSendMessage(FrameReceivedMessage(frame.sequenceId))
     }
 
     private fun handleMessage(message: AvaloniaMessage) {
         logger.trace { "Received message: $message" }
         when (message) {
-            is StartDesignerSessionMessage ->
+            is StartDesignerSessionMessage -> {
                 sessionStartedSignal.fire(message)
+            }
             is UpdateXamlResultMessage -> {
                 updateXamlResultSignal.fire(message)
                 message.error?.let {
@@ -106,12 +116,6 @@ class AvaloniaPreviewerSession(
             }
             is RequestViewportResizeMessage -> {
                 requestViewportResizeSignal.fire(message)
-
-                // TODO[F]: Properly send these from the editor control
-                val dpi = 96.0
-                writer.sendMessage(ClientRenderInfoMessage(dpi, dpi))
-                writer.sendMessage(ClientViewportAllocatedMessage(message.width, message.height, dpi, dpi))
-                writer.sendMessage(ClientSupportedPixelFormatsMessage(intArrayOf(1)))
             }
             is FrameMessage -> {
                 frameSignal.fire(message)
