@@ -28,7 +28,6 @@
         </component>
     </application-components>
     <extensions defaultExtensionNs="com.intellij">
-        <projectService serviceImplementation="me.fornever.avaloniarider.previewer.AvaloniaPreviewerProcess"/>
         <projectService serviceImplementation="me.fornever.avaloniarider.idea.AvaloniaToolWindowManager"/>
 
         <fileEditorProvider implementation="me.fornever.avaloniarider.idea.editor.AvaloniaPreviewEditorProvider"/>

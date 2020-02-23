@@ -28,15 +28,15 @@ data class AvaloniaPreviewerParameters(
     val targetPath: Path
 )
 
-// TODO[F]: Make the proper instance class here
-object AvaloniaPreviewerProcess {
-    fun getCommandLine(
-        parameters: AvaloniaPreviewerParameters,
-        bsonPort: Int
-    ): GeneralCommandLine {
+class AvaloniaPreviewerProcess(
+    private val lifetime: Lifetime,
+    private val parameters: AvaloniaPreviewerParameters,
+    private val bsonPort: Int
+) {
+    private val commandLine = run {
         val runtimeConfig = parameters.targetDir.resolve("${parameters.targetName}.runtimeconfig.json")
         val depsFile = parameters.targetDir.resolve("${parameters.targetName}.deps.json")
-        return when (parameters.runtime) {
+        when (parameters.runtime) {
             is DotNetCoreRuntime -> GeneralCommandLine().withExePath(parameters.runtime.cliExePath)
                 .withParameters(
                     "exec",
@@ -70,7 +70,7 @@ object AvaloniaPreviewerProcess {
         return consoleView
     }
 
-    private fun startProcess(lifetime: Lifetime, commandLine: GeneralCommandLine, consoleView: ConsoleView): OSProcessHandler {
+    private fun startProcess(consoleView: ConsoleView): OSProcessHandler {
         val processHandler = object : OSProcessHandler(commandLine) {
             override fun readerOptions() =
                 BaseOutputReader.Options.forMostlySilentProcess()
@@ -83,7 +83,7 @@ object AvaloniaPreviewerProcess {
         return processHandler
     }
 
-    private suspend fun waitForTermination(lifetime: Lifetime, process: ProcessHandler) {
+    private suspend fun waitForTermination(process: ProcessHandler) {
         val result = CompletableDeferred<Unit>()
         process.addProcessListener(object : ProcessAdapter() {
             override fun processTerminated(event: ProcessEvent) {
@@ -93,9 +93,9 @@ object AvaloniaPreviewerProcess {
         result.await()
     }
 
-    suspend fun run(project: Project, lifetime: Lifetime, commandLine: GeneralCommandLine) {
+    suspend fun run(project: Project) {
         val consoleView = withContext(Dispatchers.ApplicationAnyModality) { registerNewConsoleView(project) }
-        val process = startProcess(lifetime, commandLine, consoleView)
-        waitForTermination(lifetime, process)
+        val process = startProcess(consoleView)
+        waitForTermination(process)
     }
 }

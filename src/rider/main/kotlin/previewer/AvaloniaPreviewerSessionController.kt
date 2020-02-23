@@ -98,13 +98,13 @@ class AvaloniaPreviewerSessionController(private val project: Project, outerLife
         val parameters = msBuild.getAvaloniaPreviewerParameters(runnableProject, projectOutput)
 
         val socket = withContext(Dispatchers.IO) { ServerSocket(0) }
-        val commandLine = AvaloniaPreviewerProcess.getCommandLine(parameters, socket.localPort)
+        val process = AvaloniaPreviewerProcess(lifetime, parameters, socket.localPort)
         session = createSession(socket, parameters, xamlFile)
 
         statusProperty.set(Status.Working) // TODO[F]: Should be set after starting session and process, not before
         session.start() // TODO[F]: Session should run asynchronously as a suspend fun; await for either session or process termination
 
-        AvaloniaPreviewerProcess.run(project, lifetime, commandLine)
+        process.run(project)
     }
 
     fun start(xamlFile: VirtualFile) {
