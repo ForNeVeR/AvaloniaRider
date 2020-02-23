@@ -3,6 +3,7 @@ package me.fornever.avaloniarider.idea.editor
 import com.intellij.util.ui.UIUtil
 import com.jetbrains.rd.util.lifetime.Lifetime
 import com.jetbrains.rider.util.idea.application
+import me.fornever.avaloniarider.controlmessages.ClientViewportAllocatedMessage
 import me.fornever.avaloniarider.controlmessages.FrameMessage
 import me.fornever.avaloniarider.idea.concurrency.adviseOn
 import me.fornever.avaloniarider.idea.concurrency.adviseOnUiThread
@@ -21,7 +22,7 @@ class AvaloniaPreviewEditorComponent(lifetime: Lifetime, controller: AvaloniaPre
         add(content)
 
         controller.requestViewportResize.advise(lifetime) {
-            // TODO: Calculate UI scale
+            // TODO[F]: Calculate UI scale
         }
 
         controller.frame.adviseOnUiThread(lifetime) { frame ->
@@ -35,6 +36,7 @@ class AvaloniaPreviewEditorComponent(lifetime: Lifetime, controller: AvaloniaPre
     fun drawFrame(frame: FrameMessage) {
         application.assertIsDispatchThread()
 
+        // TODO[F]: Remove hardcodeds size from here
         val image = UIUtil.createImage(this, 250, 100, BufferedImage.TYPE_INT_RGB)
         image.renderFrame(frame)
         content.icon = ImageIcon(image) // TODO[F]: Find a clever way to update that
