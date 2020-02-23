@@ -18,8 +18,6 @@ class MsBuildParameterCollector(private val project: Project) {
     companion object {
         fun getInstance(project: Project): MsBuildParameterCollector =
             project.getService(MsBuildParameterCollector::class.java)
-
-        private val logger = Logger.getInstance(MsBuildParameterCollector::class.java)
     }
 
     private fun getPathKey(runtime: DotNetRuntime): String = when (runtime) {
