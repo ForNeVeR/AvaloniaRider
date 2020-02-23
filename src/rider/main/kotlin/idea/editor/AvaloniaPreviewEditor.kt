@@ -16,7 +16,7 @@ class AvaloniaPreviewEditor(
     private val currentFile: VirtualFile
 ) : UserDataHolderBase(), FileEditor {
 
-    override fun getName() = "Previewer"
+    override fun getName() = "Preview"
     override fun isValid() = true
 
     override fun getFile() = currentFile
