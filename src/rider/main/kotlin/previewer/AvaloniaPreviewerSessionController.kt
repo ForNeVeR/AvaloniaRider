@@ -90,7 +90,7 @@ class AvaloniaPreviewerSessionController(private val project: Project, outerLife
     ).apply {
         sessionStarted.advise(lifetime) {
             sendClientSupportedPixelFormat()
-            sendDpi(96.0) // TODO[F]: Properly acquire from the UI side
+            sendDpi(96.0) // TODO[F]: Properly acquire from the UI side (#9)
 
             application.runReadAction {
                 val document = FileDocumentManager.getInstance().getDocument(xamlFile)!!
