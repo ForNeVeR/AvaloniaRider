@@ -89,6 +89,7 @@ class AvaloniaPreviewerSession(
     }
 
     fun sendXamlUpdate(content: String) {
+        // TODO[F]: Send the proper XAML file path inside of the project
         writer.startSendMessage(UpdateXamlMessage(content, outputBinaryPath.toString()))
     }
 

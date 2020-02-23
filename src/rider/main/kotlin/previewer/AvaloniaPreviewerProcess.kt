@@ -6,6 +6,7 @@ import com.intellij.execution.process.*
 import com.intellij.execution.ui.ConsoleView
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.rd.createNestedDisposable
+import com.intellij.util.io.BaseOutputReader
 import com.jetbrains.rd.util.lifetime.Lifetime
 import com.jetbrains.rd.util.lifetime.onTermination
 import com.jetbrains.rider.runtime.DotNetRuntime
@@ -27,6 +28,7 @@ data class AvaloniaPreviewerParameters(
     val targetPath: Path
 )
 
+// TODO[F]: Make the proper instance class here
 object AvaloniaPreviewerProcess {
     fun getCommandLine(
         parameters: AvaloniaPreviewerParameters,
