@@ -9,9 +9,11 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.jetbrains.rd.util.lifetime.Lifetime
 import com.jetbrains.rd.util.lifetime.onTermination
 import com.jetbrains.rd.util.reactive.*
+import com.jetbrains.rd.util.throttleLast
 import com.jetbrains.rider.projectView.ProjectModelViewHost
 import com.jetbrains.rider.projectView.nodes.ProjectModelNode
 import com.jetbrains.rider.projectView.nodes.containingProject
+import com.jetbrains.rider.ui.SwingScheduler
 import com.jetbrains.rider.ui.components.utils.documentChanged
 import com.jetbrains.rider.util.idea.application
 import kotlinx.coroutines.*
@@ -21,6 +23,7 @@ import me.fornever.avaloniarider.idea.concurrency.ApplicationAnyModality
 import me.fornever.avaloniarider.rider.RiderProjectOutputHost
 import me.fornever.avaloniarider.rider.projectRelativeVirtualPath
 import java.net.ServerSocket
+import java.time.Duration
 
 /**
  * The sources on this class are thread-free. Make sure to schedule them onto the proper threads if necessary.
@@ -28,6 +31,8 @@ import java.net.ServerSocket
 class AvaloniaPreviewerSessionController(private val project: Project, outerLifetime: Lifetime) {
     companion object {
         private val logger = Logger.getInstance(AvaloniaPreviewerSessionController::class.java)
+
+        private val xamlEditThrottling = Duration.ofMillis(300L)
     }
 
     enum class Status {
@@ -102,9 +107,11 @@ class AvaloniaPreviewerSessionController(private val project: Project, outerLife
                     return item?.projectRelativeVirtualPath?.let { "/$it" } ?: ""
                 }
 
-                document.documentChanged().advise(lifetime) {
-                    sendXamlUpdate(document.text, getDocumentPathInProject()) // TODO[F]: Add throttling
-                }
+                document.documentChanged()
+                    .throttleLast(xamlEditThrottling, SwingScheduler)
+                    .advise(lifetime) {
+                        sendXamlUpdate(document.text, getDocumentPathInProject())
+                    }
                 sendXamlUpdate(document.text, getDocumentPathInProject())
             }
         }
