@@ -79,7 +79,7 @@ class AvaloniaPreviewerSessionController(private val project: Project, outerLife
             application.runReadAction {
                 val document = FileDocumentManager.getInstance().getDocument(xamlFile)!!
                 document.documentChanged().advise(lifetime) {
-                    sendXamlUpdate(document.text)
+                    sendXamlUpdate(document.text) // TODO[F]: Add throttling
                 }
                 sendXamlUpdate(document.text)
             }
