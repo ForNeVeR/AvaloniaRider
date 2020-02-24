@@ -40,8 +40,10 @@ wrapper {
 }
 
 jvmWrapper {
-    macJvmUrl = "https://corretto.aws/downloads/resources/11.0.6.10.1/amazon-corretto-11.0.6.10.1-2-macosx-x64.tar.gz"
-    windowsJvmUrl = "https://corretto.aws/downloads/resources/11.0.6.10.1/amazon-corretto-11.0.6.10.1-1-windows-x64-jdk.zip"
+    // https://github.com/corretto/corretto-11/releases
+    linuxJvmUrl = 'https://corretto.aws/downloads/resources/11.0.6.10.1/amazon-corretto-11.0.6.10.1-linux-x64.tar.gz'
+    macJvmUrl = 'https://corretto.aws/downloads/resources/11.0.6.10.1/amazon-corretto-11.0.6.10.1-2-macosx-x64.tar.gz'
+    windowsJvmUrl = 'https://corretto.aws/downloads/resources/11.0.6.10.1/amazon-corretto-11.0.6.10.1-1-windows-x64-jdk.zip'
 }
 
 if (!ext.has("BuildConfiguration"))
