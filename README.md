@@ -7,7 +7,8 @@ Build
 
 ### Prerequisites
 
-- OpenJDK-compatible JDK version 8 or later (will be downloaded automatically)
+- OpenJDK-compatible JDK version 8 or later (will be downloaded automatically
+  during build)
 - .NET Core SDK 3.1 or later
 
 ### Build
