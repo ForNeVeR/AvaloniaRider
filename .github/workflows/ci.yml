@@ -20,6 +20,11 @@ jobs:
       - uses: actions/checkout@v2
 
       # RdGen
+      - name: Gradle JVM Cache
+        uses: actions/cache@v1.1.0
+        with:
+          path: build/gradle-jvm
+          key: ${{ runner.os }}.gradle-jvm.${{ hashFiles('**/*.gradle') }}+${{ hashFiles('gradle*') }}
       - name: Gradle Wrapper Cache
         uses: actions/cache@v1.1.0
         with:
