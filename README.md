@@ -7,7 +7,7 @@ Build
 
 ### Prerequisites
 
-- OpenJDK-compatible JDK version 8 or later
+- OpenJDK-compatible JDK version 8 or later (will be downloaded automatically)
 - .NET Core SDK 3.1 or later
 
 ### Build
@@ -17,6 +17,11 @@ To build from terminal, execute this command:
 ```console
 $ ./gradlew buildPlugin
 ```
+
+This action will use [Gradle JVM Wrapper][gradle-jvm-wrapper] to automatically
+download the recommended JDK version that's used for builds, and will download a
+required Gradle version. If this isn't necessary, you could use your own
+versions of Gradle and JRE by running the build task with `gradle buildPlugin`.
 
 After that, the plugin ZIP distribution will be created in the
 `build/distributions` directory.
@@ -38,3 +43,5 @@ frontend one (written in Kotlin). Each part requires a corresponding IDE. To
 develop a backend, it's recommended to open `AvaloniaRider.sln` with JetBrains
 Rider. To develop a frontend, it's recommended to use IntelliJ IDEA (Community
 edition should be enough).
+
+[gradle-jvm-wrapper]: https://github.com/mfilippov/gradle-jvm-wrapper
