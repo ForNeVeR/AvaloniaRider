@@ -118,7 +118,7 @@ rdgen {
         "${rdLibDirectory()}/rider-model.jar"
     }
     sources "$modelDir/rider"
-    hashFolder = 'build/rdgen/rider'
+    hashFolder = "$rootDir/build/rdgen/rider"
     packages = "model.rider"
 
     generator {
