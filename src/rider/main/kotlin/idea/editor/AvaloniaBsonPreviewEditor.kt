@@ -11,7 +11,7 @@ import com.jetbrains.rd.util.lifetime.LifetimeDefinition
 import me.fornever.avaloniarider.previewer.AvaloniaPreviewerSessionController
 import java.beans.PropertyChangeListener
 
-class AvaloniaPreviewEditor(
+class AvaloniaBsonPreviewEditor(
     project: Project,
     private val currentFile: VirtualFile
 ) : UserDataHolderBase(), FileEditor {
