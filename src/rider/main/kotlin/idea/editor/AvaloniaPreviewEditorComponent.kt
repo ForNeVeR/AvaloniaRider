@@ -33,7 +33,7 @@ class AvaloniaPreviewEditorComponent(lifetime: Lifetime, controller: AvaloniaPre
         // TODO[F]: Handle controller.status and controller.errorMessage (#41)
     }
 
-    fun drawFrame(frame: FrameMessage) {
+    private fun drawFrame(frame: FrameMessage) {
         application.assertIsDispatchThread()
 
         val image = UIUtil.createImage(this, frame.width, frame.height, BufferedImage.TYPE_INT_RGB)
