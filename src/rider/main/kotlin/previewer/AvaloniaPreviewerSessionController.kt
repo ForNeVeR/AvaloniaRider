@@ -139,7 +139,8 @@ class AvaloniaPreviewerSessionController(private val project: Project, outerLife
                 lifetime.onTermination { close() }
             }
         }
-        val process = AvaloniaPreviewerProcess(lifetime, parameters, socket.localPort)
+        val transport = AvaloniaPreviewerBsonTransport(socket.localPort)
+        val process = AvaloniaPreviewerProcess(lifetime, parameters)
         session = createSession(socket, parameters, xamlFile)
 
         val sessionJob = GlobalScope.async {
@@ -148,7 +149,7 @@ class AvaloniaPreviewerSessionController(private val project: Project, outerLife
         }
         val processJob = GlobalScope.async {
             logger.info("Starting previewer process")
-            process.run(project)
+            process.run(project, transport)
         }
         statusProperty.set(Status.Working)
 

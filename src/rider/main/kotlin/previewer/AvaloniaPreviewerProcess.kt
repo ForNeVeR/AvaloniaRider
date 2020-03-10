@@ -2,8 +2,12 @@ package me.fornever.avaloniarider.previewer
 
 import com.intellij.execution.configurations.GeneralCommandLine
 import com.intellij.execution.filters.TextConsoleBuilderFactory
-import com.intellij.execution.process.*
+import com.intellij.execution.process.OSProcessHandler
+import com.intellij.execution.process.ProcessAdapter
+import com.intellij.execution.process.ProcessEvent
+import com.intellij.execution.process.ProcessHandler
 import com.intellij.execution.ui.ConsoleView
+import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.rd.createNestedDisposable
 import com.intellij.util.io.BaseOutputReader
@@ -17,7 +21,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import me.fornever.avaloniarider.idea.AvaloniaToolWindowManager
 import me.fornever.avaloniarider.idea.concurrency.ApplicationAnyModality
-import org.jetbrains.annotations.NotNull
 import java.nio.file.Path
 
 data class AvaloniaPreviewerParameters(
@@ -28,33 +31,38 @@ data class AvaloniaPreviewerParameters(
     val targetPath: Path
 )
 
+sealed class AvaloniaPreviewerTransport {
+    abstract fun getOptions(): List<String>
+}
+data class AvaloniaPreviewerBsonTransport(val bsonPort: Int) : AvaloniaPreviewerTransport() {
+    override fun getOptions() = listOf(
+        "--transport", "tcp-bson://127.0.0.1:$bsonPort/",
+        "--method", "avalonia-remote"
+    )
+}
+
 class AvaloniaPreviewerProcess(
     private val lifetime: Lifetime,
-    private val parameters: AvaloniaPreviewerParameters,
-    private val bsonPort: Int
+    private val parameters: AvaloniaPreviewerParameters
 ) {
-    private val commandLine = run {
+    companion object {
+        private val logger = Logger.getInstance(AvaloniaPreviewerProcess::class.java)
+    }
+
+    private fun getCommandLine(transport: AvaloniaPreviewerTransport): GeneralCommandLine {
         val runtimeConfig = parameters.targetDir.resolve("${parameters.targetName}.runtimeconfig.json")
         val depsFile = parameters.targetDir.resolve("${parameters.targetName}.deps.json")
-        when (parameters.runtime) {
+        val previewerArguments = transport.getOptions() + parameters.targetPath.toAbsolutePath().toString()
+        return when (parameters.runtime) {
             is DotNetCoreRuntime -> GeneralCommandLine().withExePath(parameters.runtime.cliExePath)
                 .withParameters(
                     "exec",
-                    "--runtimeconfig",
-                    runtimeConfig.toAbsolutePath().toString(),
-                    "--depsfile",
-                    depsFile.toAbsolutePath().toString(),
-                    parameters.previewerBinary.toAbsolutePath().toString(),
-                    "--transport",
-                    "tcp-bson://127.0.0.1:$bsonPort/",
-                    parameters.targetPath.toAbsolutePath().toString()
-                )
+                    "--runtimeconfig", runtimeConfig.toAbsolutePath().toString(),
+                    "--depsfile", depsFile.toAbsolutePath().toString(),
+                    parameters.previewerBinary.toAbsolutePath().toString()
+                ).withParameters(previewerArguments)
             else -> GeneralCommandLine().withExePath(parameters.previewerBinary.toAbsolutePath().toString())
-                .withParameters(
-                    "--transport",
-                    "tcp-bson://127.0.0.1:$bsonPort/",
-                    parameters.targetPath.toAbsolutePath().toString()
-                )
+                .withParameters(previewerArguments)
         }
     }
 
@@ -70,12 +78,13 @@ class AvaloniaPreviewerProcess(
         return consoleView
     }
 
-    private fun startProcess(consoleView: ConsoleView): OSProcessHandler {
+    private fun startProcess(commandLine: GeneralCommandLine, consoleView: ConsoleView): OSProcessHandler {
         val processHandler = object : OSProcessHandler(commandLine) {
             override fun readerOptions() =
                 BaseOutputReader.Options.forMostlySilentProcess()
         }
 
+        logger.info("Starting process ${commandLine.commandLineString}")
         processHandler.startNotify()
         lifetime.onTermination { processHandler.destroyProcess() }
 
@@ -93,9 +102,10 @@ class AvaloniaPreviewerProcess(
         result.await()
     }
 
-    suspend fun run(project: Project) {
+    suspend fun run(project: Project, transport: AvaloniaPreviewerTransport) {
+        val commandLine = getCommandLine(transport)
         val consoleView = withContext(Dispatchers.ApplicationAnyModality) { registerNewConsoleView(project) }
-        val process = startProcess(consoleView)
+        val process = startProcess(commandLine, consoleView)
         waitForTermination(process)
     }
 }
