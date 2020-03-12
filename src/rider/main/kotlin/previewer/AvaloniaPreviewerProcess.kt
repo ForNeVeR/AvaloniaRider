@@ -31,16 +31,6 @@ data class AvaloniaPreviewerParameters(
     val targetPath: Path
 )
 
-sealed class AvaloniaPreviewerTransport {
-    abstract fun getOptions(): List<String>
-}
-data class AvaloniaPreviewerBsonTransport(val bsonPort: Int) : AvaloniaPreviewerTransport() {
-    override fun getOptions() = listOf(
-        "--transport", "tcp-bson://127.0.0.1:$bsonPort/",
-        "--method", "avalonia-remote"
-    )
-}
-
 class AvaloniaPreviewerProcess(
     private val lifetime: Lifetime,
     private val parameters: AvaloniaPreviewerParameters
@@ -49,10 +39,13 @@ class AvaloniaPreviewerProcess(
         private val logger = Logger.getInstance(AvaloniaPreviewerProcess::class.java)
     }
 
-    private fun getCommandLine(transport: AvaloniaPreviewerTransport): GeneralCommandLine {
+    private fun getCommandLine(transport: PreviewerTransport, method: PreviewerMethod): GeneralCommandLine {
         val runtimeConfig = parameters.targetDir.resolve("${parameters.targetName}.runtimeconfig.json")
         val depsFile = parameters.targetDir.resolve("${parameters.targetName}.deps.json")
-        val previewerArguments = transport.getOptions() + parameters.targetPath.toAbsolutePath().toString()
+        val previewerArguments =
+            transport.getOptions() +
+            method.getOptions() +
+            parameters.targetPath.toAbsolutePath().toString()
         return when (parameters.runtime) {
             is DotNetCoreRuntime -> GeneralCommandLine().withExePath(parameters.runtime.cliExePath)
                 .withParameters(
@@ -102,8 +95,8 @@ class AvaloniaPreviewerProcess(
         result.await()
     }
 
-    suspend fun run(project: Project, transport: AvaloniaPreviewerTransport) {
-        val commandLine = getCommandLine(transport)
+    suspend fun run(project: Project, transport: PreviewerTransport, method: PreviewerMethod) {
+        val commandLine = getCommandLine(transport, method)
         val consoleView = withContext(Dispatchers.ApplicationAnyModality) { registerNewConsoleView(project) }
         val process = startProcess(commandLine, consoleView)
         waitForTermination(process)

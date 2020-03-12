@@ -28,11 +28,13 @@ class AvaloniaPreviewerSession(
     }
 
     private val sessionStartedSignal = Signal<StartDesignerSessionMessage>()
+    private val htmlTransportStartedSignal = Signal<HtmlTransportStartedMessage>()
     private val requestViewportResizeSignal = Signal<RequestViewportResizeMessage>()
     private val frameSignal = Signal<FrameMessage>()
     private val updateXamlResultSignal = Signal<UpdateXamlResultMessage>() // TODO[F]: Show error message in the editor control (#41)
 
     val sessionStarted: ISource<StartDesignerSessionMessage> = sessionStartedSignal
+    val htmlTransportStarted: ISource<HtmlTransportStartedMessage> = htmlTransportStartedSignal
     val requestViewportResize: ISource<RequestViewportResizeMessage> = requestViewportResizeSignal
     val frame: ISource<FrameMessage> = frameSignal
     val updateXamlResult: ISource<UpdateXamlResultMessage> = updateXamlResultSignal
@@ -90,6 +92,7 @@ class AvaloniaPreviewerSession(
         logger.trace { "Received message: $message" }
         when (message) {
             is StartDesignerSessionMessage -> sessionStartedSignal.fire(message)
+            is HtmlTransportStartedMessage -> htmlTransportStartedSignal.fire(message)
             is UpdateXamlResultMessage -> {
                 updateXamlResultSignal.fire(message)
                 message.error?.let {

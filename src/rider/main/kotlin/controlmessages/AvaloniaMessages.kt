@@ -19,9 +19,9 @@ class AvaloniaMessages {
             for (annotation in type.annotations) {
                 when (annotation) {
                     is AvaloniaIncomingMessage ->
-                        incomingTypeRegistry.put(annotation.uuid.toUUID(), type.java)
+                        incomingTypeRegistry[annotation.uuid.toUUID()] = type.java
                     is AvaloniaOutgoingMessage ->
-                        outgoingTypeRegistry.put(type.java, annotation.uuid.toUUID())
+                        outgoingTypeRegistry[type.java] = annotation.uuid.toUUID()
                 }
             }
         }
@@ -70,6 +70,11 @@ data class FrameMessage(
 data class RequestViewportResizeMessage(
     val width: Double = 0.0,
     val height: Double = 0.0
+) : AvaloniaMessage()
+
+@AvaloniaIncomingMessage("53778004-78fa-4381-8ec3-176a6f2328b6")
+data class HtmlTransportStartedMessage(
+    val uri: String = ""
 ) : AvaloniaMessage()
 
 @AvaloniaOutgoingMessage("63481025-7016-43FE-BADC-F2FD0F88609E")

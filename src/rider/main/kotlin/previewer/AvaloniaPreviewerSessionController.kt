@@ -3,7 +3,6 @@ package me.fornever.avaloniarider.previewer
 import com.intellij.application.ApplicationThreadPool
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.debug
-import com.intellij.openapi.diagnostic.trace
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
@@ -20,6 +19,7 @@ import com.jetbrains.rider.util.idea.application
 import kotlinx.coroutines.*
 import kotlinx.coroutines.selects.select
 import me.fornever.avaloniarider.controlmessages.FrameMessage
+import me.fornever.avaloniarider.controlmessages.HtmlTransportStartedMessage
 import me.fornever.avaloniarider.controlmessages.RequestViewportResizeMessage
 import me.fornever.avaloniarider.idea.concurrency.ApplicationAnyModality
 import me.fornever.avaloniarider.rider.RiderProjectOutputHost
@@ -50,10 +50,12 @@ class AvaloniaPreviewerSessionController(private val project: Project, outerLife
     val status: IPropertyView<Status> = statusProperty
     private val lifetime = outerLifetime.createNested()
 
+    private val htmlTransportStartedSignal = Signal<HtmlTransportStartedMessage>()
     private val requestViewportResizeSignal = Signal<RequestViewportResizeMessage>()
     private val frameSignal = Signal<FrameMessage>()
     private val errorMessageProperty = Property<String?>(null)
 
+    val htmlTransportStarted: ISource<HtmlTransportStartedMessage> = htmlTransportStartedSignal
     val requestViewportResize: ISource<RequestViewportResizeMessage> = requestViewportResizeSignal
     val frame: ISource<FrameMessage> = frameSignal
     val errorMessage: IPropertyView<String?> = errorMessageProperty
@@ -117,6 +119,7 @@ class AvaloniaPreviewerSessionController(private val project: Project, outerLife
             }
         }
 
+        htmlTransportStarted.flowInto(lifetime, htmlTransportStartedSignal)
         requestViewportResize.flowInto(lifetime, requestViewportResizeSignal)
         frame.flowInto(lifetime, frameSignal)
     }
@@ -139,7 +142,9 @@ class AvaloniaPreviewerSessionController(private val project: Project, outerLife
                 lifetime.onTermination { close() }
             }
         }
-        val transport = AvaloniaPreviewerBsonTransport(socket.localPort)
+        val transport = PreviewerBsonTransport(socket.localPort)
+        // TODO[F]: Determine method from config
+        val method = HtmlMethod
         val process = AvaloniaPreviewerProcess(lifetime, parameters)
         session = createSession(socket, parameters, xamlFile)
 
@@ -149,7 +154,7 @@ class AvaloniaPreviewerSessionController(private val project: Project, outerLife
         }
         val processJob = GlobalScope.async {
             logger.info("Starting previewer process")
-            process.run(project, transport)
+            process.run(project, transport, method)
         }
         statusProperty.set(Status.Working)
 
@@ -170,7 +175,9 @@ class AvaloniaPreviewerSessionController(private val project: Project, outerLife
                 logger.error(t)
             }
 
-            lifetime.terminate()
+            launch(Dispatchers.ApplicationAnyModality) {
+                lifetime.terminate()
+            }
         }
     }
 
