@@ -15,7 +15,9 @@ class AvaloniaPreviewEditorProvider : FileEditorProvider, DumbAware {
 
     override fun createEditor(project: Project, file: VirtualFile): FileEditor {
         val textEditor = TextEditorProvider.getInstance().createEditor(project, file) as TextEditor
-        val previewerEditor = AvaloniaBsonPreviewEditor(project, file)
+        // TODO[F]: Choose according to the settings
+//        val previewerEditor = AvaloniaBsonPreviewEditor(project, file)
+        val previewerEditor = AvaloniaHtmlPreviewEditor(project, file)
         return TextEditorWithPreview(textEditor, previewerEditor)
     }
 }

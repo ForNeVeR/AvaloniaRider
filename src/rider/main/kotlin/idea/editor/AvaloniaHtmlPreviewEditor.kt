@@ -3,14 +3,14 @@ package me.fornever.avaloniarider.idea.editor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 
-class AvaloniaBsonPreviewEditor(
+class AvaloniaHtmlPreviewEditor(
     project: Project,
     currentFile: VirtualFile
 ) : AvaloniaPreviewEditorBase(project, currentFile) {
 
     private val panel = lazy {
         sessionController.start(currentFile)
-        BitmapPreviewEditorComponent(lifetime, sessionController)
+        HtmlPreviewEditorComponent(lifetime, sessionController)
     }
 
     override fun getComponent() = panel.value
