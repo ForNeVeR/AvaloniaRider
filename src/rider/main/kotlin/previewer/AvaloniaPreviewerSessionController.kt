@@ -3,6 +3,7 @@ package me.fornever.avaloniarider.previewer
 import com.intellij.application.ApplicationThreadPool
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.debug
+import com.intellij.openapi.diagnostic.trace
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
@@ -22,6 +23,8 @@ import me.fornever.avaloniarider.controlmessages.FrameMessage
 import me.fornever.avaloniarider.controlmessages.HtmlTransportStartedMessage
 import me.fornever.avaloniarider.controlmessages.RequestViewportResizeMessage
 import me.fornever.avaloniarider.idea.concurrency.ApplicationAnyModality
+import me.fornever.avaloniarider.idea.settings.AvaloniaPreviewerMethod
+import me.fornever.avaloniarider.idea.settings.AvaloniaSettings
 import me.fornever.avaloniarider.rider.RiderProjectOutputHost
 import me.fornever.avaloniarider.rider.projectRelativeVirtualPath
 import java.net.ServerSocket
@@ -143,8 +146,11 @@ class AvaloniaPreviewerSessionController(private val project: Project, outerLife
             }
         }
         val transport = PreviewerBsonTransport(socket.localPort)
-        // TODO[F]: Determine method from config
-        val method = HtmlMethod
+        val settings = AvaloniaSettings.getInstance(project).state
+        val method = when (settings.previewerMethod) {
+            AvaloniaPreviewerMethod.Socket -> AvaloniaRemoteMethod
+            AvaloniaPreviewerMethod.Web -> HtmlMethod
+        }
         val process = AvaloniaPreviewerProcess(lifetime, parameters)
         session = createSession(socket, parameters, xamlFile)
 

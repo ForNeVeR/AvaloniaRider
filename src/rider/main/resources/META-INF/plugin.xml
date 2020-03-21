@@ -31,5 +31,8 @@
         <projectService serviceImplementation="me.fornever.avaloniarider.idea.AvaloniaToolWindowManager"/>
 
         <fileEditorProvider implementation="me.fornever.avaloniarider.idea.editor.AvaloniaPreviewEditorProvider"/>
+        <projectConfigurable groupId="language"
+                             instance="me.fornever.avaloniarider.idea.settings.AvaloniaSettingsConfigurable" />
+
     </extensions>
 </idea-plugin>

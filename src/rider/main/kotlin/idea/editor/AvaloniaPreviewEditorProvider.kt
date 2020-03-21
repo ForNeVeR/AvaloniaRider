@@ -5,6 +5,8 @@ import com.intellij.openapi.fileEditor.impl.text.TextEditorProvider
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
+import me.fornever.avaloniarider.idea.settings.AvaloniaPreviewerMethod
+import me.fornever.avaloniarider.idea.settings.AvaloniaSettings
 
 class AvaloniaPreviewEditorProvider : FileEditorProvider, DumbAware {
     override fun getEditorTypeId() = "AvaloniaPreviewerEditor"
@@ -15,9 +17,10 @@ class AvaloniaPreviewEditorProvider : FileEditorProvider, DumbAware {
 
     override fun createEditor(project: Project, file: VirtualFile): FileEditor {
         val textEditor = TextEditorProvider.getInstance().createEditor(project, file) as TextEditor
-        // TODO[F]: Choose according to the settings
-//        val previewerEditor = AvaloniaBsonPreviewEditor(project, file)
-        val previewerEditor = AvaloniaHtmlPreviewEditor(project, file)
+        val previewerEditor = when (AvaloniaSettings.getInstance(project).previewerTransportType) {
+            AvaloniaPreviewerMethod.Socket -> AvaloniaRemotePreviewEditor(project, file)
+            AvaloniaPreviewerMethod.Web -> AvaloniaHtmlPreviewEditor(project, file)
+        }
         return TextEditorWithPreview(textEditor, previewerEditor)
     }
 }
