@@ -3,7 +3,6 @@ package me.fornever.avaloniarider.previewer
 import com.intellij.application.ApplicationThreadPool
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.debug
-import com.intellij.openapi.diagnostic.trace
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
@@ -148,8 +147,8 @@ class AvaloniaPreviewerSessionController(private val project: Project, outerLife
         val transport = PreviewerBsonTransport(socket.localPort)
         val settings = AvaloniaSettings.getInstance(project).state
         val method = when (settings.previewerMethod) {
-            AvaloniaPreviewerMethod.Socket -> AvaloniaRemoteMethod
-            AvaloniaPreviewerMethod.Web -> HtmlMethod
+            AvaloniaPreviewerMethod.AvaloniaRemote -> AvaloniaRemoteMethod
+            AvaloniaPreviewerMethod.Html -> HtmlMethod
         }
         val process = AvaloniaPreviewerProcess(lifetime, parameters)
         session = createSession(socket, parameters, xamlFile)

@@ -7,12 +7,12 @@ import com.intellij.openapi.components.State
 import com.intellij.openapi.project.Project
 
 enum class AvaloniaPreviewerMethod {
-    Socket,
-    Web
+    AvaloniaRemote,
+    Html
 }
 
 class AvaloniaSettingsState : BaseState() {
-    var previewerMethod by enum(AvaloniaPreviewerMethod.Web)
+    var previewerMethod by enum(AvaloniaPreviewerMethod.AvaloniaRemote)
 }
 
 @State(name = "Avalonia")
