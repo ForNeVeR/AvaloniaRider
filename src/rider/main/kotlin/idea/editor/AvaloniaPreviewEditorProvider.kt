@@ -1,6 +1,9 @@
 package me.fornever.avaloniarider.idea.editor
 
-import com.intellij.openapi.fileEditor.*
+import com.intellij.openapi.fileEditor.FileEditor
+import com.intellij.openapi.fileEditor.FileEditorPolicy
+import com.intellij.openapi.fileEditor.FileEditorProvider
+import com.intellij.openapi.fileEditor.TextEditor
 import com.intellij.openapi.fileEditor.impl.text.TextEditorProvider
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
@@ -21,6 +24,6 @@ class AvaloniaPreviewEditorProvider : FileEditorProvider, DumbAware {
             AvaloniaPreviewerMethod.AvaloniaRemote -> AvaloniaRemotePreviewEditor(project, file)
             AvaloniaPreviewerMethod.Html -> AvaloniaHtmlPreviewEditor(project, file)
         }
-        return TextEditorWithPreview(textEditor, previewerEditor)
+        return PreviewerSplitterEditor(textEditor, previewerEditor)
     }
 }
