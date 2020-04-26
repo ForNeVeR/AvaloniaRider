@@ -1,5 +1,6 @@
 package me.fornever.avaloniarider.idea.editor
 
+import com.intellij.ui.components.JBScrollPane
 import com.intellij.util.ui.UIUtil
 import com.jetbrains.rd.util.lifetime.Lifetime
 import com.jetbrains.rider.util.idea.application
@@ -7,18 +8,22 @@ import me.fornever.avaloniarider.controlmessages.FrameMessage
 import me.fornever.avaloniarider.idea.concurrency.adviseOnUiThread
 import me.fornever.avaloniarider.previewer.AvaloniaPreviewerSessionController
 import me.fornever.avaloniarider.previewer.renderFrame
-import java.awt.FlowLayout
+import java.awt.BorderLayout
 import java.awt.image.BufferedImage
 import javax.swing.ImageIcon
 import javax.swing.JLabel
 import javax.swing.JPanel
+import javax.swing.JScrollPane
 
 class BitmapPreviewEditorComponent(lifetime: Lifetime, controller: AvaloniaPreviewerSessionController) : JPanel() {
 
     private val content = JLabel()
     init {
-        layout = FlowLayout()
-        add(content)
+        layout = BorderLayout()
+        add(JBScrollPane(content).apply {
+            horizontalScrollBarPolicy = JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS
+            verticalScrollBarPolicy = JScrollPane.VERTICAL_SCROLLBAR_ALWAYS
+        }, BorderLayout.CENTER)
 
         controller.requestViewportResize.advise(lifetime) {
             // TODO[F]: Update the image size for the renderer (#40)
