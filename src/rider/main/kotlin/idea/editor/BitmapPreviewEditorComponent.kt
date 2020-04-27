@@ -13,17 +13,13 @@ import java.awt.image.BufferedImage
 import javax.swing.ImageIcon
 import javax.swing.JLabel
 import javax.swing.JPanel
-import javax.swing.JScrollPane
 
 class BitmapPreviewEditorComponent(lifetime: Lifetime, controller: AvaloniaPreviewerSessionController) : JPanel() {
 
     private val content = JLabel()
     init {
         layout = BorderLayout()
-        add(JBScrollPane(content).apply {
-            horizontalScrollBarPolicy = JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS
-            verticalScrollBarPolicy = JScrollPane.VERTICAL_SCROLLBAR_ALWAYS
-        }, BorderLayout.CENTER)
+        add(JBScrollPane(content), BorderLayout.CENTER)
 
         controller.requestViewportResize.advise(lifetime) {
             // TODO[F]: Update the image size for the renderer (#40)
