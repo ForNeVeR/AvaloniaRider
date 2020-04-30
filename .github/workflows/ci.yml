@@ -36,7 +36,7 @@ jobs:
           path: ${{ env.GRADLE_USER_HOME }}/caches/modules-2
           key: ${{ runner.os }}.gradle.${{ hashFiles('**/*.gradle') }}
       - name: RdGen
-        run: ./gradlew --no-daemon rdgen
+        run: ./gradlew rdgen
 
       # Backend
       - name: NuGet Cache
@@ -53,7 +53,7 @@ jobs:
 
       # Frontend
       - name: Test
-        run: ./gradlew -PBuildConfiguration=Release --no-daemon test
+        run: ./gradlew -PBuildConfiguration=Release test
       - name: Upload Test Results
         uses: actions/upload-artifact@v1.0.0
         with:
@@ -63,10 +63,14 @@ jobs:
       # Distribution
       - name: Build Distribution
         if: matrix.image == 'ubuntu-18.04'
-        run: ./gradlew -PBuildConfiguration=Release --no-daemon buildPlugin
+        run: ./gradlew -PBuildConfiguration=Release buildPlugin
       - name: Upload Distribution
         if: matrix.image == 'ubuntu-18.04'
         uses: actions/upload-artifact@v1.0.0
         with:
           name: distribution
           path: build/distributions
+
+      # Finalize
+      - name: Stop Gradle Daemon # to collect Gradle cache
+        run: ./gradlew --stop
