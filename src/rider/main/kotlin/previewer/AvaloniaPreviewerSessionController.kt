@@ -7,6 +7,7 @@ import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.jetbrains.rd.util.lifetime.Lifetime
+import com.jetbrains.rd.util.lifetime.isAlive
 import com.jetbrains.rd.util.lifetime.onTermination
 import com.jetbrains.rd.util.reactive.*
 import com.jetbrains.rd.util.throttleLast
@@ -27,6 +28,7 @@ import me.fornever.avaloniarider.idea.settings.AvaloniaSettings
 import me.fornever.avaloniarider.rider.RiderProjectOutputHost
 import me.fornever.avaloniarider.rider.projectRelativeVirtualPath
 import java.net.ServerSocket
+import java.net.SocketException
 import java.time.Duration
 
 /**
@@ -155,7 +157,14 @@ class AvaloniaPreviewerSessionController(private val project: Project, outerLife
 
         val sessionJob = GlobalScope.async {
             logger.info("Starting socket listener")
-            session.processSocketMessages()
+            try {
+                session.processSocketMessages()
+            } catch (ex: SocketException) {
+                // Log socket errors only if the session is still alive.
+                if (lifetime.isAlive) {
+                    logger.error("Socket error while session is still alive", ex)
+                }
+            }
         }
         val processJob = GlobalScope.async {
             logger.info("Starting previewer process")
