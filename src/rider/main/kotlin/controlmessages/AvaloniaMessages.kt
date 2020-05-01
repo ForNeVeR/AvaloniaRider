@@ -1,6 +1,6 @@
 package me.fornever.avaloniarider.controlmessages
 
-import com.jetbrains.rider.util.idea.application
+import com.jetbrains.rd.platform.util.application
 import com.jetbrains.rider.util.idea.getComponent
 import me.fornever.avaloniarider.toUUID
 import java.util.*

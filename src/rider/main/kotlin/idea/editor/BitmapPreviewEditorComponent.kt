@@ -2,8 +2,8 @@ package me.fornever.avaloniarider.idea.editor
 
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.util.ui.UIUtil
+import com.jetbrains.rd.platform.util.application
 import com.jetbrains.rd.util.lifetime.Lifetime
-import com.jetbrains.rider.util.idea.application
 import me.fornever.avaloniarider.controlmessages.FrameMessage
 import me.fornever.avaloniarider.idea.concurrency.adviseOnUiThread
 import me.fornever.avaloniarider.previewer.AvaloniaPreviewerSessionController
