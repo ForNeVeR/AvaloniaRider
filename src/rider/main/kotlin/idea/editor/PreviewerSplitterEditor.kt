@@ -6,7 +6,6 @@ import com.intellij.openapi.actionSystem.ActionGroup
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.actionSystem.ToggleAction
-import com.intellij.openapi.fileEditor.FileEditor
 import com.intellij.openapi.fileEditor.TextEditor
 import com.intellij.openapi.fileEditor.TextEditorWithPreview
 import com.intellij.openapi.project.DumbAware
@@ -16,7 +15,7 @@ import javax.swing.JComponent
 /**
  * Component that shows two editors side by side.
  */
-internal class PreviewerSplitterEditor(editor: TextEditor, preview: FileEditor)
+internal class PreviewerSplitterEditor(editor: TextEditor, private val preview: AvaloniaPreviewEditorBase)
     : TextEditorWithPreview(editor, preview, PreviewerSplitterEditor::javaClass.name) {
 
     companion object {
@@ -60,6 +59,7 @@ internal class PreviewerSplitterEditor(editor: TextEditor, preview: FileEditor)
     override fun createViewActionGroup(): ActionGroup {
         val group = super.createViewActionGroup() as DefaultActionGroup
         group.add(UseHorizontalSplitterAction())
+        preview.customizeEditorToolbar(group)
         return group
     }
 }

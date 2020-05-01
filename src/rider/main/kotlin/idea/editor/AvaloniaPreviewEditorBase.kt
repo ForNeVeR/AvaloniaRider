@@ -1,6 +1,7 @@
 package me.fornever.avaloniarider.idea.editor
 
 import com.intellij.codeHighlighting.BackgroundEditorHighlighter
+import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.fileEditor.FileEditor
 import com.intellij.openapi.fileEditor.FileEditorLocation
 import com.intellij.openapi.fileEditor.FileEditorState
@@ -29,6 +30,8 @@ abstract class AvaloniaPreviewEditorBase(
 
     abstract override fun getComponent(): JComponent
     override fun getPreferredFocusedComponent() = component
+
+    open fun customizeEditorToolbar(group: DefaultActionGroup) {}
 
     override fun isModified() = false
     override fun addPropertyChangeListener(listener: PropertyChangeListener) {}
