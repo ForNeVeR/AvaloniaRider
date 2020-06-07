@@ -70,9 +70,12 @@ sourceSets {
     }
 }
 
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
+    kotlinOptions { jvmTarget = "1.8" }
+}
+
 compileKotlin {
     dependsOn 'rdgen'
-    kotlinOptions { jvmTarget = "1.8" }
 }
 
 task compileDotNet {
