@@ -10,6 +10,7 @@ import com.intellij.openapi.util.UserDataHolderBase
 import com.intellij.openapi.vfs.VirtualFile
 import com.jetbrains.rd.util.lifetime.Lifetime
 import com.jetbrains.rd.util.lifetime.LifetimeDefinition
+import me.fornever.avaloniarider.idea.editor.actions.RestartPreviewerAction
 import me.fornever.avaloniarider.previewer.AvaloniaPreviewerSessionController
 import java.beans.PropertyChangeListener
 import javax.swing.JComponent
@@ -31,7 +32,9 @@ abstract class AvaloniaPreviewEditorBase(
     abstract override fun getComponent(): JComponent
     override fun getPreferredFocusedComponent() = component
 
-    open fun customizeEditorToolbar(group: DefaultActionGroup) {}
+    open fun customizeEditorToolbar(group: DefaultActionGroup) {
+        group.add(RestartPreviewerAction(lifetime, file, sessionController))
+    }
 
     override fun isModified() = false
     override fun addPropertyChangeListener(listener: PropertyChangeListener) {}

@@ -1,13 +1,16 @@
 package me.fornever.avaloniarider.previewer
 
 import com.intellij.application.ApplicationThreadPool
+import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.debug
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.Computable
 import com.intellij.openapi.vfs.VirtualFile
 import com.jetbrains.rd.platform.util.application
 import com.jetbrains.rd.util.lifetime.Lifetime
+import com.jetbrains.rd.util.lifetime.SequentialLifetimes
 import com.jetbrains.rd.util.lifetime.isAlive
 import com.jetbrains.rd.util.lifetime.onTermination
 import com.jetbrains.rd.util.reactive.*
@@ -42,17 +45,41 @@ class AvaloniaPreviewerSessionController(private val project: Project, outerLife
     }
 
     enum class Status {
+        /**
+         * No sessions have been started so far.
+         */
         Idle,
+
+        /**
+         * Trying to connect to a started previewer process.
+         */
         Connecting,
+
+        /**
+         * Previewer process is working.
+         */
         Working,
+
+        /**
+         * Previewer process has reported a XAML error.
+         */
         XamlError,
+
+        /**
+         * Preview has been suspended (e.g. by an ongoing build session).
+         */
+        Suspended,
+
+        /**
+         * Preview process has been terminated, and no other process is present.
+         */
         Terminated
     }
 
     private val statusProperty = Property(Status.Idle)
 
     val status: IPropertyView<Status> = statusProperty
-    private val lifetime = outerLifetime.createNested()
+    private val controllerLifetime = outerLifetime.createNested()
 
     private val htmlTransportStartedSignal = Signal<HtmlTransportStartedMessage>()
     private val requestViewportResizeSignal = Signal<RequestViewportResizeMessage>()
@@ -64,16 +91,21 @@ class AvaloniaPreviewerSessionController(private val project: Project, outerLife
     val frame: ISource<FrameMessage> = frameSignal
     val errorMessage: IPropertyView<String?> = errorMessageProperty
 
-    lateinit var session: AvaloniaPreviewerSession
+    private var _session: AvaloniaPreviewerSession? = null
+    private var session: AvaloniaPreviewerSession?
+        get() = application.runReadAction(Computable { _session })
+        set(value) = WriteCommandAction.runWriteCommandAction(project) { _session = value }
+
+    private val sessionLifetimeSource = SequentialLifetimes(controllerLifetime)
 
     init {
-        lifetime.onTermination { statusProperty.set(Status.Terminated) }
+        controllerLifetime.onTermination { statusProperty.set(Status.Terminated) }
     }
 
     private suspend fun getContainingProject(xamlFile: VirtualFile): ProjectModelNode {
         val result = CompletableDeferred<ProjectModelNode>()
         val projectModelViewHost = ProjectModelViewHost.getInstance(project)
-        projectModelViewHost.view.sync.adviseNotNullOnce(lifetime) {
+        projectModelViewHost.view.sync.adviseNotNullOnce(controllerLifetime) {
             try {
                 logger.debug { "Project model view synchronized" }
                 val projectModelNodes = projectModelViewHost.getItemsByVirtualFile(xamlFile)
@@ -93,6 +125,7 @@ class AvaloniaPreviewerSessionController(private val project: Project, outerLife
     }
 
     private fun createSession(
+        lifetime: Lifetime,
         socket: ServerSocket,
         parameters: AvaloniaPreviewerParameters,
         xamlFile: VirtualFile
@@ -128,7 +161,7 @@ class AvaloniaPreviewerSessionController(private val project: Project, outerLife
         frame.flowInto(lifetime, frameSignal)
     }
 
-    private suspend fun executePreviewerAsync(xamlFile: VirtualFile) {
+    private suspend fun executePreviewerAsync(lifetime: Lifetime, xamlFile: VirtualFile) {
         statusProperty.set(Status.Connecting)
         logger.info("Receiving a containing project for the file $xamlFile")
         val containingProject = withContext(Dispatchers.ApplicationAnyModality) { getContainingProject(xamlFile) }
@@ -153,12 +186,13 @@ class AvaloniaPreviewerSessionController(private val project: Project, outerLife
             AvaloniaPreviewerMethod.Html -> HtmlMethod
         }
         val process = AvaloniaPreviewerProcess(lifetime, parameters)
-        session = createSession(socket, parameters, xamlFile)
+        val newSession = createSession(lifetime, socket, parameters, xamlFile)
+        session = newSession
 
         val sessionJob = GlobalScope.async {
             logger.info("Starting socket listener")
             try {
-                session.processSocketMessages()
+                newSession.processSocketMessages()
             } catch (ex: SocketException) {
                 // Log socket errors only if the session is still alive.
                 if (lifetime.isAlive) {
@@ -183,19 +217,19 @@ class AvaloniaPreviewerSessionController(private val project: Project, outerLife
     fun start(xamlFile: VirtualFile) {
         @Suppress("UnstableApiUsage")
         GlobalScope.launch(Dispatchers.ApplicationThreadPool) {
+            val sessionLifetime = sessionLifetimeSource.next()
             try {
-                executePreviewerAsync(xamlFile)
+                executePreviewerAsync(sessionLifetime, xamlFile)
             } catch (t: Throwable) {
                 logger.error(t)
-            }
-
-            launch(Dispatchers.ApplicationAnyModality) {
-                lifetime.terminate()
+            } finally {
+                session = null
+                sessionLifetime.terminate()
             }
         }
     }
 
     fun acknowledgeFrame(frame: FrameMessage) {
-        session.sendFrameAcknowledgement(frame)
+        session?.sendFrameAcknowledgement(frame)
     }
 }
