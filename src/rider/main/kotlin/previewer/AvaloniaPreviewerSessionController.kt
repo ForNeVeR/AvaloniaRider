@@ -9,12 +9,10 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Computable
 import com.intellij.openapi.vfs.VirtualFile
 import com.jetbrains.rd.platform.util.application
-import com.jetbrains.rd.util.lifetime.Lifetime
-import com.jetbrains.rd.util.lifetime.SequentialLifetimes
-import com.jetbrains.rd.util.lifetime.isAlive
-import com.jetbrains.rd.util.lifetime.onTermination
+import com.jetbrains.rd.util.lifetime.*
 import com.jetbrains.rd.util.reactive.*
 import com.jetbrains.rd.util.throttleLast
+import com.jetbrains.rider.build.BuildHost
 import com.jetbrains.rider.projectView.ProjectModelViewHost
 import com.jetbrains.rider.projectView.nodes.ProjectModelNode
 import com.jetbrains.rider.projectView.nodes.containingProject
@@ -37,7 +35,10 @@ import java.time.Duration
 /**
  * The sources on this class are thread-free. Make sure to schedule them onto the proper threads if necessary.
  */
-class AvaloniaPreviewerSessionController(private val project: Project, outerLifetime: Lifetime) {
+class AvaloniaPreviewerSessionController(
+    private val project: Project,
+    outerLifetime: Lifetime,
+    private val xamlFile: VirtualFile) {
     companion object {
         private val logger = Logger.getInstance(AvaloniaPreviewerSessionController::class.java)
 
@@ -97,9 +98,20 @@ class AvaloniaPreviewerSessionController(private val project: Project, outerLife
         set(value) = WriteCommandAction.runWriteCommandAction(project) { _session = value }
 
     private val sessionLifetimeSource = SequentialLifetimes(controllerLifetime)
+    private var currentSessionLifetime: LifetimeDefinition? = null
 
     init {
         controllerLifetime.onTermination { statusProperty.set(Status.Terminated) }
+        BuildHost.getInstance(project).building.change.advise(controllerLifetime) { building ->
+            logger.info("Build host signal: $building")
+            if (building) {
+                logger.info("Suspending preview for $xamlFile")
+                suspend()
+            } else {
+                logger.info("Force start preview for $xamlFile")
+                start(true)
+            }
+        }
     }
 
     private suspend fun getContainingProject(xamlFile: VirtualFile): ProjectModelNode {
@@ -161,7 +173,7 @@ class AvaloniaPreviewerSessionController(private val project: Project, outerLife
         frame.flowInto(lifetime, frameSignal)
     }
 
-    private suspend fun executePreviewerAsync(lifetime: Lifetime, xamlFile: VirtualFile) {
+    private suspend fun executePreviewerAsync(lifetime: Lifetime) {
         statusProperty.set(Status.Connecting)
         logger.info("Receiving a containing project for the file $xamlFile")
         val containingProject = withContext(Dispatchers.ApplicationAnyModality) { getContainingProject(xamlFile) }
@@ -214,19 +226,28 @@ class AvaloniaPreviewerSessionController(private val project: Project, outerLife
         logger.info("$result has been terminated first")
     }
 
-    fun start(xamlFile: VirtualFile) {
+    fun start(force: Boolean = false) {
+        if (status.value == Status.Suspended && !force) return
+
         @Suppress("UnstableApiUsage")
         GlobalScope.launch(Dispatchers.ApplicationThreadPool) {
-            val sessionLifetime = sessionLifetimeSource.next()
+            currentSessionLifetime = sessionLifetimeSource.next()
             try {
-                executePreviewerAsync(sessionLifetime, xamlFile)
+                executePreviewerAsync(currentSessionLifetime!!)
             } catch (t: Throwable) {
                 logger.error(t)
             } finally {
                 session = null
-                sessionLifetime.terminate()
+                currentSessionLifetime!!.terminate()
             }
         }
+    }
+
+    private fun suspend() {
+        application.assertIsDispatchThread()
+
+        statusProperty.set(Status.Suspended)
+        currentSessionLifetime?.terminate()
     }
 
     fun acknowledgeFrame(frame: FrameMessage) {

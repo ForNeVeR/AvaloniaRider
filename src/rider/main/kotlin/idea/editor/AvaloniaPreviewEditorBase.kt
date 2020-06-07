@@ -27,13 +27,13 @@ abstract class AvaloniaPreviewEditorBase(
 
     private val lifetimeDefinition = LifetimeDefinition()
     protected val lifetime: Lifetime = lifetimeDefinition
-    protected val sessionController = AvaloniaPreviewerSessionController(project, lifetime)
+    protected val sessionController = AvaloniaPreviewerSessionController(project, lifetime, file)
 
     abstract override fun getComponent(): JComponent
     override fun getPreferredFocusedComponent() = component
 
     open fun customizeEditorToolbar(group: DefaultActionGroup) {
-        group.add(RestartPreviewerAction(lifetime, file, sessionController))
+        group.add(RestartPreviewerAction(lifetime, sessionController))
     }
 
     override fun isModified() = false

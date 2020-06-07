@@ -9,7 +9,7 @@ class AvaloniaRemotePreviewEditor(
 ) : AvaloniaPreviewEditorBase(project, currentFile) {
 
     private val panel = lazy {
-        sessionController.start(currentFile)
+        sessionController.start()
         BitmapPreviewEditorComponent(lifetime, sessionController)
     }
 

@@ -4,14 +4,12 @@ import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.project.DumbAware
-import com.intellij.openapi.vfs.VirtualFile
 import com.jetbrains.rd.util.lifetime.Lifetime
 import com.jetbrains.rd.util.lifetime.isAlive
 import me.fornever.avaloniarider.previewer.AvaloniaPreviewerSessionController
 
 class RestartPreviewerAction(
     private val lifetime: Lifetime,
-    private val file: VirtualFile,
     private val sessionController: AvaloniaPreviewerSessionController
 ) : AnAction(
     "Restart Previewer",
@@ -24,6 +22,6 @@ class RestartPreviewerAction(
     }
 
     override fun actionPerformed(event: AnActionEvent) {
-        sessionController.start(file)
+        sessionController.start()
     }
 }
