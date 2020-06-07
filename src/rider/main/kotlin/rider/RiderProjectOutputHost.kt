@@ -25,7 +25,6 @@ class RiderProjectOutputHost(private val project: Project) {
             val model = project.solution.riderProjectOutputModel
             val projectFilePath = projectNode.getVirtualFile()!!.path
 
-            @Suppress("UnstableApiUsage")
-            model.getProjectOutput.start(RdGetProjectOutputArgs(projectFilePath)).await(lifetime)
+            model.getProjectOutput.start(lifetime, RdGetProjectOutputArgs(projectFilePath)).await(lifetime)
         }
 }
