@@ -7,6 +7,7 @@ import com.jetbrains.rd.util.lifetime.Lifetime
 import me.fornever.avaloniarider.controlmessages.FrameMessage
 import me.fornever.avaloniarider.idea.concurrency.adviseOnUiThread
 import me.fornever.avaloniarider.previewer.AvaloniaPreviewerSessionController
+import me.fornever.avaloniarider.previewer.nonTransparent
 import me.fornever.avaloniarider.previewer.renderFrame
 import java.awt.BorderLayout
 import java.awt.image.BufferedImage
@@ -26,7 +27,8 @@ class BitmapPreviewEditorComponent(lifetime: Lifetime, controller: AvaloniaPrevi
         }
 
         controller.frame.adviseOnUiThread(lifetime) { frame ->
-            drawFrame(frame)
+            if (nonTransparent(frame)) // TODO[F]: Remove after fix of https://github.com/AvaloniaUI/Avalonia/issues/4264
+                drawFrame(frame)
             controller.acknowledgeFrame(frame)
         }
 

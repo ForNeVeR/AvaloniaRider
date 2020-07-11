@@ -4,6 +4,10 @@ import me.fornever.avaloniarider.controlmessages.FrameMessage
 import java.awt.Color
 import java.awt.image.BufferedImage
 
+fun nonTransparent(frame: FrameMessage): Boolean {
+    return frame.data.any { it != 0.toByte() }
+}
+
 private fun fromByte(b: Byte): Int = b.toInt() and 0xFF
 
 // TODO[F]: This is very suboptimal (#40)
