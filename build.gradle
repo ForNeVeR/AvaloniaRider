@@ -173,4 +173,24 @@ prepareSandbox {
     }
 }
 
+prepareTestingSandbox {
+    def outputFolder = "$dotNetDir/$dotNetPluginId/bin/${dotNetPluginId}/$BuildConfiguration"
+    def dllFiles = [
+            "$outputFolder/${dotNetPluginId}.dll",
+            "$outputFolder/${dotNetPluginId}.pdb"
+    ]
+
+    dllFiles.forEach({ f ->
+        def file = file(f)
+        from(file, { into "$intellij.pluginName/dotnet" })
+    })
+
+    doLast {
+        dllFiles.forEach({ f ->
+            def file = file(f)
+            if (!file.exists()) throw new RuntimeException("File $file does not exist")
+        })
+    }
+}
+
 buildSearchableOptions.enabled = false
