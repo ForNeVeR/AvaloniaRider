@@ -54,6 +54,8 @@ jobs:
       # Frontend
       - name: Test
         run: ./gradlew -PBuildConfiguration=Release -PbuildNumber=${{ github.run_id }} test
+        env:
+          LOCAL_ENV_RUN: true
       - name: Upload Test Results
         uses: actions/upload-artifact@v1.0.0
         with:

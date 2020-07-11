@@ -59,6 +59,16 @@ instance of Rider (set the required version via `build.gradle`).
 $ ./gradlew runIde
 ```
 
+### Test
+
+First, set `LOCAL_ENV_RUN` environment variable to `true` (to prevent
+downloading of test environment from JetBrains servers), and then execute the
+following command:
+
+```console
+$ ./gradlew test
+```
+
 Development
 -----------
 
