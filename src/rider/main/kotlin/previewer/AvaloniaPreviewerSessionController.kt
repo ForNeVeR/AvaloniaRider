@@ -23,7 +23,9 @@ import kotlinx.coroutines.selects.select
 import me.fornever.avaloniarider.controlmessages.FrameMessage
 import me.fornever.avaloniarider.controlmessages.HtmlTransportStartedMessage
 import me.fornever.avaloniarider.controlmessages.RequestViewportResizeMessage
+import me.fornever.avaloniarider.controlmessages.UpdateXamlResultMessage
 import me.fornever.avaloniarider.idea.concurrency.ApplicationAnyModality
+import me.fornever.avaloniarider.idea.concurrency.adviseOnUiThread
 import me.fornever.avaloniarider.idea.settings.AvaloniaPreviewerMethod
 import me.fornever.avaloniarider.idea.settings.AvaloniaSettings
 import me.fornever.avaloniarider.rider.RiderProjectOutputHost
@@ -85,12 +87,12 @@ class AvaloniaPreviewerSessionController(
     private val htmlTransportStartedSignal = Signal<HtmlTransportStartedMessage>()
     private val requestViewportResizeSignal = Signal<RequestViewportResizeMessage>()
     private val frameSignal = Signal<FrameMessage>()
-    private val errorMessageProperty = Property<String?>(null)
+    private val updateXamlResultSignal = Signal<UpdateXamlResultMessage>()
 
     val htmlTransportStarted: ISource<HtmlTransportStartedMessage> = htmlTransportStartedSignal
     val requestViewportResize: ISource<RequestViewportResizeMessage> = requestViewportResizeSignal
     val frame: ISource<FrameMessage> = frameSignal
-    val errorMessage: IPropertyView<String?> = errorMessageProperty
+    val updateXamlResult: ISource<UpdateXamlResultMessage> = updateXamlResultSignal
 
     private var _session: AvaloniaPreviewerSession? = null
     private var session: AvaloniaPreviewerSession?
@@ -170,7 +172,16 @@ class AvaloniaPreviewerSessionController(
 
         htmlTransportStarted.flowInto(lifetime, htmlTransportStartedSignal)
         requestViewportResize.flowInto(lifetime, requestViewportResizeSignal)
-        frame.flowInto(lifetime, frameSignal)
+        updateXamlResult.adviseOnUiThread(lifetime) { message ->
+            if (message.error != null) {
+                statusProperty.value = Status.XamlError
+            }
+            updateXamlResultSignal.fire(message)
+        }
+        frame.adviseOnUiThread(lifetime) { frame ->
+            statusProperty.value = Status.Working
+            frameSignal.fire(frame)
+        }
     }
 
     private suspend fun executePreviewerAsync(lifetime: Lifetime) {

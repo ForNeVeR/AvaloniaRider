@@ -1,17 +1,18 @@
 package me.fornever.avaloniarider.previewer
 
-import com.jetbrains.rd.util.*
+import com.jetbrains.rd.util.getLogger
+import com.jetbrains.rd.util.info
 import com.jetbrains.rd.util.lifetime.Lifetime
 import com.jetbrains.rd.util.reactive.ISource
 import com.jetbrains.rd.util.reactive.Signal
-import kotlinx.coroutines.*
+import com.jetbrains.rd.util.trace
+import com.jetbrains.rd.util.warn
 import me.fornever.avaloniarider.bson.BsonStreamReader
 import me.fornever.avaloniarider.bson.BsonStreamWriter
 import me.fornever.avaloniarider.controlmessages.*
 import java.io.DataInputStream
 import java.net.ServerSocket
 import java.nio.file.Path
-import kotlin.io.use
 
 /**
  * Avalonia previewer session.
@@ -31,7 +32,7 @@ class AvaloniaPreviewerSession(
     private val htmlTransportStartedSignal = Signal<HtmlTransportStartedMessage>()
     private val requestViewportResizeSignal = Signal<RequestViewportResizeMessage>()
     private val frameSignal = Signal<FrameMessage>()
-    private val updateXamlResultSignal = Signal<UpdateXamlResultMessage>() // TODO[F]: Show error message in the editor control (#41)
+    private val updateXamlResultSignal = Signal<UpdateXamlResultMessage>()
 
     val sessionStarted: ISource<StartDesignerSessionMessage> = sessionStartedSignal
     val htmlTransportStarted: ISource<HtmlTransportStartedMessage> = htmlTransportStartedSignal
