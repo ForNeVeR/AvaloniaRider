@@ -2,6 +2,7 @@ package me.fornever.avaloniarider.idea.editor
 
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.diagnostic.Logger
+import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.util.ui.AsyncProcessIcon
 import com.intellij.util.ui.UIUtil
@@ -10,14 +11,15 @@ import com.jetbrains.rd.util.lifetime.Lifetime
 import me.fornever.avaloniarider.controlmessages.FrameMessage
 import me.fornever.avaloniarider.controlmessages.UpdateXamlResultMessage
 import me.fornever.avaloniarider.idea.concurrency.adviseOnUiThread
+import me.fornever.avaloniarider.plainTextToHtml
 import me.fornever.avaloniarider.previewer.AvaloniaPreviewerSessionController
 import me.fornever.avaloniarider.previewer.AvaloniaPreviewerSessionController.Status
 import me.fornever.avaloniarider.previewer.nonTransparent
 import me.fornever.avaloniarider.previewer.renderFrame
 import java.awt.BorderLayout
+import java.awt.GridBagLayout
 import java.awt.image.BufferedImage
 import javax.swing.ImageIcon
-import javax.swing.JComponent
 import javax.swing.JLabel
 import javax.swing.JPanel
 
@@ -26,17 +28,28 @@ class BitmapPreviewEditorComponent(lifetime: Lifetime, controller: AvaloniaPrevi
         private val logger = Logger.getInstance(BitmapPreviewEditorComponent::class.java)
     }
 
-    private val frameBuffer = lazy { JLabel() }
-    private val contentScrollView = lazy { JBScrollPane(frameBuffer.value) }
+    private val mainScrollView = JBScrollPane()
+    private val frameBufferView = lazy { JLabel() }
     private val spinnerView = lazy { AsyncProcessIcon.Big("Loading") }
-    private val errorView = lazy { JLabel(AllIcons.General.Error) }
+    private val errorLabel = lazy {
+        JBLabel().apply {
+            setCopyable(true)
+        }
+    }
+    private val errorView = lazy {
+        JPanel().apply {
+            layout = GridBagLayout()
+            add(JLabel(AllIcons.General.Error))
+            add(errorLabel.value)
+        }
+    }
     private val terminatedView = lazy { JLabel("Previewer has been terminated") }
 
-    private var visibleComponent: JComponent? = null
     private var status = Status.Idle
 
     init {
         layout = BorderLayout()
+        add(mainScrollView, BorderLayout.CENTER)
 
         controller.requestViewportResize.advise(lifetime) {
             // TODO[F]: Update the image size for the renderer (#40)
@@ -52,21 +65,14 @@ class BitmapPreviewEditorComponent(lifetime: Lifetime, controller: AvaloniaPrevi
         }
     }
 
-    private fun setCurrentView(view: JComponent) {
-        if (visibleComponent == view) return
-        visibleComponent?.isVisible = false
-        if (!this.components.contains(view)) add(view, BorderLayout.CENTER)
-        view.isVisible = true
-    }
-
     private fun handleStatus(newStatus: Status) {
         application.assertIsDispatchThread()
-        when (newStatus) {
-            Status.Idle, Status.Connecting -> setCurrentView(spinnerView.value)
-            Status.Working -> setCurrentView(contentScrollView.value)
-            Status.XamlError -> setCurrentView(errorView.value)
-            Status.Suspended -> setCurrentView(spinnerView.value)
-            Status.Terminated -> setCurrentView(terminatedView.value)
+        mainScrollView.viewport.view = when (newStatus) {
+            Status.Idle, Status.Connecting -> spinnerView.value
+            Status.Working -> frameBufferView.value
+            Status.XamlError -> errorView.value
+            Status.Suspended -> spinnerView.value
+            Status.Terminated -> terminatedView.value
         }
 
         status = newStatus
@@ -80,7 +86,7 @@ class BitmapPreviewEditorComponent(lifetime: Lifetime, controller: AvaloniaPrevi
             return
         }
 
-        val frameBuffer = frameBuffer.value
+        val frameBuffer = frameBufferView.value
         if (frame.height <= 0 || frame.width <= 0) {
             frameBuffer.icon = null
             return
@@ -121,6 +127,6 @@ class BitmapPreviewEditorComponent(lifetime: Lifetime, controller: AvaloniaPrevi
             }
 
         if (errorMessage.isNotEmpty())
-            errorView.value.text = errorMessage
+            errorLabel.value.text = errorMessage.plainTextToHtml()
     }
 }
