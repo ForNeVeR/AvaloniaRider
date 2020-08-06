@@ -97,8 +97,7 @@ class AvaloniaPreviewerSession(
             is UpdateXamlResultMessage -> {
                 updateXamlResultSignal.fire(message)
                 message.error?.let {
-                    // TODO[F]: Lower the priority to INFO since these errors are part of standard workflow (#41)
-                    logger.warn { "Error from UpdateXamlResultMessage: $it" }
+                    logger.info { "Error from UpdateXamlResultMessage: $it" }
                 }
             }
             is RequestViewportResizeMessage -> requestViewportResizeSignal.fire(message)

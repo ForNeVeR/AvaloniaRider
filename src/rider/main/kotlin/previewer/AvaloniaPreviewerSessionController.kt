@@ -24,6 +24,7 @@ import me.fornever.avaloniarider.controlmessages.FrameMessage
 import me.fornever.avaloniarider.controlmessages.HtmlTransportStartedMessage
 import me.fornever.avaloniarider.controlmessages.RequestViewportResizeMessage
 import me.fornever.avaloniarider.controlmessages.UpdateXamlResultMessage
+import me.fornever.avaloniarider.exceptions.AvaloniaPreviewerInitializationException
 import me.fornever.avaloniarider.idea.concurrency.ApplicationAnyModality
 import me.fornever.avaloniarider.idea.concurrency.adviseOnUiThread
 import me.fornever.avaloniarider.idea.settings.AvaloniaPreviewerMethod
@@ -88,11 +89,13 @@ class AvaloniaPreviewerSessionController(
     private val requestViewportResizeSignal = Signal<RequestViewportResizeMessage>()
     private val frameSignal = Signal<FrameMessage>()
     private val updateXamlResultSignal = Signal<UpdateXamlResultMessage>()
+    private val criticalErrorSignal = Signal<Throwable>()
 
     val htmlTransportStarted: ISource<HtmlTransportStartedMessage> = htmlTransportStartedSignal
     val requestViewportResize: ISource<RequestViewportResizeMessage> = requestViewportResizeSignal
     val frame: ISource<FrameMessage> = frameSignal
     val updateXamlResult: ISource<UpdateXamlResultMessage> = updateXamlResultSignal
+    val criticalError: ISource<Throwable> = criticalErrorSignal
 
     private var _session: AvaloniaPreviewerSession? = null
     private var session: AvaloniaPreviewerSession?
@@ -245,6 +248,9 @@ class AvaloniaPreviewerSessionController(
             currentSessionLifetime = sessionLifetimeSource.next()
             try {
                 executePreviewerAsync(currentSessionLifetime!!)
+            } catch (ex: AvaloniaPreviewerInitializationException) {
+                criticalErrorSignal.fire(ex)
+                logger.warn(ex)
             } catch (t: Throwable) {
                 logger.error(t)
             } finally {

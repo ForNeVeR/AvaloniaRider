@@ -1,9 +1,10 @@
 package me.fornever.avaloniarider.previewer
 
 import com.intellij.openapi.components.Service
-import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
-import com.jetbrains.rider.model.*
+import com.jetbrains.rider.model.RdProjectDescriptor
+import com.jetbrains.rider.model.RdProjectOutput
+import com.jetbrains.rider.model.RunnableProjectKind
 import com.jetbrains.rider.projectView.nodes.ProjectModelNode
 import com.jetbrains.rider.run.environment.MSBuildEvaluator
 import com.jetbrains.rider.runtime.DotNetRuntime
@@ -33,7 +34,6 @@ class MsBuildParameterCollector(private val project: Project) {
         fun getProperty(key: String, errorMessage: String? = null): String {
             val property = properties[key]
             if (property.isNullOrEmpty()) {
-                // TODO[F]: Catch that in the session controller layer and show a notification (#41)
                 throw AvaloniaPreviewerInitializationException(
                     errorMessage ?: "Cannot determine value of property \"$key\" from MSBuild")
             }

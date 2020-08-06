@@ -57,6 +57,7 @@ class BitmapPreviewEditorComponent(lifetime: Lifetime, controller: AvaloniaPrevi
 
         controller.status.adviseOnUiThread(lifetime, ::handleStatus)
         controller.updateXamlResult.adviseOnUiThread(lifetime, ::handleXamlResult)
+        controller.criticalError.adviseOnUiThread(lifetime, ::handleCriticalError)
 
         controller.frame.adviseOnUiThread(lifetime) { frame ->
             if (nonTransparent(frame)) // TODO[F]: Remove after fix of https://github.com/AvaloniaUI/Avalonia/issues/4264
@@ -128,5 +129,9 @@ class BitmapPreviewEditorComponent(lifetime: Lifetime, controller: AvaloniaPrevi
 
         if (errorMessage.isNotEmpty())
             errorLabel.value.text = errorMessage.plainTextToHtml()
+    }
+
+    private fun handleCriticalError(error: Throwable) {
+        terminatedView.value.text = "Previewer has been terminated: ${error.localizedMessage}".plainTextToHtml()
     }
 }
