@@ -21,7 +21,7 @@ dependencies {
 }
 
 ext {
-    sdkVersion = '2020.1.3'
+    sdkVersion = '2020.1.4'
     rdLibDirectory = {
         new File(intellij.ideaDependency.classes, "lib/rd")
     }
