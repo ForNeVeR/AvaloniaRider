@@ -24,6 +24,8 @@ jobs:
         with:
           path: ${{ env.GRADLE_USER_HOME }}/wrapper
           key: ${{ runner.os }}.gradle-wrapper.${{ hashFiles('gradle/**') }}
+      - name: RdGen
+        run: ./gradlew rdgen
 
       # Backend
       - name: NuGet Cache
