@@ -14,7 +14,7 @@ the `master` branch), first add the custom plugin repository into your IDE (see
 
 Then, install the plugin as usual via the IDE plugin settings screen.
 
-### Install from GitHub (any build from any branch or PR)
+### Install from GitHub (any build from the master branch or PR; may be unstable)
 
 To install a plugin distribution built by GitHub Actions, open the Actions page
 for the commit you want to install (e.g. [here's a build list for the `master`

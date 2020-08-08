@@ -42,7 +42,7 @@ jobs:
 
       # Distribution
       - name: Build Distribution
-        run: ./gradlew -PBuildConfiguration=Release -PbuildNumber=${{ github.run_number }} buildPlugin
+        run: ./gradlew -PBuildConfiguration=Release -PbuildNumber=${{ github.run_id }} buildPlugin
 
       # Publish
       - name: Publish
