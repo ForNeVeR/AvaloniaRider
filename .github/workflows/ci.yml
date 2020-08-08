@@ -70,12 +70,16 @@ jobs:
         run: |
           $version = ./scripts/Get-Version.ps1
           Write-Output "::set-env name=AVALONIA_RIDER_VERSION::$version"
+      - name: Unpack Distribution # for the purpose of uploading
+        if: matrix.image == 'ubuntu-18.04'
+        shell: pwsh
+        run: scripts/Unpack-Distribution.ps1
       - name: Upload Distribution
         if: matrix.image == 'ubuntu-18.04'
         uses: actions/upload-artifact@v2
         with:
           name: avaloniarider-${{ env.AVALONIA_RIDER_VERSION }}
-          path: build/distributions/avaloniarider-${{ env.AVALONIA_RIDER_VERSION }}.zip
+          path: build/distributions/unpacked
 
       # Finalize
       - name: Stop Gradle Daemon # to collect Gradle cache
