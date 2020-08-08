@@ -46,7 +46,6 @@ jobs:
 
       # Publish
       - name: Publish
-        if: github.event_name == 'push' && env.GITHUB_REF == 'master'
         shell: pwsh
         run: scripts/Publish-Distribution.ps1 -Channel dev -AuthToken $env:JETBRAINS_MARKETPLACE_TOKEN
         env:
