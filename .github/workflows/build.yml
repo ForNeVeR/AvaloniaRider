@@ -1,12 +1,18 @@
-name: Dev Publish
+name: Build and Test
 on:
   push:
+    branches:
+      - '*'
+  pull_request:
     branches:
       - master
 
 jobs:
   build:
-    runs-on: ubuntu-18.04
+    runs-on: ${{ matrix.image }}
+    strategy:
+      matrix:
+        image: [macos-10.15, ubuntu-18.04, windows-2019]
     env:
       NUGET_PACKAGES: ${{ github.workspace }}/.github/nuget-packages
       GRADLE_USER_HOME: ${{ github.workspace }}/.github/gradle
@@ -24,6 +30,13 @@ jobs:
         with:
           path: ${{ env.GRADLE_USER_HOME }}/wrapper
           key: ${{ runner.os }}.gradle-wrapper.${{ hashFiles('gradle/**') }}
+      - name: Gradle Cache
+        uses: actions/cache@v1.1.0
+        with:
+          path: ${{ env.GRADLE_USER_HOME }}/caches/modules-2
+          key: ${{ runner.os }}.gradle.${{ hashFiles('**/*.gradle') }}
+      - name: RdGen
+        run: ./gradlew rdgen
 
       # Backend
       - name: NuGet Cache
@@ -38,13 +51,39 @@ jobs:
       - name: Build Backend
         run: dotnet build -c Release
 
+      # Frontend
+      - name: Test
+        run: ./gradlew -PBuildConfiguration=Release -PbuildNumber=${{ github.run_number }} test
+      - name: Upload Test Results
+        uses: actions/upload-artifact@v1.0.0
+        with:
+          name: ${{ runner.os }}.test-results
+          path: build/reports/tests
+
       # Distribution
       - name: Build Distribution
+        if: matrix.image == 'ubuntu-18.04'
         run: ./gradlew -PBuildConfiguration=Release -PbuildNumber=${{ github.run_number }} buildPlugin
+      - name: Determine Version
+        if: matrix.image == 'ubuntu-18.04'
+        shell: pwsh
+        run: |
+          $version = ./scripts/Get-Version.ps1
+          Write-Output "::set-env name=AVALONIA_RIDER_VERSION::$version"
+      - name: Unpack Distribution # for the purpose of uploading
+        if: matrix.image == 'ubuntu-18.04'
+        shell: pwsh
+        run: scripts/Unpack-Distribution.ps1
+      - name: Upload Distribution
+        if: matrix.image == 'ubuntu-18.04'
+        uses: actions/upload-artifact@v2
+        with:
+          name: avaloniarider-${{ env.AVALONIA_RIDER_VERSION }}
+          path: build/distributions/unpacked
 
       # Publish
       - name: Publish
-        if: github.event_name == 'push' && env.GITHUB_REF == 'master'
+        if: matrix.image == 'ubuntu-18.04' && github.event_name == 'push' && env.GITHUB_REF == 'master'
         shell: pwsh
         run: scripts/Publish-Distribution.ps1 -Channel dev -AuthToken $env:JETBRAINS_MARKETPLACE_TOKEN
         env:
