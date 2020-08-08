@@ -2,7 +2,7 @@ name: Dev Environment Actions
 on:
   push:
     branches:
-      - master
+      - /refs/heads/*
   pull_request:
     branches:
       - master
