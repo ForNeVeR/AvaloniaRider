@@ -81,6 +81,14 @@ jobs:
           name: avaloniarider-${{ env.AVALONIA_RIDER_VERSION }}
           path: build/distributions/unpacked
 
+      # Publish
+      - name: Publish
+        if: matrix.image == 'ubuntu-18.04' && github.event_name == 'push' && env.GITHUB_REF == 'master'
+        shell: pwsh
+        run: scripts/Publish-Distribution.ps1 -Channel dev -AuthToken $env:JETBRAINS_MARKETPLACE_TOKEN
+        env:
+          JETBRAINS_MARKETPLACE_TOKEN: ${{ secrets.JETBRAINS_MARKETPLACE_TOKEN }}
+
       # Finalize
       - name: Stop Gradle Daemon # to collect Gradle cache
         run: ./gradlew --stop

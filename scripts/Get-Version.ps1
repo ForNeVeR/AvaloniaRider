@@ -11,14 +11,10 @@ param (
     [string] $DistributionsLocation = "$PSScriptRoot/../build/distributions"
 )
 
-$file = Get-Item $DistributionsLocation/*
-if (!$file) {
-    throw "File not found in $DistributionsLocation"
-}
-if ($file.Count -gt 1) {
-    throw "Found more files than expected in ${DistributionsLocation}: $($file.Count)"
-}
+Set-StrictMode -Version Latest
+$ErrorActionPreference = 'Stop'
 
+$file = & "$PSScriptRoot/Get-Distribution.ps1" -DistributionsLocation $DistributionsLocation
 if (!($file.Name -match 'avaloniarider-(.*?)\.zip')) {
     throw "File name `"$($file.Name)`" doesn't match the expected pattern"
 }
