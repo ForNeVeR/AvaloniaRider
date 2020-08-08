@@ -21,6 +21,7 @@ dependencies {
 }
 
 ext {
+    pluginVersionBase = '1.0.0'
     sdkVersion = '2020.1.4'
     rdLibDirectory = {
         new File(intellij.ideaDependency.classes, "lib/rd")
@@ -49,10 +50,10 @@ jvmWrapper {
 if (!ext.has("BuildConfiguration"))
     ext.BuildConfiguration = "Debug"
 
-if (ext.has("pluginVersion"))
-    ext.version = ext.pluginVersion
+if (ext.has('buildNumber'))
+    ext.version = "$ext.pluginVersionBase.$ext.buildNumber"
 else
-    ext.version = "1.3.3.7"
+    ext.version = "$ext.pluginVersionBase.0"
 
 if (ext.has("username"))
     intellij.publish.username = ext.username

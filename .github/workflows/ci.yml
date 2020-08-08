@@ -53,7 +53,7 @@ jobs:
 
       # Frontend
       - name: Test
-        run: ./gradlew -PBuildConfiguration=Release test
+        run: ./gradlew -PBuildConfiguration=Release -PbuildNumber=${{ github.run_number }} test
       - name: Upload Test Results
         uses: actions/upload-artifact@v1.0.0
         with:
@@ -63,13 +63,19 @@ jobs:
       # Distribution
       - name: Build Distribution
         if: matrix.image == 'ubuntu-18.04'
-        run: ./gradlew -PBuildConfiguration=Release buildPlugin
+        run: ./gradlew -PBuildConfiguration=Release -PbuildNumber=${{ github.run_number }} buildPlugin
+      - name: Determine Version
+        if: matrix.image == 'ubuntu-18.04'
+        shell: pwsh
+        run: |
+          $version = ./scripts/Get-Version.ps1
+          Write-Output "::set-env name=AVALONIA_RIDER_VERSION::$version"
       - name: Upload Distribution
         if: matrix.image == 'ubuntu-18.04'
-        uses: actions/upload-artifact@v1.0.0
+        uses: actions/upload-artifact@v2
         with:
-          name: distribution
-          path: build/distributions
+          name: avaloniarider-${{ env.AVALONIA_RIDER_VERSION }}
+          path: build/distributions/avaloniarider-${{ env.AVALONIA_RIDER_VERSION }}.zip
 
       # Finalize
       - name: Stop Gradle Daemon # to collect Gradle cache
