@@ -1,24 +1,14 @@
 <idea-plugin>
-    <id>avaloniarider-rider</id>
+    <id>avalonia-rider</id>
     <name>AvaloniaRider</name>
     <version>_PLACEHOLDER_</version>
     <vendor url="https://fornever.me">Friedrich von Never</vendor>
-    <idea-version since-build="_PLACEHOLDER_" until-build="_PLACEHOLDER_"/>
     <depends>com.intellij.modules.rider</depends>
 
     <description>
-        <![CDATA[
-<p>Paragraph</p>
-]]>
+        This is the Avalonia integration for JetBrains Rider. It adds a live
+        preview for Avalonia XAML files.
     </description>
-    <change-notes>
-        <![CDATA[
-<ul>
-  <li>Bullet point 1</li>
-  <li>Bullet point 2</li>
-</ul>
-]]>
-    </change-notes>
     <application-components>
         <component>
             <implementation-class>me.fornever.avaloniarider.controlmessages.AvaloniaMessages</implementation-class>
