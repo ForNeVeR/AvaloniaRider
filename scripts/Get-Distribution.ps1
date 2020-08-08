@@ -11,7 +11,7 @@ param (
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
-$file = Get-Item $DistributionsLocation/*
+$file = Get-Item $DistributionsLocation/*.zip
 if (!$file) {
     throw "File not found in $DistributionsLocation"
 }
