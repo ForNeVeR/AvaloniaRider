@@ -2,12 +2,13 @@ package me.fornever.avaloniarider.bson
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.jetbrains.rd.util.getLogger
-import com.jetbrains.rd.util.info
 import com.jetbrains.rd.util.lifetime.Lifetime
 import com.jetbrains.rd.util.lifetime.onTermination
 import com.jetbrains.rd.util.trace
 import de.undercouch.bson4jackson.BsonFactory
-import kotlinx.coroutines.*
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.launch
 import me.fornever.avaloniarider.controlmessages.AvaloniaMessage
 import java.io.OutputStream
 import java.util.*
@@ -30,7 +31,6 @@ class BsonStreamWriter(
     }
 
     fun startSendMessage(message: AvaloniaMessage) {
-        @Suppress("BlockingMethodInNonBlockingContext")
         GlobalScope.launch(writerThread) {
             lifetime.executeIfAlive {
                 val body = objectMapper.writeValueAsBytes(message)

@@ -243,8 +243,7 @@ class AvaloniaPreviewerSessionController(
     fun start(force: Boolean = false) {
         if (status.value == Status.Suspended && !force) return
 
-        @Suppress("UnstableApiUsage")
-        GlobalScope.launch(Dispatchers.ApplicationThreadPool) {
+        GlobalScope.launch {
             currentSessionLifetime = sessionLifetimeSource.next()
             try {
                 executePreviewerAsync(currentSessionLifetime!!)

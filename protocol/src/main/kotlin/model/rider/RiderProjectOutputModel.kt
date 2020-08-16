@@ -9,11 +9,11 @@ import com.jetbrains.rider.model.nova.ide.SolutionModel
 @Suppress("unused")
 object RiderProjectOutputModel : Ext(SolutionModel.Solution) {
 
-    val RdGetProjectOutputArgs = structdef {
+    private val RdGetProjectOutputArgs = structdef {
         field("projectFilePath", string)
     }
 
-    val RdProjectOutput = structdef {
+    private val RdProjectOutput = structdef {
         field("tfm", string)
         field("outputPath", string)
     }

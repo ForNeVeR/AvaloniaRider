@@ -5,6 +5,5 @@ import com.jetbrains.rd.util.lifetime.Lifetime
 import com.jetbrains.rider.util.idea.toAsyncPromise
 import org.jetbrains.concurrency.await
 
-@Suppress("UnstableApiUsage")
-suspend fun <T> IRdTask<T>.await(lifetime: Lifetime) =
+suspend fun <T> IRdTask<T>.await(lifetime: Lifetime): T =
     toAsyncPromise(lifetime).await()
