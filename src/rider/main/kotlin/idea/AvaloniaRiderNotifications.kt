@@ -5,11 +5,11 @@ import com.intellij.notification.NotificationGroup
 import com.intellij.notification.NotificationType
 import com.intellij.notification.Notifications
 import com.jetbrains.rd.platform.util.application
-import com.jetbrains.rider.util.idea.getComponent
+import com.jetbrains.rd.platform.util.getComponent
 
 class AvaloniaRiderNotifications {
     companion object {
-        fun getInstance() = application.getComponent<AvaloniaRiderNotifications>()
+        fun getInstance(): AvaloniaRiderNotifications = application.getComponent()
     }
 
     private val notificationGroup = NotificationGroup(
