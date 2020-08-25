@@ -12,6 +12,7 @@ import me.fornever.avaloniarider.controlmessages.FrameMessage
 import me.fornever.avaloniarider.controlmessages.UpdateXamlResultMessage
 import me.fornever.avaloniarider.idea.concurrency.adviseOnUiThread
 import me.fornever.avaloniarider.plainTextToHtml
+import me.fornever.avaloniarider.previewer.AvaloniaMessageMouseListener
 import me.fornever.avaloniarider.previewer.AvaloniaPreviewerSessionController
 import me.fornever.avaloniarider.previewer.AvaloniaPreviewerSessionController.Status
 import me.fornever.avaloniarider.previewer.nonTransparent
@@ -64,6 +65,10 @@ class BitmapPreviewEditorComponent(lifetime: Lifetime, controller: AvaloniaPrevi
                 handleFrame(frame)
             controller.acknowledgeFrame(frame)
         }
+
+        val listener = AvaloniaMessageMouseListener(controller, logger)
+        frameBufferView.value.addMouseListener(listener)
+        frameBufferView.value.addMouseMotionListener(listener)
     }
 
     private fun handleStatus(newStatus: Status) {

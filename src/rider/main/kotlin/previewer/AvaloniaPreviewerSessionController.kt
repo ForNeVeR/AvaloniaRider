@@ -1,6 +1,5 @@
 package me.fornever.avaloniarider.previewer
 
-import com.intellij.application.ApplicationThreadPool
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.debug
@@ -20,6 +19,7 @@ import com.jetbrains.rider.ui.SwingScheduler
 import com.jetbrains.rider.ui.components.utils.documentChanged
 import kotlinx.coroutines.*
 import kotlinx.coroutines.selects.select
+import me.fornever.avaloniarider.controlmessages.AvaloniaInputEventMessage
 import me.fornever.avaloniarider.controlmessages.FrameMessage
 import me.fornever.avaloniarider.controlmessages.HtmlTransportStartedMessage
 import me.fornever.avaloniarider.controlmessages.RequestViewportResizeMessage
@@ -268,5 +268,9 @@ class AvaloniaPreviewerSessionController(
 
     fun acknowledgeFrame(frame: FrameMessage) {
         session?.sendFrameAcknowledgement(frame)
+    }
+
+    fun sendInputEventMessage(event: AvaloniaInputEventMessage) {
+        session?.sendInputEventMessage(event)
     }
 }

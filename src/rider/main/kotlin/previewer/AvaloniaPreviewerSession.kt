@@ -89,6 +89,10 @@ class AvaloniaPreviewerSession(
         writer.startSendMessage(FrameReceivedMessage(frame.sequenceId))
     }
 
+    fun sendInputEventMessage(event: AvaloniaInputEventMessage) {
+        writer.startSendMessage(event)
+    }
+
     private fun handleMessage(message: AvaloniaMessage) {
         logger.trace { "Received message: $message" }
         when (message) {
