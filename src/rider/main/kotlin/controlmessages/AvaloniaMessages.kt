@@ -101,14 +101,14 @@ sealed class AvaloniaInputEventMessage : AvaloniaMessage()
 
 @AvaloniaOutgoingMessage("6228F0B9-99F2-4F62-A621-414DA2881648")
 data class PointerMovedEventMessage(
-    val modifiers: Array<InputModifiers>,
+    val modifiers: Array<Int>,
     val x: Double,
     val y: Double
 ) : AvaloniaInputEventMessage()
 
 @AvaloniaOutgoingMessage("7E9E2818-F93F-411A-800E-6B1AEB11DA46")
 data class PointerPressedEventMessage(
-    val modifiers: Array<InputModifiers>,
+    val modifiers: Array<Int>,
     val x: Double,
     val y: Double,
     val button: Int
@@ -116,7 +116,7 @@ data class PointerPressedEventMessage(
 
 @AvaloniaOutgoingMessage("4ADC84EE-E7C8-4BCF-986C-DE3A2F78EDE4")
 data class PointerReleasedEventMessage(
-    val modifiers: Array<InputModifiers>,
+    val modifiers: Array<Int>,
     val x: Double,
     val y: Double,
     val button: Int
