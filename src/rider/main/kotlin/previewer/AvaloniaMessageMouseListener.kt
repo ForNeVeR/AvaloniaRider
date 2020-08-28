@@ -6,27 +6,32 @@ import me.fornever.avaloniarider.controlmessages.PointerMovedEventMessage
 import me.fornever.avaloniarider.controlmessages.PointerPressedEventMessage
 import me.fornever.avaloniarider.controlmessages.PointerReleasedEventMessage
 import java.awt.event.MouseEvent
+import javax.swing.JLabel
+import javax.swing.SwingConstants
 import javax.swing.event.MouseInputAdapter
 
 
 internal class AvaloniaMessageMouseListener(
+    private val frameView: JLabel,
     private val controller: AvaloniaPreviewerSessionController
 ) : MouseInputAdapter() {
 
     override fun mousePressed(e: MouseEvent) {
+        val coordinates = e.relCoordinatesOrNull() ?: return
         val message = PointerPressedEventMessage(
             e.avaloniaModifiers(),
-            e.x.toDouble(),
-            e.y.toDouble(),
+            coordinates.first,
+            coordinates.second,
             e.avaloniaMouseButton())
         controller.sendInputEventMessage(message)
     }
 
     override fun mouseReleased(e: MouseEvent) {
+        val coordinates = e.relCoordinatesOrNull()?: return
         val message = PointerReleasedEventMessage(
             e.avaloniaModifiers(),
-            e.x.toDouble(),
-            e.y.toDouble(),
+            coordinates.first,
+            coordinates.second,
             e.avaloniaMouseButton())
         controller.sendInputEventMessage(message)
     }
@@ -40,11 +45,19 @@ internal class AvaloniaMessageMouseListener(
     }
 
     private fun sendPointerMovedEventMessage(e: MouseEvent) {
+        val coordinates = e.relCoordinatesOrNull()?: return
         val message = PointerMovedEventMessage(
             e.avaloniaModifiers(),
-            e.x.toDouble(),
-            e.y.toDouble())
+            coordinates.first,
+            coordinates.second)
         controller.sendInputEventMessage(message)
+    }
+
+    private fun MouseEvent.relCoordinatesOrNull(): Pair<Double, Double>? {
+        frameView.icon ?: return null
+        val relFirst = frameView.relFirstOrNull(this.x) ?: return null
+        val relSecond = frameView.relSecondOrNull(this.y) ?: return null
+        return Pair(relFirst, relSecond)
     }
 
     private fun MouseEvent.avaloniaModifiers() : Array<Int> {
@@ -76,5 +89,33 @@ internal class AvaloniaMessageMouseListener(
             MouseEvent.BUTTON3 -> MouseButton.Right.ordinal
             else -> MouseButton.None.ordinal
         }
+    }
+
+    private fun JLabel.relFirstOrNull(first: Int): Double? {
+        var relFirst = first.toDouble()
+
+        if (frameView.horizontalAlignment == SwingConstants.CENTER) {
+            relFirst -= (this.width - this.icon.iconWidth) / 2.0
+        } else if (frameView.horizontalAlignment == SwingConstants.RIGHT) {
+            relFirst -= (this.width - this.icon.iconWidth).toDouble()
+        }
+
+        val isContains = 0 <= relFirst || relFirst <= frameView.icon.iconWidth
+
+        return if (isContains) relFirst else null
+    }
+
+    private fun JLabel.relSecondOrNull(second: Int): Double? {
+        var relSecond = second.toDouble()
+
+        if (frameView.verticalAlignment == SwingConstants.CENTER) {
+            relSecond -= (this.height - this.icon.iconHeight) / 2.0
+        } else if (frameView.verticalAlignment == SwingConstants.BOTTOM) {
+            relSecond -= (this.height - this.icon.iconHeight).toDouble()
+        }
+
+        val isContains = 0 <= relSecond || relSecond <= frameView.icon.iconHeight
+
+        return if (isContains) relSecond else null
     }
 }

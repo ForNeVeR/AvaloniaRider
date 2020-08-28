@@ -66,7 +66,7 @@ class BitmapPreviewEditorComponent(lifetime: Lifetime, controller: AvaloniaPrevi
             controller.acknowledgeFrame(frame)
         }
 
-        val listener = AvaloniaMessageMouseListener(controller)
+        val listener = AvaloniaMessageMouseListener(frameBufferView.value, controller)
         frameBufferView.value.addMouseListener(listener)
         frameBufferView.value.addMouseMotionListener(listener)
     }
