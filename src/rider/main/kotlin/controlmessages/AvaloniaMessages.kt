@@ -121,3 +121,12 @@ data class PointerReleasedEventMessage(
     val y: Double,
     val button: Int
 ) : AvaloniaInputEventMessage()
+
+@AvaloniaOutgoingMessage("79301A05-F02D-4B90-BB39-472563B504AE")
+data class ScrollEventMessage(
+    val modifiers: Array<Int>,
+    val x: Double,
+    val y: Double,
+    val deltaX: Double,
+    val deltaY: Double
+) : AvaloniaInputEventMessage()

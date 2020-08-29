@@ -5,7 +5,9 @@ import me.fornever.avaloniarider.controlmessages.MouseButton
 import me.fornever.avaloniarider.controlmessages.PointerMovedEventMessage
 import me.fornever.avaloniarider.controlmessages.PointerPressedEventMessage
 import me.fornever.avaloniarider.controlmessages.PointerReleasedEventMessage
+import me.fornever.avaloniarider.controlmessages.ScrollEventMessage
 import java.awt.event.MouseEvent
+import java.awt.event.MouseWheelEvent
 import javax.swing.JLabel
 import javax.swing.SwingConstants
 import javax.swing.event.MouseInputAdapter
@@ -16,7 +18,8 @@ internal class AvaloniaMessageMouseListener(
     private val controller: AvaloniaPreviewerSessionController
 ) : MouseInputAdapter() {
 
-    override fun mousePressed(e: MouseEvent) {
+    override fun mousePressed(e: MouseEvent?) {
+        e ?: return
         val coordinates = e.relCoordinatesOrNull() ?: return
         val message = PointerPressedEventMessage(
             e.avaloniaModifiers(),
@@ -26,7 +29,8 @@ internal class AvaloniaMessageMouseListener(
         controller.sendInputEventMessage(message)
     }
 
-    override fun mouseReleased(e: MouseEvent) {
+    override fun mouseReleased(e: MouseEvent?) {
+        e ?: return
         val coordinates = e.relCoordinatesOrNull()?: return
         val message = PointerReleasedEventMessage(
             e.avaloniaModifiers(),
@@ -36,21 +40,39 @@ internal class AvaloniaMessageMouseListener(
         controller.sendInputEventMessage(message)
     }
 
-    override fun mouseMoved(e: MouseEvent) {
+    override fun mouseWheelMoved(e: MouseWheelEvent?) {
+        e ?: return
+        if (e.scrollType != MouseWheelEvent.WHEEL_UNIT_SCROLL) return
+        val coordinates = e.relCoordinatesOrNull()?: return
+        val message = ScrollEventMessage(
+            e.avaloniaModifiers(),
+            coordinates.first,
+            coordinates.second,
+            0.0,
+            -e.preciseUnitsToScroll())
+        controller.sendInputEventMessage(message)
+    }
+
+    override fun mouseMoved(e: MouseEvent?) {
         sendPointerMovedEventMessage(e)
     }
 
-    override fun mouseDragged(e: MouseEvent) {
+    override fun mouseDragged(e: MouseEvent?) {
         sendPointerMovedEventMessage(e)
     }
 
-    private fun sendPointerMovedEventMessage(e: MouseEvent) {
+    private fun sendPointerMovedEventMessage(e: MouseEvent?) {
+        e ?: return
         val coordinates = e.relCoordinatesOrNull()?: return
         val message = PointerMovedEventMessage(
             e.avaloniaModifiers(),
             coordinates.first,
             coordinates.second)
         controller.sendInputEventMessage(message)
+    }
+
+    private fun MouseWheelEvent.preciseUnitsToScroll(): Double {
+        return this.preciseWheelRotation * this.scrollAmount
     }
 
     private fun MouseEvent.relCoordinatesOrNull(): Pair<Double, Double>? {
