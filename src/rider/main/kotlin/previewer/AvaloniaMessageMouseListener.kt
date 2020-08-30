@@ -82,7 +82,7 @@ internal class AvaloniaMessageMouseListener(
         return Pair(relFirst, relSecond)
     }
 
-    private fun MouseEvent.avaloniaModifiers() : Array<Int> {
+    private fun MouseEvent.avaloniaModifiers(): Array<Int> {
         val result = mutableListOf<Int>()
 
         val m = this.modifiersEx
@@ -104,7 +104,7 @@ internal class AvaloniaMessageMouseListener(
         return result.toTypedArray()
     }
 
-    private fun MouseEvent.avaloniaMouseButton() : Int {
+    private fun MouseEvent.avaloniaMouseButton(): Int {
         return when (this.button) {
             MouseEvent.BUTTON1 -> MouseButton.Left.ordinal
             MouseEvent.BUTTON2 -> MouseButton.Middle.ordinal
@@ -122,7 +122,7 @@ internal class AvaloniaMessageMouseListener(
             relFirst -= (this.width - this.icon.iconWidth).toDouble()
         }
 
-        val isContains = 0 <= relFirst || relFirst <= frameView.icon.iconWidth
+        val isContains = 0 <= relFirst && relFirst <= frameView.icon.iconWidth
 
         return if (isContains) relFirst else null
     }
@@ -136,7 +136,7 @@ internal class AvaloniaMessageMouseListener(
             relSecond -= (this.height - this.icon.iconHeight).toDouble()
         }
 
-        val isContains = 0 <= relSecond || relSecond <= frameView.icon.iconHeight
+        val isContains = 0 <= relSecond && relSecond <= frameView.icon.iconHeight
 
         return if (isContains) relSecond else null
     }
