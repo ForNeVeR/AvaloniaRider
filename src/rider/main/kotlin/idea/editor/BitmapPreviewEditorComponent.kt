@@ -30,7 +30,14 @@ class BitmapPreviewEditorComponent(lifetime: Lifetime, controller: AvaloniaPrevi
     }
 
     private val mainScrollView = JBScrollPane()
-    private val frameBufferView = lazy { JLabel() }
+    private val frameBufferView = lazy {
+        JLabel().apply {
+            val listener = AvaloniaMessageMouseListener(this, controller)
+            addMouseListener(listener)
+            addMouseMotionListener(listener)
+            addMouseWheelListener(listener)
+        }
+    }
     private val spinnerView = lazy { AsyncProcessIcon.Big("Loading") }
     private val errorLabel = lazy {
         JBLabel().apply {
@@ -65,11 +72,6 @@ class BitmapPreviewEditorComponent(lifetime: Lifetime, controller: AvaloniaPrevi
                 handleFrame(frame)
             controller.acknowledgeFrame(frame)
         }
-
-        val listener = AvaloniaMessageMouseListener(frameBufferView.value, controller)
-        frameBufferView.value.addMouseListener(listener)
-        frameBufferView.value.addMouseMotionListener(listener)
-        frameBufferView.value.addMouseWheelListener(listener)
     }
 
     private fun handleStatus(newStatus: Status) {
