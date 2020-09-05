@@ -32,7 +32,10 @@ class BitmapPreviewEditorComponent(lifetime: Lifetime, controller: AvaloniaPrevi
     private val mainScrollView = JBScrollPane()
     private val frameBufferView = lazy {
         JLabel().apply {
-            val listener = AvaloniaMessageMouseListener(this, controller)
+            val listener = AvaloniaMessageMouseListener(this)
+            listener.avaloniaInputEvent.advise(lifetime) { message ->
+                controller.sendInputEventMessage(message)
+            }
             addMouseListener(listener)
             addMouseMotionListener(listener)
             addMouseWheelListener(listener)

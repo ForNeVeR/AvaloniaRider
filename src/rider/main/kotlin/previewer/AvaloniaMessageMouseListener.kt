@@ -1,5 +1,8 @@
 package me.fornever.avaloniarider.previewer
 
+import com.jetbrains.rd.util.reactive.ISource
+import com.jetbrains.rd.util.reactive.Signal
+import me.fornever.avaloniarider.controlmessages.AvaloniaInputEventMessage
 import me.fornever.avaloniarider.controlmessages.InputModifiers
 import me.fornever.avaloniarider.controlmessages.MouseButton
 import me.fornever.avaloniarider.controlmessages.PointerMovedEventMessage
@@ -14,9 +17,12 @@ import javax.swing.event.MouseInputAdapter
 
 
 internal class AvaloniaMessageMouseListener(
-    private val frameView: JLabel,
-    private val controller: AvaloniaPreviewerSessionController
+    private val frameView: JLabel
 ) : MouseInputAdapter() {
+
+    private val avaloniaInputEventSignal = Signal<AvaloniaInputEventMessage>()
+
+    val avaloniaInputEvent: ISource<AvaloniaInputEventMessage> = avaloniaInputEventSignal
 
     override fun mousePressed(e: MouseEvent?) {
         e ?: return
@@ -26,7 +32,7 @@ internal class AvaloniaMessageMouseListener(
             coordinates.first,
             coordinates.second,
             e.avaloniaMouseButton())
-        controller.sendInputEventMessage(message)
+        avaloniaInputEventSignal.fire(message)
     }
 
     override fun mouseReleased(e: MouseEvent?) {
@@ -37,7 +43,7 @@ internal class AvaloniaMessageMouseListener(
             coordinates.first,
             coordinates.second,
             e.avaloniaMouseButton())
-        controller.sendInputEventMessage(message)
+        avaloniaInputEventSignal.fire(message)
     }
 
     override fun mouseWheelMoved(e: MouseWheelEvent?) {
@@ -50,7 +56,7 @@ internal class AvaloniaMessageMouseListener(
             coordinates.second,
             0.0,
             -e.preciseUnitsToScroll())
-        controller.sendInputEventMessage(message)
+        avaloniaInputEventSignal.fire(message)
     }
 
     override fun mouseMoved(e: MouseEvent?) {
@@ -68,7 +74,7 @@ internal class AvaloniaMessageMouseListener(
             e.avaloniaModifiers(),
             coordinates.first,
             coordinates.second)
-        controller.sendInputEventMessage(message)
+        avaloniaInputEventSignal.fire(message)
     }
 
     private fun MouseWheelEvent.preciseUnitsToScroll(): Double {
