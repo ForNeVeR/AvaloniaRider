@@ -7,7 +7,7 @@ Install
 
 To install a development release (automatically published for every push into
 the `master` branch), first add the custom plugin repository into your IDE (see
-[the documentation][marketplace.channels] on how to do that).
+[the documentation][ide.channels] on how to do that).
 
 **Custom plugin repository address:**
 `https://plugins.jetbrains.com/plugins/dev/14839`
@@ -83,4 +83,4 @@ all the components necessary to build the plugin.
 
 [github-actions.master]: https://github.com/ForNeVeR/AvaloniaRider/actions?query=branch%3Amaster
 [gradle-jvm-wrapper]: https://github.com/mfilippov/gradle-jvm-wrapper
-[marketplace.channels]: https://plugins.jetbrains.com/docs/marketplace/custom-release-channels.html#configuring-a-custom-channel-in-intellij-platform-based-ides
+[ide.channels]: https://www.jetbrains.com/help/idea/managing-plugins.html#repos
