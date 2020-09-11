@@ -142,6 +142,8 @@ rdgen {
 }
 
 patchPluginXml {
+    untilBuild = '203.*'
+
     def changelogText = file("$projectDir/CHANGELOG.md").text
     def changelogMatches = changelogText =~ /(?s)##(.+?)(.+?)(?=##|$)/
 
