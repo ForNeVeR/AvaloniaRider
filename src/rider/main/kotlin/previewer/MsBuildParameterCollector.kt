@@ -2,8 +2,8 @@ package me.fornever.avaloniarider.previewer
 
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
+import com.jetbrains.rd.ide.model.RdProjectOutput
 import com.jetbrains.rider.model.RdProjectDescriptor
-import com.jetbrains.rider.model.RdProjectOutput
 import com.jetbrains.rider.model.RunnableProjectKind
 import com.jetbrains.rider.projectView.nodes.ProjectModelNode
 import com.jetbrains.rider.run.environment.MSBuildEvaluator
@@ -56,7 +56,8 @@ class MsBuildParameterCollector(private val project: Project) {
 
     suspend fun getAvaloniaPreviewerParameters(
         project: ProjectModelNode,
-        projectOutput: RdProjectOutput): AvaloniaPreviewerParameters {
+        projectOutput: RdProjectOutput
+    ): AvaloniaPreviewerParameters {
         val runtimeHost = RiderDotNetActiveRuntimeHost.getInstance(this.project)
         val msBuildEvaluator = MSBuildEvaluator.getInstance(this.project)
 

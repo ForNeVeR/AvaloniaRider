@@ -2,10 +2,10 @@ package me.fornever.avaloniarider.rider
 
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
+import com.jetbrains.rd.ide.model.RdGetProjectOutputArgs
+import com.jetbrains.rd.ide.model.RdProjectOutput
+import com.jetbrains.rd.ide.model.riderProjectOutputModel
 import com.jetbrains.rd.util.lifetime.Lifetime
-import com.jetbrains.rider.model.RdGetProjectOutputArgs
-import com.jetbrains.rider.model.RdProjectOutput
-import com.jetbrains.rider.model.riderProjectOutputModel
 import com.jetbrains.rider.projectView.nodes.ProjectModelNode
 import com.jetbrains.rider.projectView.solution
 import kotlinx.coroutines.Dispatchers

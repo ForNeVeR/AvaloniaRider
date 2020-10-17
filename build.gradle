@@ -22,7 +22,7 @@ dependencies {
 
 ext {
     pluginVersionBase = '1.0.0'
-    sdkVersion = '2020.2'
+    sdkVersion = '2020.3-SNAPSHOT'
     rdLibDirectory = {
         new File(intellij.ideaDependency.classes, "lib/rd")
     }
@@ -113,8 +113,8 @@ apply plugin: 'com.jetbrains.rdgen'
 
 rdgen {
     def modelDir = new File(projectDir, "protocol/src/main/kotlin/model")
-    def csOutput = new File(projectDir, "src/dotnet/AvaloniaRider.Plugin/Rider/Model")
-    def ktOutput = new File(projectDir, "src/rider/main/kotlin/avaloniarider/model")
+    def csOutput = new File(projectDir, "src/dotnet/AvaloniaRider.Plugin/Model")
+    def ktOutput = new File(projectDir, "src/rider/main/kotlin/model")
 
     verbose = true
     classpath {
@@ -128,7 +128,7 @@ rdgen {
         language = "kotlin"
         transform = "asis"
         root = "com.jetbrains.rider.model.nova.ide.IdeRoot"
-        namespace = "com.jetbrains.rider.model"
+        namespace = "me.fornever.avaloniarider.model"
         directory = "$ktOutput"
     }
 
@@ -136,7 +136,7 @@ rdgen {
         language = "csharp"
         transform = "reversed"
         root = "com.jetbrains.rider.model.nova.ide.IdeRoot"
-        namespace = "JetBrains.Rider.Model"
+        namespace = "AvaloniaRider.Model"
         directory = "$csOutput"
     }
 }

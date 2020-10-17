@@ -15,8 +15,4 @@
     <PackageReference Include="Wave" Version="$(WaveVersion)" />
   </ItemGroup>
   
-  <ItemGroup>
-    <Folder Include="Rider\Model" />
-  </ItemGroup>
-  
 </Project>
