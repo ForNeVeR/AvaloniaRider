@@ -142,7 +142,8 @@ rdgen {
 }
 
 patchPluginXml {
-    untilBuild = '203.*'
+    sinceBuild = '203.4818' // 2020.3 EAP4
+    untilBuild = null
 
     def changelogText = file("$projectDir/CHANGELOG.md").text
     def changelogMatches = changelogText =~ /(?s)##(.+?)(.+?)(?=##|$)/
