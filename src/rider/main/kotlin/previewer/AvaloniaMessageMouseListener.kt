@@ -26,7 +26,7 @@ internal class AvaloniaMessageMouseListener(
 
     override fun mousePressed(e: MouseEvent?) {
         e ?: return
-        val coordinates = e.relCoordinatesOrNull() ?: return
+        val coordinates = e.pointerPositionOrNull() ?: return
         val message = PointerPressedEventMessage(
             e.avaloniaModifiers(),
             coordinates.first,
@@ -37,7 +37,7 @@ internal class AvaloniaMessageMouseListener(
 
     override fun mouseReleased(e: MouseEvent?) {
         e ?: return
-        val coordinates = e.relCoordinatesOrNull()?: return
+        val coordinates = e.pointerPositionOrNull()?: return
         val message = PointerReleasedEventMessage(
             e.avaloniaModifiers(),
             coordinates.first,
@@ -49,7 +49,7 @@ internal class AvaloniaMessageMouseListener(
     override fun mouseWheelMoved(e: MouseWheelEvent?) {
         e ?: return
         if (e.scrollType != MouseWheelEvent.WHEEL_UNIT_SCROLL) return
-        val coordinates = e.relCoordinatesOrNull()?: return
+        val coordinates = e.pointerPositionOrNull()?: return
         val message = ScrollEventMessage(
             e.avaloniaModifiers(),
             coordinates.first,
@@ -59,17 +59,13 @@ internal class AvaloniaMessageMouseListener(
         avaloniaInputEventSignal.fire(message)
     }
 
-    override fun mouseMoved(e: MouseEvent?) {
-        sendPointerMovedEventMessage(e)
-    }
+    override fun mouseMoved(e: MouseEvent?) = sendPointerMovedEventMessage(e)
 
-    override fun mouseDragged(e: MouseEvent?) {
-        sendPointerMovedEventMessage(e)
-    }
+    override fun mouseDragged(e: MouseEvent?) = sendPointerMovedEventMessage(e)
 
     private fun sendPointerMovedEventMessage(e: MouseEvent?) {
         e ?: return
-        val coordinates = e.relCoordinatesOrNull()?: return
+        val coordinates = e.pointerPositionOrNull()?: return
         val message = PointerMovedEventMessage(
             e.avaloniaModifiers(),
             coordinates.first,
@@ -77,15 +73,21 @@ internal class AvaloniaMessageMouseListener(
         avaloniaInputEventSignal.fire(message)
     }
 
-    private fun MouseWheelEvent.preciseUnitsToScroll(): Double {
-        return this.preciseWheelRotation * this.scrollAmount
-    }
+    private fun MouseWheelEvent.preciseUnitsToScroll(): Double =
+        this.preciseWheelRotation * this.scrollAmount
 
-    private fun MouseEvent.relCoordinatesOrNull(): Pair<Double, Double>? {
+    private fun MouseEvent.pointerPositionOrNull(): Pair<Double, Double>? {
         frameView.icon ?: return null
-        val relFirst = frameView.relFirstOrNull(this.x) ?: return null
-        val relSecond = frameView.relSecondOrNull(this.y) ?: return null
-        return Pair(relFirst, relSecond)
+
+        val iconX = this.x - frameView.shiftIconX()
+        val isContainsX = 0 <= iconX && iconX <= frameView.icon.iconWidth
+        if (!isContainsX) return null
+
+        val iconY = this.y - frameView.shiftIconY()
+        val isContainsY = 0 <= iconY && iconY <= frameView.icon.iconHeight
+        if (!isContainsY) return null
+
+        return iconX to iconY
     }
 
     private fun MouseEvent.avaloniaModifiers(): Array<Int> {
@@ -110,40 +112,22 @@ internal class AvaloniaMessageMouseListener(
         return result.toTypedArray()
     }
 
-    private fun MouseEvent.avaloniaMouseButton(): Int {
-        return when (this.button) {
-            MouseEvent.BUTTON1 -> MouseButton.Left.ordinal
-            MouseEvent.BUTTON2 -> MouseButton.Middle.ordinal
-            MouseEvent.BUTTON3 -> MouseButton.Right.ordinal
-            else -> MouseButton.None.ordinal
-        }
+    private fun MouseEvent.avaloniaMouseButton(): Int = when (this.button) {
+        MouseEvent.BUTTON1 -> MouseButton.Left.ordinal
+        MouseEvent.BUTTON2 -> MouseButton.Middle.ordinal
+        MouseEvent.BUTTON3 -> MouseButton.Right.ordinal
+        else -> MouseButton.None.ordinal
     }
 
-    private fun JLabel.relFirstOrNull(first: Int): Double? {
-        var relFirst = first.toDouble()
-
-        if (frameView.horizontalAlignment == SwingConstants.CENTER) {
-            relFirst -= (this.width - this.icon.iconWidth) / 2.0
-        } else if (frameView.horizontalAlignment == SwingConstants.RIGHT) {
-            relFirst -= (this.width - this.icon.iconWidth).toDouble()
-        }
-
-        val isContains = 0 <= relFirst && relFirst <= frameView.icon.iconWidth
-
-        return if (isContains) relFirst else null
+    private fun JLabel.shiftIconX(): Double = when (this.horizontalAlignment) {
+        SwingConstants.CENTER -> (this.width - this.icon.iconWidth) / 2.0
+        SwingConstants.RIGHT -> (this.width - this.icon.iconWidth).toDouble()
+        else -> 0.0
     }
 
-    private fun JLabel.relSecondOrNull(second: Int): Double? {
-        var relSecond = second.toDouble()
-
-        if (frameView.verticalAlignment == SwingConstants.CENTER) {
-            relSecond -= (this.height - this.icon.iconHeight) / 2.0
-        } else if (frameView.verticalAlignment == SwingConstants.BOTTOM) {
-            relSecond -= (this.height - this.icon.iconHeight).toDouble()
-        }
-
-        val isContains = 0 <= relSecond && relSecond <= frameView.icon.iconHeight
-
-        return if (isContains) relSecond else null
+    private fun JLabel.shiftIconY(): Double = when (this.verticalAlignment) {
+        SwingConstants.CENTER -> (this.width - this.icon.iconWidth) / 2.0
+        SwingConstants.BOTTOM -> (this.width - this.icon.iconWidth).toDouble()
+        else -> 0.0
     }
 }
