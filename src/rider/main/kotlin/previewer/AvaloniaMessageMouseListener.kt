@@ -10,7 +10,7 @@ import javax.swing.SwingConstants
 import javax.swing.event.MouseInputAdapter
 
 /**
- * @suppress Pass the JLabel instance in order to find out the position of the pointer to the Icon
+ * Pass the JLabel instance in order to find out the position of the pointer to the Icon
  */
 internal class AvaloniaMessageMouseListener(
     private val frameView: JLabel
