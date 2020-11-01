@@ -2,13 +2,7 @@ package me.fornever.avaloniarider.previewer
 
 import com.jetbrains.rd.util.reactive.ISource
 import com.jetbrains.rd.util.reactive.Signal
-import me.fornever.avaloniarider.controlmessages.AvaloniaInputEventMessage
-import me.fornever.avaloniarider.controlmessages.InputModifiers
-import me.fornever.avaloniarider.controlmessages.MouseButton
-import me.fornever.avaloniarider.controlmessages.PointerMovedEventMessage
-import me.fornever.avaloniarider.controlmessages.PointerPressedEventMessage
-import me.fornever.avaloniarider.controlmessages.PointerReleasedEventMessage
-import me.fornever.avaloniarider.controlmessages.ScrollEventMessage
+import me.fornever.avaloniarider.controlmessages.*
 import java.awt.event.MouseEvent
 import java.awt.event.MouseWheelEvent
 import javax.swing.JLabel
@@ -128,8 +122,8 @@ internal class AvaloniaMessageMouseListener(
     }
 
     private fun JLabel.shiftIconY(): Double = when (this.verticalAlignment) {
-        SwingConstants.CENTER -> (this.width - this.icon.iconWidth) / 2.0
-        SwingConstants.BOTTOM -> (this.width - this.icon.iconWidth).toDouble()
+        SwingConstants.CENTER -> (this.height - this.icon.iconHeight) / 2.0
+        SwingConstants.BOTTOM -> (this.height - this.icon.iconHeight).toDouble()
         else -> 0.0
     }
 }
