@@ -87,12 +87,6 @@ task compileDotNet {
 
 buildPlugin {
     dependsOn compileDotNet
-
-    copy {
-        from "$rootDir/build/distributions"
-        into "$rootDir/output"
-        include "*"
-    }
 }
 
 intellij {

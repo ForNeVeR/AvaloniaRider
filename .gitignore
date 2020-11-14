@@ -8,7 +8,6 @@ bin/
 build/
 obj/
 out/
-output/
 
 *.Generated.cs
 *.Generated.kt
