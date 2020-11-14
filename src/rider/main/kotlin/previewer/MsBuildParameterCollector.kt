@@ -3,6 +3,7 @@ package me.fornever.avaloniarider.previewer
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 import com.jetbrains.rd.ide.model.RdProjectOutput
+import com.jetbrains.rider.debugger.DebuggerHelperHost
 import com.jetbrains.rider.model.RdProjectDescriptor
 import com.jetbrains.rider.model.RunnableProjectKind
 import com.jetbrains.rider.projectView.nodes.ProjectModelNode
@@ -70,6 +71,7 @@ class MsBuildParameterCollector(private val project: Project) {
         val runtime = DotNetRuntime.detectRuntimeForProjectOrThrow(
             projectKind,
             runtimeHost,
+            DebuggerHelperHost.getInstance(this.project),
             false,
             projectOutput.outputPath,
             projectOutput.tfm
