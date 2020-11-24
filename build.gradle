@@ -93,6 +93,7 @@ intellij {
     type = 'RD'
     version = "$sdkVersion"
     downloadSources = false
+    plugins 'com.intellij.javafx:1.0.3'
 }
 
 runIde {

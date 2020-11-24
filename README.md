@@ -59,11 +59,6 @@ instance of Rider (set the required version via `build.gradle`).
 $ ./gradlew runIde
 ```
 
-⚠ First time after starting the IDE, you'll have to go to **Settings →
-Plugins** and install the plugin **JavaFX Runtime for Plugins**. Otherwise, the
-AvaloniaRider plugin won't work. It is a restriction to be solved in scope of
-the issue #74.
-
 Development
 -----------
 
