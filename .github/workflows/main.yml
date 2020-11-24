@@ -69,7 +69,7 @@ jobs:
         shell: pwsh
         run: |
           $version = ./scripts/Get-Version.ps1
-          Write-Output "::set-env name=AVALONIA_RIDER_VERSION::$version"
+          "AVALONIA_RIDER_VERSION=$version" | Out-File $env:GITHUB_ENV
       - name: Unpack Distribution # for the purpose of uploading
         if: matrix.image == 'ubuntu-18.04'
         shell: pwsh
