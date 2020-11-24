@@ -5,6 +5,7 @@ import javafx.application.Platform
 import javafx.embed.swing.JFXPanel
 import javafx.scene.Scene
 import javafx.scene.web.WebView
+import me.fornever.avaloniarider.idea.JavaFxPlatformInterop
 import me.fornever.avaloniarider.previewer.AvaloniaPreviewerSessionController
 import java.awt.FlowLayout
 import javax.swing.JPanel
@@ -13,6 +14,7 @@ class HtmlPreviewEditorComponent(lifetime: Lifetime, controller: AvaloniaPreview
 
     private lateinit var webView: WebView
     init {
+        JavaFxPlatformInterop.initialize()
         layout = FlowLayout()
 
         add(JFXPanel().apply {
