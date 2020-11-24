@@ -11,6 +11,7 @@ import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.rd.createNestedDisposable
 import com.intellij.util.io.BaseOutputReader
+import com.jetbrains.rd.framework.util.NetUtils
 import com.jetbrains.rd.platform.util.application
 import com.jetbrains.rd.util.lifetime.Lifetime
 import com.jetbrains.rd.util.lifetime.onTermination
@@ -44,7 +45,7 @@ class AvaloniaPreviewerProcess(
         val depsFile = parameters.targetDir.resolve("${parameters.targetName}.deps.json")
         val previewerArguments =
             transport.getOptions() +
-            method.getOptions() +
+            method.getOptions { NetUtils.findFreePort(5000) } +
             parameters.targetPath.toAbsolutePath().toString()
         return when (parameters.runtime) {
             is DotNetCoreRuntime -> GeneralCommandLine().withExePath(parameters.runtime.cliExePath)
