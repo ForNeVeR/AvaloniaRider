@@ -10,6 +10,7 @@ import com.intellij.execution.ui.ConsoleView
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.rd.createNestedDisposable
+import com.intellij.openapi.util.Key
 import com.intellij.util.io.BaseOutputReader
 import com.jetbrains.rd.framework.util.NetUtils
 import com.jetbrains.rd.platform.util.application
@@ -76,6 +77,12 @@ class AvaloniaPreviewerProcess(
         val processHandler = object : OSProcessHandler(commandLine) {
             override fun readerOptions() =
                 BaseOutputReader.Options.forMostlySilentProcess()
+
+            override fun notifyTextAvailable(text: String, outputType: Key<*>) {
+                if (application.isUnitTestMode)
+                    logger.info("$outputType: ${text}")
+                super.notifyTextAvailable(text, outputType)
+            }
         }
 
         logger.info("Starting process ${commandLine.commandLineString}")
