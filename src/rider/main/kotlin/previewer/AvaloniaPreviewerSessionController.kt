@@ -19,11 +19,7 @@ import com.jetbrains.rider.ui.SwingScheduler
 import com.jetbrains.rider.ui.components.utils.documentChanged
 import kotlinx.coroutines.*
 import kotlinx.coroutines.selects.select
-import me.fornever.avaloniarider.controlmessages.AvaloniaInputEventMessage
-import me.fornever.avaloniarider.controlmessages.FrameMessage
-import me.fornever.avaloniarider.controlmessages.HtmlTransportStartedMessage
-import me.fornever.avaloniarider.controlmessages.RequestViewportResizeMessage
-import me.fornever.avaloniarider.controlmessages.UpdateXamlResultMessage
+import me.fornever.avaloniarider.controlmessages.*
 import me.fornever.avaloniarider.exceptions.AvaloniaPreviewerInitializationException
 import me.fornever.avaloniarider.idea.concurrency.ApplicationAnyModality
 import me.fornever.avaloniarider.idea.concurrency.adviseOnUiThread
@@ -31,6 +27,7 @@ import me.fornever.avaloniarider.idea.settings.AvaloniaPreviewerMethod
 import me.fornever.avaloniarider.idea.settings.AvaloniaSettings
 import me.fornever.avaloniarider.rider.RiderProjectOutputHost
 import me.fornever.avaloniarider.rider.projectRelativeVirtualPath
+import java.io.EOFException
 import java.net.ServerSocket
 import java.net.SocketException
 import java.time.Duration
@@ -219,10 +216,15 @@ class AvaloniaPreviewerSessionController(
             logger.info("Starting socket listener")
             try {
                 newSession.processSocketMessages()
-            } catch (ex: SocketException) {
-                // Log socket errors only if the session is still alive.
-                if (lifetime.isAlive) {
-                    logger.error("Socket error while session is still alive", ex)
+            } catch (ex: Exception) {
+                when (ex) {
+                    is SocketException, is EOFException -> {
+                        // Log socket errors only if the session is still alive.
+                        if (lifetime.isAlive) {
+                            logger.error("Socket error while session is still alive", ex)
+                        }
+                    }
+                    else -> throw ex
                 }
             }
         }
