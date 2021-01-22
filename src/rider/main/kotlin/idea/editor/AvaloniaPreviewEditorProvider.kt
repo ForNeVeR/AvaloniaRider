@@ -16,7 +16,7 @@ class AvaloniaPreviewEditorProvider : FileEditorProvider, DumbAware {
     override fun getPolicy() = FileEditorPolicy.HIDE_DEFAULT_EDITOR
 
     override fun accept(project: Project, file: VirtualFile) =
-        file.extension == "xaml" // TODO: Backend XAML file check (#42)
+        file.extension == "xaml" || file.extension == "paml" || file.extension == "axaml" // TODO: Backend XAML file check (#42)
 
     override fun createEditor(project: Project, file: VirtualFile): FileEditor {
         val textEditor = TextEditorProvider.getInstance().createEditor(project, file) as TextEditor
