@@ -5,7 +5,7 @@ buildscript {
     }
 
     // https://www.myget.org/feed/rd-snapshots/package/maven/com.jetbrains.rd/rd-gen
-    dependencies { classpath "com.jetbrains.rd:rd-gen:0.201.78" }
+    dependencies { classpath "com.jetbrains.rd:rd-gen:0.203.190" }
 }
 
 plugins {
@@ -22,7 +22,7 @@ dependencies {
 
 ext {
     pluginVersionBase = '1.0.0'
-    sdkVersion = '2020.3-SNAPSHOT'
+    sdkVersion = '2020.3'
     rdLibDirectory = {
         new File(intellij.ideaDependency.classes, "lib/rd")
     }
@@ -144,7 +144,6 @@ rdgen {
 }
 
 patchPluginXml {
-    sinceBuild = '203.4818' // 2020.3 EAP4
     untilBuild = null
 
     def changelogText = file("$projectDir/CHANGELOG.md").text
