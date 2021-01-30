@@ -6,12 +6,12 @@ import com.jetbrains.rd.ide.model.RdGetProjectOutputArgs
 import com.jetbrains.rd.ide.model.RdProjectOutput
 import com.jetbrains.rd.ide.model.riderProjectOutputModel
 import com.jetbrains.rd.util.lifetime.Lifetime
-import com.jetbrains.rider.projectView.nodes.ProjectModelNode
 import com.jetbrains.rider.projectView.solution
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import me.fornever.avaloniarider.idea.concurrency.ApplicationAnyModality
 import me.fornever.avaloniarider.idea.concurrency.await
+import java.nio.file.Path
 
 @Service
 class RiderProjectOutputHost(private val project: Project) {
@@ -20,11 +20,9 @@ class RiderProjectOutputHost(private val project: Project) {
             project.getService(RiderProjectOutputHost::class.java)
     }
 
-    suspend fun getProjectOutput(lifetime: Lifetime, projectNode: ProjectModelNode): RdProjectOutput =
+    suspend fun getProjectOutput(lifetime: Lifetime, projectFilePath: Path): RdProjectOutput =
         withContext(Dispatchers.ApplicationAnyModality) {
             val model = project.solution.riderProjectOutputModel
-            val projectFilePath = projectNode.getVirtualFile()!!.path
-
-            model.getProjectOutput.start(lifetime, RdGetProjectOutputArgs(projectFilePath)).await(lifetime)
+            model.getProjectOutput.start(lifetime, RdGetProjectOutputArgs(projectFilePath.toString())).await(lifetime)
         }
 }

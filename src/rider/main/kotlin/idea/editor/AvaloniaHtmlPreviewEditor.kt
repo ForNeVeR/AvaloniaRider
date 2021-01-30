@@ -11,7 +11,6 @@ class AvaloniaHtmlPreviewEditor(
 ) : AvaloniaPreviewEditorBase(project, currentFile) {
 
     private val panel = lazy {
-        sessionController.start()
         HtmlPreviewEditorComponent(lifetime, sessionController)
     }
 

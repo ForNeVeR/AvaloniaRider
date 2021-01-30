@@ -2,7 +2,6 @@ package me.fornever.avaloniarider.previewer
 
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.diagnostic.Logger
-import com.intellij.openapi.diagnostic.debug
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Computable
@@ -13,15 +12,12 @@ import com.jetbrains.rd.util.reactive.*
 import com.jetbrains.rd.util.throttleLast
 import com.jetbrains.rider.build.BuildHost
 import com.jetbrains.rider.projectView.ProjectModelViewHost
-import com.jetbrains.rider.projectView.nodes.ProjectModelNode
-import com.jetbrains.rider.projectView.nodes.containingProject
 import com.jetbrains.rider.ui.SwingScheduler
 import com.jetbrains.rider.ui.components.utils.documentChanged
 import kotlinx.coroutines.*
 import kotlinx.coroutines.selects.select
 import me.fornever.avaloniarider.controlmessages.*
 import me.fornever.avaloniarider.exceptions.AvaloniaPreviewerInitializationException
-import me.fornever.avaloniarider.idea.concurrency.ApplicationAnyModality
 import me.fornever.avaloniarider.idea.concurrency.adviseOnUiThread
 import me.fornever.avaloniarider.idea.settings.AvaloniaPreviewerMethod
 import me.fornever.avaloniarider.idea.settings.AvaloniaSettings
@@ -30,6 +26,7 @@ import me.fornever.avaloniarider.rider.projectRelativeVirtualPath
 import java.io.EOFException
 import java.net.ServerSocket
 import java.net.SocketException
+import java.nio.file.Path
 import java.time.Duration
 
 /**
@@ -38,7 +35,8 @@ import java.time.Duration
 class AvaloniaPreviewerSessionController(
     private val project: Project,
     outerLifetime: Lifetime,
-    private val xamlFile: VirtualFile) {
+    private val xamlFile: VirtualFile,
+    projectFilePathProperty: IPropertyView<Path?>) {
     companion object {
         private val logger = Logger.getInstance(AvaloniaPreviewerSessionController::class.java)
 
@@ -104,38 +102,19 @@ class AvaloniaPreviewerSessionController(
 
     init {
         controllerLifetime.onTermination { statusProperty.set(Status.Terminated) }
-        BuildHost.getInstance(project).building.change.advise(controllerLifetime) { building ->
-            logger.info("Build host signal: $building")
-            if (building) {
-                logger.info("Suspending preview for $xamlFile")
-                suspend()
-            } else {
-                logger.info("Force start preview for $xamlFile")
-                start(true)
-            }
-        }
-    }
 
-    private suspend fun getContainingProject(xamlFile: VirtualFile): ProjectModelNode {
-        val result = CompletableDeferred<ProjectModelNode>()
-        val projectModelViewHost = ProjectModelViewHost.getInstance(project)
-        projectModelViewHost.view.sync.adviseNotNullOnce(controllerLifetime) {
-            try {
-                logger.debug { "Project model view synchronized" }
-                val projectModelNodes = projectModelViewHost.getItemsByVirtualFile(xamlFile)
-                logger.debug {
-                    "Project model nodes for file $xamlFile: " + projectModelNodes.joinToString(", ")
+        val isBuildingProperty = BuildHost.getInstance(project).building
+        isBuildingProperty.compose(projectFilePathProperty, ::Pair)
+            .advise(controllerLifetime) { (isBuilding, projectFilePath) ->
+                logger.info("Controller state change: isBuilding = $isBuilding, projectFilePath = $projectFilePath")
+                if (isBuilding || projectFilePath == null) {
+                    logger.info("Suspending preview for $xamlFile")
+                    suspend()
+                } else {
+                    logger.info("Force start preview for $xamlFile")
+                    start(projectFilePath, true)
                 }
-                val containingProject = projectModelNodes.asSequence()
-                    .map { it.containingProject() }
-                    .filterNotNull()
-                    .first()
-                result.complete(containingProject)
-            } catch (t: Throwable) {
-                result.completeExceptionally(t)
             }
-        }
-        return result.await()
     }
 
     private fun createSession(
@@ -184,18 +163,16 @@ class AvaloniaPreviewerSessionController(
         }
     }
 
-    private suspend fun executePreviewerAsync(lifetime: Lifetime) {
+    private suspend fun executePreviewerAsync(lifetime: Lifetime, projectFilePath: Path) {
         statusProperty.set(Status.Connecting)
-        logger.info("Receiving a containing project for the file $xamlFile")
-        val containingProject = withContext(Dispatchers.ApplicationAnyModality) { getContainingProject(xamlFile) }
 
-        logger.info("Calculating a project output for the project ${containingProject.name}")
+        logger.info("Calculating a project output for the project $projectFilePath")
         val riderProjectOutputHost = RiderProjectOutputHost.getInstance(project)
-        val projectOutput = riderProjectOutputHost.getProjectOutput(lifetime, containingProject)
+        val projectOutput = riderProjectOutputHost.getProjectOutput(lifetime, projectFilePath)
 
-        logger.info("Calculating previewer start parameters for the project ${containingProject.name}, output $projectOutput")
+        logger.info("Calculating previewer start parameters for the project $projectFilePath, output $projectOutput")
         val msBuild = MsBuildParameterCollector.getInstance(project)
-        val parameters = msBuild.getAvaloniaPreviewerParameters(containingProject, projectOutput)
+        val parameters = msBuild.getAvaloniaPreviewerParameters(project, projectFilePath, projectOutput)
 
         val socket = withContext(Dispatchers.IO) {
             ServerSocket(0).apply {
@@ -242,13 +219,13 @@ class AvaloniaPreviewerSessionController(
         logger.info("$result has been terminated first")
     }
 
-    fun start(force: Boolean = false) {
+    fun start(projectFilePath: Path, force: Boolean = false) {
         if (status.value == Status.Suspended && !force) return
 
         GlobalScope.launch {
             currentSessionLifetime = sessionLifetimeSource.next()
             try {
-                executePreviewerAsync(currentSessionLifetime!!)
+                executePreviewerAsync(currentSessionLifetime!!, projectFilePath)
             } catch (ex: AvaloniaPreviewerInitializationException) {
                 criticalErrorSignal.fire(ex)
                 logger.warn(ex)
