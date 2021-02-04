@@ -1,11 +1,13 @@
 package me.fornever.avaloniarider.previewer
 
+import com.intellij.execution.RunManager
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.debug
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Computable
+import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
 import com.jetbrains.rd.platform.util.application
 import com.jetbrains.rd.util.lifetime.*
@@ -15,16 +17,18 @@ import com.jetbrains.rider.build.BuildHost
 import com.jetbrains.rider.projectView.ProjectModelViewHost
 import com.jetbrains.rider.projectView.nodes.ProjectModelNode
 import com.jetbrains.rider.projectView.nodes.containingProject
+import com.jetbrains.rider.run.configurations.IProjectBasedRunConfiguration
 import com.jetbrains.rider.ui.SwingScheduler
 import com.jetbrains.rider.ui.components.utils.documentChanged
+import com.jetbrains.rider.util.startOnUi
 import kotlinx.coroutines.*
 import kotlinx.coroutines.selects.select
 import me.fornever.avaloniarider.controlmessages.*
 import me.fornever.avaloniarider.exceptions.AvaloniaPreviewerInitializationException
-import me.fornever.avaloniarider.idea.concurrency.ApplicationAnyModality
 import me.fornever.avaloniarider.idea.concurrency.adviseOnUiThread
 import me.fornever.avaloniarider.idea.settings.AvaloniaPreviewerMethod
 import me.fornever.avaloniarider.idea.settings.AvaloniaSettings
+import me.fornever.avaloniarider.idea.settings.ExecutableProjectSelectionMode
 import me.fornever.avaloniarider.rider.RiderProjectOutputHost
 import me.fornever.avaloniarider.rider.projectRelativeVirtualPath
 import java.io.EOFException
@@ -116,13 +120,30 @@ class AvaloniaPreviewerSessionController(
         }
     }
 
-    private suspend fun getContainingProject(xamlFile: VirtualFile): ProjectModelNode {
+    private suspend fun getProjectForPreviewer(
+        projectSelectionMode: ExecutableProjectSelectionMode,
+        xamlFile: VirtualFile
+    ): ProjectModelNode {
         val result = CompletableDeferred<ProjectModelNode>()
         val projectModelViewHost = ProjectModelViewHost.getInstance(project)
+
+        var virtualFile = xamlFile
+        if (projectSelectionMode == ExecutableProjectSelectionMode.RunConfiguration) {
+            val runConfiguration = RunManager.getInstance(project).selectedConfiguration?.configuration as? IProjectBasedRunConfiguration
+            if (runConfiguration != null) {
+                val projectFilePath = runConfiguration.getProjectFilePath()
+                logger.info("Project from run configuration: $projectFilePath")
+
+                val projectFile = LocalFileSystem.getInstance().refreshAndFindFileByPath(projectFilePath)
+                if (projectFile == null) logger.warn("Project file not found in VFS")
+                virtualFile = projectFile ?: virtualFile
+            }
+        }
+
         projectModelViewHost.view.sync.adviseNotNullOnce(controllerLifetime) {
             try {
                 logger.debug { "Project model view synchronized" }
-                val projectModelNodes = projectModelViewHost.getItemsByVirtualFile(xamlFile)
+                val projectModelNodes = projectModelViewHost.getItemsByVirtualFile(virtualFile)
                 logger.debug {
                     "Project model nodes for file $xamlFile: " + projectModelNodes.joinToString(", ")
                 }
@@ -185,9 +206,11 @@ class AvaloniaPreviewerSessionController(
     }
 
     private suspend fun executePreviewerAsync(lifetime: Lifetime) {
+        val settings = AvaloniaSettings.getInstance(project).state
+
         statusProperty.set(Status.Connecting)
         logger.info("Receiving a containing project for the file $xamlFile")
-        val containingProject = withContext(Dispatchers.ApplicationAnyModality) { getContainingProject(xamlFile) }
+        val containingProject = lifetime.startOnUi { getProjectForPreviewer(settings.projectSelectionMode, xamlFile) }
 
         logger.info("Calculating a project output for the project ${containingProject.name}")
         val riderProjectOutputHost = RiderProjectOutputHost.getInstance(project)
@@ -203,7 +226,6 @@ class AvaloniaPreviewerSessionController(
             }
         }
         val transport = PreviewerBsonTransport(socket.localPort)
-        val settings = AvaloniaSettings.getInstance(project).state
         val method = when (settings.previewerMethod) {
             AvaloniaPreviewerMethod.AvaloniaRemote -> AvaloniaRemoteMethod
             AvaloniaPreviewerMethod.Html -> HtmlMethod
