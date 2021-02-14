@@ -31,8 +31,9 @@ class MsBuildParameterCollector(private val project: Project) {
         runtime: DotNetRuntime,
         runnableProject: ProjectModelNode,
         avaloniaPreviewerPathKey: String,
-        properties: Map<String, String>): AvaloniaPreviewerParameters {
-        fun getProperty(key: String, errorMessage: String? = null): String {
+        runnableProjectProperties: Map<String, String>,
+        xamlContainingProjectProperties: Map<String, String>): AvaloniaPreviewerParameters {
+        fun getProperty(properties: Map<String, String>, key: String, errorMessage: String? = null): String {
             val property = properties[key]
             if (property.isNullOrEmpty()) {
                 throw AvaloniaPreviewerInitializationException(
@@ -44,26 +45,32 @@ class MsBuildParameterCollector(private val project: Project) {
 
         val previewerPath = Paths.get(
             getProperty(
+                runnableProjectProperties,
                 avaloniaPreviewerPathKey,
                 "Avalonia could not be found. Please ensure project ${runnableProject.name} includes package Avalonia version 0.7 or higher"
             )
         )
-        val targetDir = Paths.get(getProperty("TargetDir"))
-        val targetName = getProperty("TargetName")
-        val targetPath = Paths.get(getProperty("TargetPath"))
+        val targetDir = Paths.get(getProperty(runnableProjectProperties, "TargetDir"))
+        val targetName = getProperty(runnableProjectProperties, "TargetName")
+        val targetPath = Paths.get(getProperty(runnableProjectProperties, "TargetPath"))
 
-        return AvaloniaPreviewerParameters(runtime, previewerPath, targetDir, targetName, targetPath)
+        val xamlAssemblyPath = Paths.get(getProperty(xamlContainingProjectProperties, "TargetPath"))
+
+        return AvaloniaPreviewerParameters(runtime, previewerPath, targetDir, targetName, targetPath, xamlAssemblyPath)
     }
 
     suspend fun getAvaloniaPreviewerParameters(
-        project: ProjectModelNode,
-        projectOutput: RdProjectOutput
+        runnableProject: ProjectModelNode,
+        runnableProjectOutput: RdProjectOutput,
+        xamlContainingProject: ProjectModelNode
     ): AvaloniaPreviewerParameters {
         val runtimeHost = RiderDotNetActiveRuntimeHost.getInstance(this.project)
         val msBuildEvaluator = MSBuildEvaluator.getInstance(this.project)
 
-        val projectFilePath = project.getVirtualFile()!!.path
-        val projectKind = if ((project.descriptor as RdProjectDescriptor).isDotNetCore)
+        val runnableProjectFilePath = runnableProject.getVirtualFile()!!.path
+        val xamlContainingProjectPath = xamlContainingProject.getVirtualFile()!!.path
+
+        val projectKind = if ((runnableProject.descriptor as RdProjectDescriptor).isDotNetCore)
             RunnableProjectKind.DotNetCore
         else
             RunnableProjectKind.Console
@@ -73,19 +80,31 @@ class MsBuildParameterCollector(private val project: Project) {
             runtimeHost,
             DebuggerHelperHost.getInstance(this.project),
             false,
-            projectOutput.outputPath,
-            projectOutput.tfm
+            runnableProjectOutput.outputPath,
+            runnableProjectOutput.tfm
         )
         val avaloniaPreviewerPathKey = getPathKey(runtime)
 
-        val properties = msBuildEvaluator.evaluateProperties(
+        val runnableProjectProperties = msBuildEvaluator.evaluateProperties(
             MSBuildEvaluator.PropertyRequest(
-                projectFilePath,
+                runnableProjectFilePath,
                 null,
                 listOf(avaloniaPreviewerPathKey, "TargetDir", "TargetName", "TargetPath")
             )
-        ).await()
+        )
+        val xamlProjectProperties = msBuildEvaluator.evaluateProperties(
+            MSBuildEvaluator.PropertyRequest(
+                xamlContainingProjectPath,
+                null,
+                listOf("TargetPath")
+            )
+        )
 
-        return createParameters(runtime, project, avaloniaPreviewerPathKey, properties)
+        return createParameters(
+            runtime,
+            runnableProject,
+            avaloniaPreviewerPathKey,
+            runnableProjectProperties.await(),
+            xamlProjectProperties.await())
     }
 }

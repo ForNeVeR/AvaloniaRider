@@ -20,8 +20,12 @@ import com.jetbrains.rider.projectView.nodes.containingProject
 import com.jetbrains.rider.run.configurations.IProjectBasedRunConfiguration
 import com.jetbrains.rider.ui.SwingScheduler
 import com.jetbrains.rider.ui.components.utils.documentChanged
+import com.jetbrains.rider.util.startIOBackground
 import com.jetbrains.rider.util.startOnUi
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.selects.select
 import me.fornever.avaloniarider.controlmessages.*
 import me.fornever.avaloniarider.exceptions.AvaloniaPreviewerInitializationException
@@ -120,25 +124,11 @@ class AvaloniaPreviewerSessionController(
         }
     }
 
-    private suspend fun getProjectForPreviewer(
-        projectSelectionMode: ExecutableProjectSelectionMode,
-        xamlFile: VirtualFile
-    ): ProjectModelNode {
+    private suspend fun getProjectContainingFile(virtualFile: VirtualFile): ProjectModelNode {
+        application.assertIsDispatchThread()
+
         val result = CompletableDeferred<ProjectModelNode>()
         val projectModelViewHost = ProjectModelViewHost.getInstance(project)
-
-        var virtualFile = xamlFile
-        if (projectSelectionMode == ExecutableProjectSelectionMode.RunConfiguration) {
-            val runConfiguration = RunManager.getInstance(project).selectedConfiguration?.configuration as? IProjectBasedRunConfiguration
-            if (runConfiguration != null) {
-                val projectFilePath = runConfiguration.getProjectFilePath()
-                logger.info("Project from run configuration: $projectFilePath")
-
-                val projectFile = LocalFileSystem.getInstance().refreshAndFindFileByPath(projectFilePath)
-                if (projectFile == null) logger.warn("Project file not found in VFS")
-                virtualFile = projectFile ?: virtualFile
-            }
-        }
 
         projectModelViewHost.view.sync.adviseNotNullOnce(controllerLifetime) {
             try {
@@ -156,7 +146,33 @@ class AvaloniaPreviewerSessionController(
                 result.completeExceptionally(t)
             }
         }
+
         return result.await()
+    }
+
+    private suspend fun getRunnableProjectForPreviewer(
+        projectSelectionMode: ExecutableProjectSelectionMode,
+        xamlContainingProject: ProjectModelNode
+    ): ProjectModelNode {
+        application.assertIsDispatchThread()
+
+        if (projectSelectionMode == ExecutableProjectSelectionMode.RunConfiguration) {
+            val runConfiguration = RunManager.getInstance(project).selectedConfiguration?.configuration as? IProjectBasedRunConfiguration
+            if (runConfiguration != null) {
+                val projectFilePath = runConfiguration.getProjectFilePath()
+                logger.info("Project from run configuration: $projectFilePath")
+
+                val projectFile = LocalFileSystem.getInstance().refreshAndFindFileByPath(projectFilePath)
+                if (projectFile == null) {
+                    logger.warn("Project file not found in VFS")
+                    return xamlContainingProject
+                }
+
+                return getProjectContainingFile(projectFile)
+            }
+        }
+
+        return xamlContainingProject
     }
 
     private fun createSession(
@@ -166,7 +182,7 @@ class AvaloniaPreviewerSessionController(
         xamlFile: VirtualFile
     ) = AvaloniaPreviewerSession(
         socket,
-        parameters.targetPath
+        parameters.xamlContainingAssemblyPath
     ).apply {
         sessionStarted.advise(lifetime) {
             sendClientSupportedPixelFormat()
@@ -210,17 +226,20 @@ class AvaloniaPreviewerSessionController(
 
         statusProperty.set(Status.Connecting)
         logger.info("Receiving a containing project for the file $xamlFile")
-        val containingProject = lifetime.startOnUi { getProjectForPreviewer(settings.projectSelectionMode, xamlFile) }
+        val xamlContainingProject = lifetime.startOnUi { getProjectContainingFile(xamlFile) }
+        val runnableProject = lifetime.startOnUi {
+            getRunnableProjectForPreviewer(settings.projectSelectionMode, xamlContainingProject)
+        }
 
-        logger.info("Calculating a project output for the project ${containingProject.name}")
+        logger.info("Calculating a project output for the project ${runnableProject.name}")
         val riderProjectOutputHost = RiderProjectOutputHost.getInstance(project)
-        val projectOutput = riderProjectOutputHost.getProjectOutput(lifetime, containingProject)
+        val projectOutput = riderProjectOutputHost.getProjectOutput(lifetime, runnableProject)
 
-        logger.info("Calculating previewer start parameters for the project ${containingProject.name}, output $projectOutput")
+        logger.info("Calculating previewer start parameters for the project ${runnableProject.name}, output $projectOutput")
         val msBuild = MsBuildParameterCollector.getInstance(project)
-        val parameters = msBuild.getAvaloniaPreviewerParameters(containingProject, projectOutput)
+        val parameters = msBuild.getAvaloniaPreviewerParameters(runnableProject, projectOutput, xamlContainingProject)
 
-        val socket = withContext(Dispatchers.IO) {
+        val socket = lifetime.startIOBackground {
             ServerSocket(0).apply {
                 lifetime.onTermination { close() }
             }

@@ -30,7 +30,14 @@ data class AvaloniaPreviewerParameters(
     val previewerBinary: Path,
     val targetDir: Path,
     val targetName: String,
-    val targetPath: Path
+    /**
+     * Path to the executable assembly.
+     */
+    val targetPath: Path,
+    /**
+     * Path to the assembly containing a XAML file in question.
+     */
+    val xamlContainingAssemblyPath: Path
 )
 
 class AvaloniaPreviewerProcess(
@@ -80,7 +87,7 @@ class AvaloniaPreviewerProcess(
 
             override fun notifyTextAvailable(text: String, outputType: Key<*>) {
                 if (application.isUnitTestMode)
-                    logger.info("$outputType: ${text}")
+                    logger.info("$outputType: $text")
                 super.notifyTextAvailable(text, outputType)
             }
         }
