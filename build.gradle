@@ -157,6 +157,10 @@ patchPluginXml {
 }
 
 prepareSandbox {
+    def pluginId = "avalonia-rider"
+    def reSharperPluginDesc = "fvnever.$pluginId"
+    from('src/extensions', { into "${intellij.pluginName}/dotnet/Extensions/$reSharperPluginDesc" })
+
     def outputFolder = "$dotNetDir/$dotNetPluginId/bin/${dotNetPluginId}/$BuildConfiguration"
     def dllFiles = [
             "$outputFolder/${dotNetPluginId}.dll",

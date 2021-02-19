@@ -1,0 +1,186 @@
+<wpf:ResourceDictionary xml:space="preserve" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:s="clr-namespace:System;assembly=mscorlib" xmlns:ss="urn:shemas-jetbrains-com:settings-storage-xaml" xmlns:wpf="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+    <!-- Avalonia User Control -->
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=2FBEA98F8AB8294B87A62E4CCD2CC3E3/Entry/=AA00FE2BDD2D35429C91F3F1C6A11BCF/@KeyIndexDefined">True</s:Boolean>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=2FBEA98F8AB8294B87A62E4CCD2CC3E3/Entry/=AA00FE2BDD2D35429C91F3F1C6A11BCF/EntryName/@EntryValue">Avalonia User Control</s:String>
+
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=AA00FE2BDD2D35429C91F3F1C6A11BCF/@KeyIndexDefined">True</s:Boolean>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=AA00FE2BDD2D35429C91F3F1C6A11BCF/Description/@EntryValue">Avalonia User Control</s:String>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=AA00FE2BDD2D35429C91F3F1C6A11BCF/Image/@EntryValue">Xaml</s:String>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=AA00FE2BDD2D35429C91F3F1C6A11BCF/Text/@EntryValue">&lt;UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="$NAMESPACE$.$CLASS$"&gt;
+  Welcome to Avalonia!$END$
+&lt;/UserControl&gt;
+</s:String>
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=AA00FE2BDD2D35429C91F3F1C6A11BCF/Reformat/@EntryValue">True</s:Boolean>
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=AA00FE2BDD2D35429C91F3F1C6A11BCF/ShortenQualifiedReferences/@EntryValue">True</s:Boolean>
+
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=AA00FE2BDD2D35429C91F3F1C6A11BCF/CustomProperties/=Extension/@EntryIndexedValue">axaml</s:String>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=AA00FE2BDD2D35429C91F3F1C6A11BCF/CustomProperties/=FileName/@EntryIndexedValue">UserControl</s:String>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=AA00FE2BDD2D35429C91F3F1C6A11BCF/CustomProperties/=ValidateFileName/@EntryIndexedValue">True</s:String>
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=AA00FE2BDD2D35429C91F3F1C6A11BCF/Applicability/=File/@EntryIndexedValue">True</s:Boolean>
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=AA00FE2BDD2D35429C91F3F1C6A11BCF/Scope/=1F4DBD605BD33C409AE7328D8C5965C3/@KeyIndexDefined">True</s:Boolean>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=AA00FE2BDD2D35429C91F3F1C6A11BCF/Scope/=1F4DBD605BD33C409AE7328D8C5965C3/Type/@EntryValue">InAnyXamlProject</s:String>
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=AA00FE2BDD2D35429C91F3F1C6A11BCF/Field/=HEADER/@KeyIndexDefined">True</s:Boolean>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=AA00FE2BDD2D35429C91F3F1C6A11BCF/Field/=HEADER/Expression/@EntryValue">fileheader()</s:String>
+    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=AA00FE2BDD2D35429C91F3F1C6A11BCF/Field/=HEADER/InitialRange/@EntryValue">-1</s:Int64>
+    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=AA00FE2BDD2D35429C91F3F1C6A11BCF/Field/=HEADER/Order/@EntryValue">0</s:Int64>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=AA00FE2BDD2D35429C91F3F1C6A11BCF/Field/=HEADER/InitialSection/@EntryValue">CEDE21F2D361E248BD568E538548D636</s:String>
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=AA00FE2BDD2D35429C91F3F1C6A11BCF/Field/=CLASS/@KeyIndexDefined">True</s:Boolean>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=AA00FE2BDD2D35429C91F3F1C6A11BCF/Field/=CLASS/Expression/@EntryValue">getAlphaNumericFileNameWithoutExtension()</s:String>
+    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=AA00FE2BDD2D35429C91F3F1C6A11BCF/Field/=CLASS/InitialRange/@EntryValue">-1</s:Int64>
+    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=AA00FE2BDD2D35429C91F3F1C6A11BCF/Field/=CLASS/Order/@EntryValue">1</s:Int64>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=AA00FE2BDD2D35429C91F3F1C6A11BCF/Field/=CLASS/InitialSection/@EntryValue">CEDE21F2D361E248BD568E538548D636</s:String>
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=AA00FE2BDD2D35429C91F3F1C6A11BCF/Field/=NAMESPACE/@KeyIndexDefined">True</s:Boolean>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=AA00FE2BDD2D35429C91F3F1C6A11BCF/Field/=NAMESPACE/Expression/@EntryValue">fileDefaultNamespace()</s:String>
+    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=AA00FE2BDD2D35429C91F3F1C6A11BCF/Field/=NAMESPACE/InitialRange/@EntryValue">-1</s:Int64>
+    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=AA00FE2BDD2D35429C91F3F1C6A11BCF/Field/=NAMESPACE/Order/@EntryValue">2</s:Int64>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=AA00FE2BDD2D35429C91F3F1C6A11BCF/Field/=NAMESPACE/InitialSection/@EntryValue">CEDE21F2D361E248BD568E538548D636</s:String>
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=AA00FE2BDD2D35429C91F3F1C6A11BCF/Section/=CEDE21F2D361E248BD568E538548D636/@KeyIndexDefined">True</s:Boolean>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=AA00FE2BDD2D35429C91F3F1C6A11BCF/Section/=CEDE21F2D361E248BD568E538548D636/LocationSelectorName/@EntryValue">manual</s:String>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=AA00FE2BDD2D35429C91F3F1C6A11BCF/Section/=CEDE21F2D361E248BD568E538548D636/LocationSelectorConfig/@EntryValue">&lt;RelativeConfig File="$FULLNAME$.cs" /&gt;</s:String>
+    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=AA00FE2BDD2D35429C91F3F1C6A11BCF/Section/=CEDE21F2D361E248BD568E538548D636/Order/@EntryValue">0</s:Int64>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=AA00FE2BDD2D35429C91F3F1C6A11BCF/Section/=CEDE21F2D361E248BD568E538548D636/SectionPlain/Text/@EntryValue">$HEADER$using Avalonia;&#xD;
+using Avalonia.Controls;&#xD;
+using Avalonia.Markup.Xaml;&#xD;
+&#xD;
+namespace $NAMESPACE$&#xD;
+{&#xD;
+    public class $CLASS$ : UserControl&#xD;
+    {&#xD;
+        public $CLASS$()&#xD;
+        {&#xD;
+            InitializeComponent();&#xD;
+        }&#xD;
+&#xD;
+        private void InitializeComponent()&#xD;
+        {&#xD;
+            AvaloniaXamlLoader.Load(this);&#xD;
+        }&#xD;
+    }&#xD;
+}&#xD;
+</s:String>
+
+    <!-- Avalonia Window -->
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=2FBEA98F8AB8294B87A62E4CCD2CC3E3/Entry/=AA11FE2BDD2D35429C91F3F1C6A11BCF/@KeyIndexDefined">True</s:Boolean>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=2FBEA98F8AB8294B87A62E4CCD2CC3E3/Entry/=AA11FE2BDD2D35429C91F3F1C6A11BCF/EntryName/@EntryValue">Avalonia Window</s:String>
+
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=AA11FE2BDD2D35429C91F3F1C6A11BCF/@KeyIndexDefined">True</s:Boolean>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=AA11FE2BDD2D35429C91F3F1C6A11BCF/Description/@EntryValue">Avalonia Window</s:String>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=AA11FE2BDD2D35429C91F3F1C6A11BCF/Image/@EntryValue">Xaml</s:String>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=AA11FE2BDD2D35429C91F3F1C6A11BCF/Text/@EntryValue">&lt;Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="$NAMESPACE$.$CLASS$"
+        Title="$CLASS$"&gt;
+  Welcome to Avalonia!$END$
+&lt;/Window&gt;
+</s:String>
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=AA11FE2BDD2D35429C91F3F1C6A11BCF/Reformat/@EntryValue">True</s:Boolean>
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=AA11FE2BDD2D35429C91F3F1C6A11BCF/ShortenQualifiedReferences/@EntryValue">True</s:Boolean>
+
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=AA11FE2BDD2D35429C91F3F1C6A11BCF/CustomProperties/=Extension/@EntryIndexedValue">axaml</s:String>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=AA11FE2BDD2D35429C91F3F1C6A11BCF/CustomProperties/=FileName/@EntryIndexedValue">Window</s:String>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=AA11FE2BDD2D35429C91F3F1C6A11BCF/CustomProperties/=ValidateFileName/@EntryIndexedValue">True</s:String>
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=AA11FE2BDD2D35429C91F3F1C6A11BCF/Applicability/=File/@EntryIndexedValue">True</s:Boolean>
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=AA11FE2BDD2D35429C91F3F1C6A11BCF/Scope/=1F4DBD605BD33C409AE7328D8C5965C3/@KeyIndexDefined">True</s:Boolean>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=AA11FE2BDD2D35429C91F3F1C6A11BCF/Scope/=1F4DBD605BD33C409AE7328D8C5965C3/Type/@EntryValue">InAnyXamlProject</s:String>
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=AA11FE2BDD2D35429C91F3F1C6A11BCF/Field/=HEADER/@KeyIndexDefined">True</s:Boolean>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=AA11FE2BDD2D35429C91F3F1C6A11BCF/Field/=HEADER/Expression/@EntryValue">fileheader()</s:String>
+    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=AA11FE2BDD2D35429C91F3F1C6A11BCF/Field/=HEADER/InitialRange/@EntryValue">-1</s:Int64>
+    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=AA11FE2BDD2D35429C91F3F1C6A11BCF/Field/=HEADER/Order/@EntryValue">0</s:Int64>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=AA11FE2BDD2D35429C91F3F1C6A11BCF/Field/=HEADER/InitialSection/@EntryValue">CEDE21F2D361E248BD568E538548D636</s:String>
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=AA11FE2BDD2D35429C91F3F1C6A11BCF/Field/=CLASS/@KeyIndexDefined">True</s:Boolean>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=AA11FE2BDD2D35429C91F3F1C6A11BCF/Field/=CLASS/Expression/@EntryValue">getAlphaNumericFileNameWithoutExtension()</s:String>
+    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=AA11FE2BDD2D35429C91F3F1C6A11BCF/Field/=CLASS/InitialRange/@EntryValue">-1</s:Int64>
+    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=AA11FE2BDD2D35429C91F3F1C6A11BCF/Field/=CLASS/Order/@EntryValue">1</s:Int64>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=AA11FE2BDD2D35429C91F3F1C6A11BCF/Field/=CLASS/InitialSection/@EntryValue">CEDE21F2D361E248BD568E538548D636</s:String>
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=AA11FE2BDD2D35429C91F3F1C6A11BCF/Field/=NAMESPACE/@KeyIndexDefined">True</s:Boolean>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=AA11FE2BDD2D35429C91F3F1C6A11BCF/Field/=NAMESPACE/Expression/@EntryValue">fileDefaultNamespace()</s:String>
+    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=AA11FE2BDD2D35429C91F3F1C6A11BCF/Field/=NAMESPACE/InitialRange/@EntryValue">-1</s:Int64>
+    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=AA11FE2BDD2D35429C91F3F1C6A11BCF/Field/=NAMESPACE/Order/@EntryValue">2</s:Int64>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=AA11FE2BDD2D35429C91F3F1C6A11BCF/Field/=NAMESPACE/InitialSection/@EntryValue">CEDE21F2D361E248BD568E538548D636</s:String>
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=AA11FE2BDD2D35429C91F3F1C6A11BCF/Section/=CEDE21F2D361E248BD568E538548D636/@KeyIndexDefined">True</s:Boolean>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=AA11FE2BDD2D35429C91F3F1C6A11BCF/Section/=CEDE21F2D361E248BD568E538548D636/LocationSelectorName/@EntryValue">manual</s:String>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=AA11FE2BDD2D35429C91F3F1C6A11BCF/Section/=CEDE21F2D361E248BD568E538548D636/LocationSelectorConfig/@EntryValue">&lt;RelativeConfig File="$FULLNAME$.cs" /&gt;</s:String>
+    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=AA11FE2BDD2D35429C91F3F1C6A11BCF/Section/=CEDE21F2D361E248BD568E538548D636/Order/@EntryValue">0</s:Int64>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=AA11FE2BDD2D35429C91F3F1C6A11BCF/Section/=CEDE21F2D361E248BD568E538548D636/SectionPlain/Text/@EntryValue">$HEADER$using Avalonia;&#xD;
+using Avalonia.Controls;&#xD;
+using Avalonia.Markup.Xaml;&#xD;
+&#xD;
+namespace $NAMESPACE$&#xD;
+{&#xD;
+    public class $CLASS$ : Window&#xD;
+    {&#xD;
+        public $CLASS$()&#xD;
+        {&#xD;
+            InitializeComponent();&#xD;
+#if DEBUG&#xD;
+            this.AttachDevTools();&#xD;
+#endif&#xD;
+        }&#xD;
+&#xD;
+        private void InitializeComponent()&#xD;
+        {&#xD;
+            AvaloniaXamlLoader.Load(this);&#xD;
+        }&#xD;
+    }&#xD;
+}&#xD;
+</s:String>
+
+    <!-- Resources -->
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=2FBEA98F8AB8294B87A62E4CCD2CC3E3/Entry/=AA22FE2BDD2D35429C91F3F1C6A11BCF/@KeyIndexDefined">True</s:Boolean>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=2FBEA98F8AB8294B87A62E4CCD2CC3E3/Entry/=AA22FE2BDD2D35429C91F3F1C6A11BCF/EntryName/@EntryValue">Avalonia Resource</s:String>
+
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=AA22FE2BDD2D35429C91F3F1C6A11BCF/@KeyIndexDefined">True</s:Boolean>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=AA22FE2BDD2D35429C91F3F1C6A11BCF/Description/@EntryValue">Avalonia Resource</s:String>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=AA22FE2BDD2D35429C91F3F1C6A11BCF/Image/@EntryValue">Xaml</s:String>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=AA22FE2BDD2D35429C91F3F1C6A11BCF/Text/@EntryValue">&lt;ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"&gt;
+  &lt;!-- Add Resources Here --&gt;$END$
+&lt;/ResourceDictionary&gt;
+</s:String>
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=AA22FE2BDD2D35429C91F3F1C6A11BCF/Reformat/@EntryValue">True</s:Boolean>
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=AA22FE2BDD2D35429C91F3F1C6A11BCF/ShortenQualifiedReferences/@EntryValue">True</s:Boolean>
+
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=AA22FE2BDD2D35429C91F3F1C6A11BCF/CustomProperties/=Extension/@EntryIndexedValue">axaml</s:String>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=AA22FE2BDD2D35429C91F3F1C6A11BCF/CustomProperties/=FileName/@EntryIndexedValue">Resources</s:String>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=AA22FE2BDD2D35429C91F3F1C6A11BCF/CustomProperties/=ValidateFileName/@EntryIndexedValue">True</s:String>
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=AA22FE2BDD2D35429C91F3F1C6A11BCF/Applicability/=File/@EntryIndexedValue">True</s:Boolean>
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=AA22FE2BDD2D35429C91F3F1C6A11BCF/Scope/=1F4DBD605BD33C409AE7328D8C5965C3/@KeyIndexDefined">True</s:Boolean>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=AA22FE2BDD2D35429C91F3F1C6A11BCF/Scope/=1F4DBD605BD33C409AE7328D8C5965C3/Type/@EntryValue">InAnyXamlProject</s:String>
+
+
+    <!-- Styles -->
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=2FBEA98F8AB8294B87A62E4CCD2CC3E3/Entry/=AA33FE2BDD2D35429C91F3F1C6A11BCF/@KeyIndexDefined">True</s:Boolean>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=2FBEA98F8AB8294B87A62E4CCD2CC3E3/Entry/=AA33FE2BDD2D35429C91F3F1C6A11BCF/EntryName/@EntryValue">Avalonia Style</s:String>
+
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=AA33FE2BDD2D35429C91F3F1C6A11BCF/@KeyIndexDefined">True</s:Boolean>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=AA33FE2BDD2D35429C91F3F1C6A11BCF/Description/@EntryValue">Avalonia Style</s:String>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=AA33FE2BDD2D35429C91F3F1C6A11BCF/Image/@EntryValue">Xaml</s:String>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=AA33FE2BDD2D35429C91F3F1C6A11BCF/Text/@EntryValue">&lt;Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"&gt;
+  &lt;Design.PreviewWith&gt;
+    &lt;Border Padding="20"&gt;
+      &lt;!-- Add Controls for Previewer Here --&gt;
+    &lt;/Border&gt;
+  &lt;/Design.PreviewWith&gt;
+
+  &lt;!-- Add Styles Here --&gt;$END$
+&lt;/Styles&gt;
+</s:String>
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=AA33FE2BDD2D35429C91F3F1C6A11BCF/Reformat/@EntryValue">True</s:Boolean>
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=AA33FE2BDD2D35429C91F3F1C6A11BCF/ShortenQualifiedReferences/@EntryValue">True</s:Boolean>
+
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=AA33FE2BDD2D35429C91F3F1C6A11BCF/CustomProperties/=Extension/@EntryIndexedValue">axaml</s:String>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=AA33FE2BDD2D35429C91F3F1C6A11BCF/CustomProperties/=FileName/@EntryIndexedValue">Styles</s:String>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=AA33FE2BDD2D35429C91F3F1C6A11BCF/CustomProperties/=ValidateFileName/@EntryIndexedValue">True</s:String>
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=AA33FE2BDD2D35429C91F3F1C6A11BCF/Applicability/=File/@EntryIndexedValue">True</s:Boolean>
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=AA33FE2BDD2D35429C91F3F1C6A11BCF/Scope/=1F4DBD605BD33C409AE7328D8C5965C3/@KeyIndexDefined">True</s:Boolean>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=AA33FE2BDD2D35429C91F3F1C6A11BCF/Scope/=1F4DBD605BD33C409AE7328D8C5965C3/Type/@EntryValue">InAnyXamlProject</s:String>
+</wpf:ResourceDictionary>
