@@ -20,6 +20,7 @@ import java.time.Duration
 class PreviewTests : BaseTestWithSolution() {
     override fun getSolutionDirectoryName() = "AvaloniaMvvm"
     override val restoreNuGetPackages = true
+    override val backendLoadedTimeout: Duration = Duration.ofMinutes(2L)
 
     private val mainWindowFile
         get() = getVirtualFileFromPath("Views/MainWindow.xaml", activeSolutionDirectory)
