@@ -197,7 +197,7 @@ namespace $NAMESPACE$&#xD;
 }&#xD;
 </s:String>
 
-    <!-- Resources -->
+    <!-- Avalonia Resource Dictionary -->
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=2FBEA98F8AB8294B87A62E4CCD2CC3E3/Entry/=AA22FE2BDD2D35429C91F3F1C6A11BCF/@KeyIndexDefined">True</s:Boolean>
     <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=2FBEA98F8AB8294B87A62E4CCD2CC3E3/Entry/=AA22FE2BDD2D35429C91F3F1C6A11BCF/EntryName/@EntryValue">Avalonia Resource Dictionary</s:String>
 
@@ -220,7 +220,7 @@ namespace $NAMESPACE$&#xD;
     <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=AA22FE2BDD2D35429C91F3F1C6A11BCF/Scope/=1F4DBD605BD33C409AE7328D8C5965C3/Type/@EntryValue">InAnyXamlProject</s:String>
 
 
-    <!-- Styles -->
+    <!-- Avalonia Styles -->
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=2FBEA98F8AB8294B87A62E4CCD2CC3E3/Entry/=AA33FE2BDD2D35429C91F3F1C6A11BCF/@KeyIndexDefined">True</s:Boolean>
     <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=2FBEA98F8AB8294B87A62E4CCD2CC3E3/Entry/=AA33FE2BDD2D35429C91F3F1C6A11BCF/EntryName/@EntryValue">Avalonia Styles</s:String>
 
