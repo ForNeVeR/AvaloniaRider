@@ -7,32 +7,14 @@ on:
 jobs:
   publish:
     runs-on: ubuntu-18.04
-    env:
-      NUGET_PACKAGES: ${{ github.workspace }}/.github/nuget-packages
-      GRADLE_USER_HOME: ${{ github.workspace }}/.github/gradle
     steps:
       - uses: actions/checkout@v2
 
       # RdGen
-      - name: Gradle JVM Cache
-        uses: actions/cache@v1.1.0
-        with:
-          path: build/gradle-jvm
-          key: ${{ runner.os }}.gradle-jvm.${{ hashFiles('**/*.gradle') }}+${{ hashFiles('gradle*') }}
-      - name: Gradle Wrapper Cache
-        uses: actions/cache@v1.1.0
-        with:
-          path: ${{ env.GRADLE_USER_HOME }}/wrapper
-          key: ${{ runner.os }}.gradle-wrapper.${{ hashFiles('gradle/**') }}
       - name: RdGen
         run: ./gradlew rdgen
 
       # Backend
-      - name: NuGet Cache
-        uses: actions/cache@v1.1.0
-        with:
-          path: ${{ env.NUGET_PACKAGES }}
-          key: ${{ runner.os }}.nuget.${{ hashFiles('src/dotnet/**/*.csproj') }}+${{ hashFiles('src/dotnet/**/*.props') }}
       - name: Setup .NET Core SDK
         uses: actions/setup-dotnet@v1.7.2
         with:
@@ -50,7 +32,3 @@ jobs:
         run: scripts/Publish-Distribution.ps1 -Channel dev -AuthToken $env:JETBRAINS_MARKETPLACE_TOKEN
         env:
           JETBRAINS_MARKETPLACE_TOKEN: ${{ secrets.JETBRAINS_MARKETPLACE_TOKEN }}
-
-      # Finalize
-      - name: Stop Gradle Daemon # to collect Gradle cache
-        run: ./gradlew --stop

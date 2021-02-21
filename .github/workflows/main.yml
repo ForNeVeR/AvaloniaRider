@@ -13,37 +13,14 @@ jobs:
     strategy:
       matrix:
         image: [macos-10.15, ubuntu-18.04, windows-2019]
-    env:
-      NUGET_PACKAGES: ${{ github.workspace }}/.github/nuget-packages
-      GRADLE_USER_HOME: ${{ github.workspace }}/.github/gradle
     steps:
       - uses: actions/checkout@v2
 
       # RdGen
-      - name: Gradle JVM Cache
-        uses: actions/cache@v1.1.0
-        with:
-          path: build/gradle-jvm
-          key: ${{ runner.os }}.gradle-jvm.${{ hashFiles('**/*.gradle') }}+${{ hashFiles('gradle*') }}
-      - name: Gradle Wrapper Cache
-        uses: actions/cache@v1.1.0
-        with:
-          path: ${{ env.GRADLE_USER_HOME }}/wrapper
-          key: ${{ runner.os }}.gradle-wrapper.${{ hashFiles('gradle/**') }}
-      - name: Gradle Cache
-        uses: actions/cache@v1.1.0
-        with:
-          path: ${{ env.GRADLE_USER_HOME }}/caches/modules-2
-          key: ${{ runner.os }}.gradle.${{ hashFiles('**/*.gradle') }}
       - name: RdGen
         run: ./gradlew rdgen
 
       # Backend
-      - name: NuGet Cache
-        uses: actions/cache@v1.1.0
-        with:
-          path: ${{ env.NUGET_PACKAGES }}
-          key: ${{ runner.os }}.nuget.${{ hashFiles('src/dotnet/**/*.csproj') }}+${{ hashFiles('src/dotnet/**/*.props') }}
       - name: Setup .NET Core SDK
         uses: actions/setup-dotnet@v1.7.2
         with:
@@ -83,7 +60,3 @@ jobs:
         with:
           name: avaloniarider-${{ env.AVALONIA_RIDER_VERSION }}
           path: build/distributions/unpacked
-
-      # Finalize
-      - name: Stop Gradle Daemon # to collect Gradle cache
-        run: ./gradlew --stop
