@@ -17,8 +17,9 @@ import com.jetbrains.rd.util.lifetime.*
 import com.jetbrains.rd.util.reactive.*
 import com.jetbrains.rd.util.throttleLast
 import com.jetbrains.rider.build.BuildHost
+import com.jetbrains.rider.model.riderSolutionLifecycle
+import com.jetbrains.rider.projectView.solution
 import com.jetbrains.rider.projectView.workspace.ProjectModelEntity
-import com.jetbrains.rider.projectView.workspace.WorkspaceModelEvents
 import com.jetbrains.rider.projectView.workspace.containingProjectEntity
 import com.jetbrains.rider.projectView.workspace.getProjectModelEntities
 import com.jetbrains.rider.run.configurations.IProjectBasedRunConfiguration
@@ -89,7 +90,6 @@ class AvaloniaPreviewerSessionController(
     }
 
     private val workspaceModel = WorkspaceModel.getInstance(project)
-    private val workspaceModelEvents = WorkspaceModelEvents.getInstance(project)
 
     private val statusProperty = Property(Status.Idle)
 
@@ -135,7 +135,8 @@ class AvaloniaPreviewerSessionController(
 
         val result = CompletableDeferred<ProjectModelEntity>()
 
-        workspaceModelEvents.syncSignal.adviseNotNullOnce(controllerLifetime) {
+        project.solution.riderSolutionLifecycle.isProjectModelReady.adviseUntil(controllerLifetime) { isReady ->
+            if (!isReady) return@adviseUntil false
             try {
                 logger.debug { "Project model view synchronized" }
                 val projectModelEntities = workspaceModel.getProjectModelEntities(virtualFile, project)
@@ -150,6 +151,8 @@ class AvaloniaPreviewerSessionController(
             } catch (t: Throwable) {
                 result.completeExceptionally(t)
             }
+
+            return@adviseUntil true
         }
 
         return result.await()
