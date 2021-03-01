@@ -2,7 +2,6 @@ package me.fornever.avaloniarider.idea.editor
 
 import com.intellij.codeHighlighting.BackgroundEditorHighlighter
 import com.intellij.openapi.actionSystem.DefaultActionGroup
-import com.intellij.openapi.fileEditor.FileEditor
 import com.intellij.openapi.fileEditor.FileEditorLocation
 import com.intellij.openapi.fileEditor.FileEditorState
 import com.intellij.openapi.project.Project
@@ -10,17 +9,31 @@ import com.intellij.openapi.util.UserDataHolderBase
 import com.intellij.openapi.vfs.VirtualFile
 import com.jetbrains.rd.util.lifetime.Lifetime
 import com.jetbrains.rd.util.lifetime.LifetimeDefinition
+import com.jetbrains.rd.util.reactive.IPropertyView
+import com.jetbrains.rd.util.reactive.Property
+import com.jetbrains.rider.xaml.FocusableEditor
+import com.jetbrains.rider.xaml.PreviewEditorToolbar
+import com.jetbrains.rider.xaml.XamlPreviewEditor
 import me.fornever.avaloniarider.idea.editor.actions.RestartPreviewerAction
 import me.fornever.avaloniarider.previewer.AvaloniaPreviewerSessionController
 import java.beans.PropertyChangeListener
 import javax.swing.JComponent
 
 abstract class AvaloniaPreviewEditorBase(
-    project: Project,
+    final override val project: Project,
     private val currentFile: VirtualFile
-) : UserDataHolderBase(), FileEditor {
+) : UserDataHolderBase(), XamlPreviewEditor {
 
-    override fun getName() = "Preview"
+    override var parentEditor: FocusableEditor? = null
+    override val toolbar: PreviewEditorToolbar? = null
+    override val virtualFilePath: String = currentFile.path
+    override val zoomFactor: Double = 1.0
+    override val zoomFactorLive: IPropertyView<Double> = Property(1.0)
+
+    override fun updateLayout() {
+    }
+
+    override fun getName() = "Avalonia Preview"
     override fun isValid() = true
 
     override fun getFile() = currentFile

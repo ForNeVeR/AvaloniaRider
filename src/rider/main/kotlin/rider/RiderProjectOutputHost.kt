@@ -2,12 +2,13 @@ package me.fornever.avaloniarider.rider
 
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
+import com.intellij.workspaceModel.ide.toPath
 import com.jetbrains.rd.ide.model.RdGetProjectOutputArgs
 import com.jetbrains.rd.ide.model.RdProjectOutput
 import com.jetbrains.rd.ide.model.riderProjectOutputModel
 import com.jetbrains.rd.util.lifetime.Lifetime
-import com.jetbrains.rider.projectView.nodes.ProjectModelNode
 import com.jetbrains.rider.projectView.solution
+import com.jetbrains.rider.projectView.workspace.ProjectModelEntity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import me.fornever.avaloniarider.idea.concurrency.ApplicationAnyModality
@@ -20,11 +21,10 @@ class RiderProjectOutputHost(private val project: Project) {
             project.getService(RiderProjectOutputHost::class.java)
     }
 
-    suspend fun getProjectOutput(lifetime: Lifetime, projectNode: ProjectModelNode): RdProjectOutput =
+    suspend fun getProjectOutput(lifetime: Lifetime, projectNode: ProjectModelEntity): RdProjectOutput =
         withContext(Dispatchers.ApplicationAnyModality) {
             val model = project.solution.riderProjectOutputModel
-            val projectFilePath = projectNode.getVirtualFile()!!.path
-
+            @Suppress("UnstableApiUsage") val projectFilePath = projectNode.url!!.toPath().toString()
             model.getProjectOutput.start(lifetime, RdGetProjectOutputArgs(projectFilePath)).await(lifetime)
         }
 }
