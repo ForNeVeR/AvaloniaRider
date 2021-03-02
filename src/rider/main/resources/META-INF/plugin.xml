@@ -6,6 +6,7 @@
 
     <depends>com.intellij.modules.rider</depends>
     <depends>com.intellij.javafx</depends>
+    <depends>com.jetbrains.xaml.previewer</depends>
 
     <description>
         This is the Avalonia integration for JetBrains Rider. It adds a live

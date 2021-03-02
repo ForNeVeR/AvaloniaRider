@@ -10,13 +10,17 @@ import com.intellij.openapi.fileEditor.FileEditorState
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.UserDataHolderBase
 import com.intellij.openapi.vfs.VirtualFile
+import com.jetbrains.rd.platform.util.launchOnUi
 import com.jetbrains.rd.util.lifetime.Lifetime
 import com.jetbrains.rd.util.lifetime.LifetimeDefinition
 import com.jetbrains.rd.util.reactive.IPropertyView
 import com.jetbrains.rd.util.reactive.Property
+import com.jetbrains.rd.util.reactive.adviseUntil
 import com.jetbrains.rider.xaml.FocusableEditor
 import com.jetbrains.rider.xaml.PreviewEditorToolbar
 import com.jetbrains.rider.xaml.XamlPreviewEditor
+import com.jetbrains.rider.xaml.preview.editor.XamlPreviewEditorSplitLayout
+import com.jetbrains.rider.xaml.preview.editor.XamlPreviewerSplitEditor
 import me.fornever.avaloniarider.idea.editor.actions.RestartPreviewerAction
 import me.fornever.avaloniarider.previewer.AvaloniaPreviewerSessionController
 import java.awt.BorderLayout
@@ -46,6 +50,22 @@ abstract class AvaloniaPreviewEditorBase(
     private val lifetimeDefinition = LifetimeDefinition()
     protected val lifetime: Lifetime = lifetimeDefinition
     protected val sessionController = AvaloniaPreviewerSessionController(project, lifetime, file)
+    init {
+        sessionController.status.adviseUntil(lifetime) { status ->
+            when (status) {
+                AvaloniaPreviewerSessionController.Status.Working -> {
+                    lifetime.launchOnUi {
+                        (parentEditor as? XamlPreviewerSplitEditor<*, *>)?.triggerLayoutChange(
+                            XamlPreviewEditorSplitLayout.SPLIT,
+                            false
+                        )
+                    }
+                    true
+                }
+                else -> false
+            }
+        }
+    }
 
     protected abstract val toolbarComponent: JComponent
     protected abstract val editorComponent: JComponent
