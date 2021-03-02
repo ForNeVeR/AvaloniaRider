@@ -41,18 +41,13 @@ namespace ReSharperPlugin.AvaloniaRider
                 // Take .NET Core first, then .NET Framework, and then .NET Standard. The comparer below will hold this order.
                 .OrderBy(tfm => (!tfm.IsNetCoreApp, !tfm.IsNetFramework, !tfm.IsNetStandard))
                 .First();
-            var rdTargetFramework = targetFramework.ToRdTargetFrameworkInfo();
 
             _logger.Trace("TFM selected for project {0}: {1}", args, targetFramework);
             var assemblyInfo = project.GetOutputAssemblyInfo(targetFramework).NotNull();
             _logger.Trace("Assembly file path detected for project {0}: {1}", args, assemblyInfo.Location);
             return RdTask<RdProjectOutput>.Successful(
                 new RdProjectOutput(
-                    new RdTargetFrameworkIdMock(
-                        rdTargetFramework.ShortName,
-                        rdTargetFramework.PresentableName,
-                        isNetCoreApp: rdTargetFramework.IsNetCoreApp,
-                        isNetFramework: rdTargetFramework.IsNetFramework),
+                    targetFramework.ToRdTargetFrameworkInfo(),
                     assemblyInfo.Location.ToString()));
         }
     }
