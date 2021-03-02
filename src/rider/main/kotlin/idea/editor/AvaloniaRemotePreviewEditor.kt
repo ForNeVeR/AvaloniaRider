@@ -13,5 +13,6 @@ class AvaloniaRemotePreviewEditor(
         BitmapPreviewEditorComponent(lifetime, sessionController)
     }
 
-    override fun getComponent() = panel.value
+    override val editorComponent = panel.value
+    override val toolbarComponent = createToolbarComponent()
 }
