@@ -26,6 +26,9 @@
         <projectConfigurable groupId="language"
                              instance="me.fornever.avaloniarider.idea.settings.AvaloniaSettingsConfigurable" />
 
+        <fileEditorProvider implementation="me.fornever.avaloniarider.idea.editor.legacy.AvaloniaPreviewEditorProvider"
+                            os="unix"/>
+
         <rider.xaml.preview.editor implementation="me.fornever.avaloniarider.idea.editor.AvaloniaPreviewerXamlEditorExtension"/>
     </extensions>
 </idea-plugin>
