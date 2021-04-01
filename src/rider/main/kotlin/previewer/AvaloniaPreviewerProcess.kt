@@ -15,7 +15,6 @@ import com.intellij.util.io.BaseOutputReader
 import com.jetbrains.rd.framework.util.NetUtils
 import com.jetbrains.rd.platform.util.application
 import com.jetbrains.rd.util.lifetime.Lifetime
-import com.jetbrains.rd.util.lifetime.onTermination
 import com.jetbrains.rider.runtime.DotNetRuntime
 import com.jetbrains.rider.runtime.dotNetCore.DotNetCoreRuntime
 import kotlinx.coroutines.CompletableDeferred
@@ -80,23 +79,29 @@ class AvaloniaPreviewerProcess(
         return consoleView
     }
 
-    private fun startProcess(commandLine: GeneralCommandLine, consoleView: ConsoleView): OSProcessHandler {
+    private fun startProcess(
+        lifetime: Lifetime,
+        project: Project,
+        commandLine: GeneralCommandLine,
+        consoleView: ConsoleView
+    ): OSProcessHandler {
         val processHandler = object : OSProcessHandler(commandLine) {
             override fun readerOptions() =
                 BaseOutputReader.Options.forMostlySilentProcess()
 
             override fun notifyTextAvailable(text: String, outputType: Key<*>) {
-                if (application.isUnitTestMode)
+                if (application.isUnitTestMode || logger.isTraceEnabled)
                     logger.info("$outputType: $text")
                 super.notifyTextAvailable(text, outputType)
             }
         }
 
+        consoleView.attachToProcess(processHandler)
+
         logger.info("Starting process ${commandLine.commandLineString}")
         processHandler.startNotify()
-        lifetime.onTermination { processHandler.destroyProcess() }
+        ProcessReaper.getInstance(project).registerProcess(lifetime, processHandler)
 
-        consoleView.attachToProcess(processHandler)
         return processHandler
     }
 
@@ -110,10 +115,10 @@ class AvaloniaPreviewerProcess(
         result.await()
     }
 
-    suspend fun run(project: Project, transport: PreviewerTransport, method: PreviewerMethod) {
+    suspend fun run(lifetime: Lifetime, project: Project, transport: PreviewerTransport, method: PreviewerMethod) {
         val commandLine = getCommandLine(transport, method)
         val consoleView = withContext(Dispatchers.ApplicationAnyModality) { registerNewConsoleView(project) }
-        val process = startProcess(commandLine, consoleView)
+        val process = startProcess(lifetime, project, commandLine, consoleView)
         waitForTermination(process)
     }
 }

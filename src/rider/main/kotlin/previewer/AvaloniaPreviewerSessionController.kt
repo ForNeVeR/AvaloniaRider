@@ -189,6 +189,7 @@ class AvaloniaPreviewerSessionController(
         parameters: AvaloniaPreviewerParameters,
         xamlFile: VirtualFile
     ) = AvaloniaPreviewerSession(
+        lifetime,
         socket,
         parameters.xamlContainingAssemblyPath
     ).apply {
@@ -279,7 +280,7 @@ class AvaloniaPreviewerSessionController(
         }
         val processJob = GlobalScope.async {
             logger.info("Starting previewer process")
-            process.run(project, transport, method)
+            process.run(lifetime, project, transport, method)
         }
         statusProperty.set(Status.Working)
 
