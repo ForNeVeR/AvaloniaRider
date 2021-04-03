@@ -57,7 +57,12 @@ class AvaloniaPreviewerSession(
                 socket.getInputStream().use {
                     DataInputStream(it).use { input ->
                         socket.getOutputStream().use { output ->
-                            writer = BsonStreamWriter(lifetime, avaloniaMessages.outgoingTypeRegistry, output)
+                            writer = BsonStreamWriter(
+                                lifetime,
+                                avaloniaMessages.outgoingTypeRegistry,
+                                output,
+                                serverSocket.localPort
+                            )
                             reader = BsonStreamReader(avaloniaMessages.incomingTypeRegistry, input)
                             while (!socket.isClosed) {
                                 val message = reader.readMessage()
