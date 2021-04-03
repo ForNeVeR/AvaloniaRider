@@ -1,6 +1,8 @@
 package me.fornever.avaloniarider.bson
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.jetbrains.rd.framework.util.startAsync
+import com.jetbrains.rd.platform.util.launchIOBackground
 import com.jetbrains.rd.util.getLogger
 import com.jetbrains.rd.util.lifetime.Lifetime
 import com.jetbrains.rd.util.lifetime.onTermination
@@ -31,17 +33,16 @@ class BsonStreamWriter(
     }
 
     fun startSendMessage(message: AvaloniaMessage) {
-        GlobalScope.launch(writerThread) {
-            lifetime.executeIfAlive {
-                val body = objectMapper.writeValueAsBytes(message)
-                val header = MessageHeader(body.size, typeRegistry.getValue(message.javaClass))
-                output.write(header.toByteArray())
-                logger.trace { "Sent header $header" }
+        @Suppress("BlockingMethodInNonBlockingContext")
+        lifetime.launchIOBackground {
+            val body = objectMapper.writeValueAsBytes(message)
+            val header = MessageHeader(body.size, typeRegistry.getValue(message.javaClass))
+            output.write(header.toByteArray())
+            logger.trace { "Sent header $header" }
 
-                output.write(body)
-                output.flush()
-                logger.trace { "Sent message $message" }
-            }
+            output.write(body)
+            output.flush()
+            logger.trace { "Sent message $message" }
         }
     }
 }

@@ -10,9 +10,7 @@ import com.intellij.openapi.util.Computable
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.workspaceModel.ide.WorkspaceModel
-import com.jetbrains.rd.platform.util.application
-import com.jetbrains.rd.platform.util.withIOBackgroundContext
-import com.jetbrains.rd.platform.util.withUiContext
+import com.jetbrains.rd.platform.util.*
 import com.jetbrains.rd.util.lifetime.*
 import com.jetbrains.rd.util.reactive.*
 import com.jetbrains.rd.util.throttleLast
@@ -262,7 +260,7 @@ class AvaloniaPreviewerSessionController(
         val newSession = createSession(lifetime, socket, parameters, xamlFile)
         session = newSession
 
-        val sessionJob = GlobalScope.async {
+        val sessionJob = lifetime.startIOBackgroundAsync {
             logger.info("Starting socket listener")
             try {
                 newSession.processSocketMessages()
@@ -278,7 +276,7 @@ class AvaloniaPreviewerSessionController(
                 }
             }
         }
-        val processJob = GlobalScope.async {
+        val processJob = lifetime.startIOBackgroundAsync {
             logger.info("Starting previewer process")
             process.run(lifetime, project, transport, method)
         }
@@ -295,8 +293,9 @@ class AvaloniaPreviewerSessionController(
     fun start(force: Boolean = false) {
         if (status.value == Status.Suspended && !force) return
 
-        GlobalScope.launch {
-            currentSessionLifetime = sessionLifetimeSource.next()
+        val lt = sessionLifetimeSource.next()
+        currentSessionLifetime = lt
+        lt.launchLongBackground {
             try {
                 executePreviewerAsync(currentSessionLifetime!!)
             } catch (ex: AvaloniaPreviewerInitializationException) {

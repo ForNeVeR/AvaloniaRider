@@ -7,6 +7,7 @@ import com.intellij.execution.process.ProcessAdapter
 import com.intellij.execution.process.ProcessEvent
 import com.intellij.execution.process.ProcessHandler
 import com.intellij.execution.ui.ConsoleView
+import com.intellij.execution.ui.ConsoleViewContentType
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.rd.createNestedDisposable
@@ -14,6 +15,7 @@ import com.intellij.openapi.util.Key
 import com.intellij.util.io.BaseOutputReader
 import com.jetbrains.rd.framework.util.NetUtils
 import com.jetbrains.rd.platform.util.application
+import com.jetbrains.rd.platform.util.withUiContext
 import com.jetbrains.rd.util.lifetime.Lifetime
 import com.jetbrains.rider.runtime.DotNetRuntime
 import com.jetbrains.rider.runtime.dotNetCore.DotNetCoreRuntime
@@ -94,6 +96,11 @@ class AvaloniaPreviewerProcess(
                     logger.info("$outputType: $text")
                 super.notifyTextAvailable(text, outputType)
             }
+
+            override fun notifyProcessTerminated(exitCode: Int) {
+                super.notifyProcessTerminated(exitCode)
+                consoleView.print("Process terminated with exit code $exitCode", ConsoleViewContentType.SYSTEM_OUTPUT)
+            }
         }
 
         consoleView.attachToProcess(processHandler)
@@ -112,13 +119,20 @@ class AvaloniaPreviewerProcess(
                 result.complete(Unit)
             }
         }, lifetime.createNestedDisposable("AvaloniaPreviewerProcess::waitForTermination"))
+        if (process.isProcessTerminated) {
+            logger.error("Process terminated")
+        }
         result.await()
     }
 
     suspend fun run(lifetime: Lifetime, project: Project, transport: PreviewerTransport, method: PreviewerMethod) {
+        logger.info("AvaloniaPreviewerProcess::run#1")
         val commandLine = getCommandLine(transport, method)
-        val consoleView = withContext(Dispatchers.ApplicationAnyModality) { registerNewConsoleView(project) }
+        logger.info("AvaloniaPreviewerProcess::run#2")
+        val consoleView = withUiContext { registerNewConsoleView(project) }
+        logger.info("AvaloniaPreviewerProcess::run#3")
         val process = startProcess(lifetime, project, commandLine, consoleView)
+        logger.info("AvaloniaPreviewerProcess::run#4")
         waitForTermination(process)
     }
 }
