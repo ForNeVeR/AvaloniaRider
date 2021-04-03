@@ -131,13 +131,13 @@ class AvaloniaPreviewerProcess(
         method: PreviewerMethod,
         title: String
     ) {
-        logger.info("AvaloniaPreviewerProcess::run#1")
+        logger.info("1/4: generating process command line")
         val commandLine = getCommandLine(transport, method)
-        logger.info("AvaloniaPreviewerProcess::run#2")
+        logger.info("2/4: creating a console view")
         val consoleView = withUiContext { registerNewConsoleView(project) }
-        logger.info("AvaloniaPreviewerProcess::run#3")
+        logger.info("3/4: starting a process")
         val process = startProcess(lifetime, project, commandLine, consoleView, title)
-        logger.info("AvaloniaPreviewerProcess::run#4")
+        logger.info("4/4: awaiting termination")
         waitForTermination(process, title)
     }
 }
