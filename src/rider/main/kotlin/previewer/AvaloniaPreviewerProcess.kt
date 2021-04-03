@@ -20,10 +20,7 @@ import com.jetbrains.rd.util.lifetime.Lifetime
 import com.jetbrains.rider.runtime.DotNetRuntime
 import com.jetbrains.rider.runtime.dotNetCore.DotNetCoreRuntime
 import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import me.fornever.avaloniarider.idea.AvaloniaToolWindowManager
-import me.fornever.avaloniarider.idea.concurrency.ApplicationAnyModality
 import java.nio.file.Path
 
 data class AvaloniaPreviewerParameters(
@@ -85,21 +82,22 @@ class AvaloniaPreviewerProcess(
         lifetime: Lifetime,
         project: Project,
         commandLine: GeneralCommandLine,
-        consoleView: ConsoleView
+        consoleView: ConsoleView,
+        title: String
     ): OSProcessHandler {
         val processHandler = object : OSProcessHandler(commandLine) {
             override fun readerOptions() =
                 BaseOutputReader.Options.forMostlySilentProcess()
 
             override fun notifyTextAvailable(text: String, outputType: Key<*>) {
-                if (application.isUnitTestMode || logger.isTraceEnabled)
-                    logger.info("$outputType: $text")
+                logger.info("$title [$outputType]: $text")
                 super.notifyTextAvailable(text, outputType)
             }
 
             override fun notifyProcessTerminated(exitCode: Int) {
-                super.notifyProcessTerminated(exitCode)
                 consoleView.print("Process terminated with exit code $exitCode", ConsoleViewContentType.SYSTEM_OUTPUT)
+                logger.info("Process $title exited with $exitCode")
+                super.notifyProcessTerminated(exitCode)
             }
         }
 
@@ -112,7 +110,7 @@ class AvaloniaPreviewerProcess(
         return processHandler
     }
 
-    private suspend fun waitForTermination(process: ProcessHandler) {
+    private suspend fun waitForTermination(process: ProcessHandler, title: String) {
         val result = CompletableDeferred<Unit>()
         process.addProcessListener(object : ProcessAdapter() {
             override fun processTerminated(event: ProcessEvent) {
@@ -120,19 +118,26 @@ class AvaloniaPreviewerProcess(
             }
         }, lifetime.createNestedDisposable("AvaloniaPreviewerProcess::waitForTermination"))
         if (process.isProcessTerminated) {
-            logger.error("Process terminated")
+            logger.warn("Already terminated: $title")
+            return
         }
         result.await()
     }
 
-    suspend fun run(lifetime: Lifetime, project: Project, transport: PreviewerTransport, method: PreviewerMethod) {
+    suspend fun run(
+        lifetime: Lifetime,
+        project: Project,
+        transport: PreviewerTransport,
+        method: PreviewerMethod,
+        title: String
+    ) {
         logger.info("AvaloniaPreviewerProcess::run#1")
         val commandLine = getCommandLine(transport, method)
         logger.info("AvaloniaPreviewerProcess::run#2")
         val consoleView = withUiContext { registerNewConsoleView(project) }
         logger.info("AvaloniaPreviewerProcess::run#3")
-        val process = startProcess(lifetime, project, commandLine, consoleView)
+        val process = startProcess(lifetime, project, commandLine, consoleView, title)
         logger.info("AvaloniaPreviewerProcess::run#4")
-        waitForTermination(process)
+        waitForTermination(process, title)
     }
 }

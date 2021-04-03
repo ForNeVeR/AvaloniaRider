@@ -24,9 +24,6 @@ import com.jetbrains.rider.run.configurations.IProjectBasedRunConfiguration
 import com.jetbrains.rider.ui.SwingScheduler
 import com.jetbrains.rider.ui.components.utils.documentChanged
 import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.selects.select
 import me.fornever.avaloniarider.controlmessages.*
 import me.fornever.avaloniarider.exceptions.AvaloniaPreviewerInitializationException
@@ -256,6 +253,7 @@ class AvaloniaPreviewerSessionController(
             AvaloniaPreviewerMethod.AvaloniaRemote -> AvaloniaRemoteMethod
             AvaloniaPreviewerMethod.Html -> HtmlMethod
         }
+        val processTitle = "${xamlFile.name} (port ${socket.localPort})"
         val process = AvaloniaPreviewerProcess(lifetime, parameters)
         val newSession = createSession(lifetime, socket, parameters, xamlFile)
         session = newSession
@@ -278,7 +276,7 @@ class AvaloniaPreviewerSessionController(
         }
         val processJob = lifetime.startIOBackgroundAsync {
             logger.info("Starting previewer process")
-            process.run(lifetime, project, transport, method)
+            process.run(lifetime, project, transport, method, processTitle)
         }
         statusProperty.set(Status.Working)
 

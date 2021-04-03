@@ -30,14 +30,20 @@ class ProcessReaper(project: Project) : LifetimedProjectService(project) {
         processHandler: ProcessHandler,
         timeout: Duration = Duration.ofSeconds(5L)
     ) {
+        fun destroy() {
+            if (!processHandler.isProcessTerminated) {
+                logger.info("Forcefully terminating process $processHandler after timeout of $timeout")
+                processHandler.destroyProcess()
+            }
+        }
+
         externalLifetime.onTermination {
             val actualProcessLifetime = processHandler.lifetime
             val timeoutLifetime = createTimeoutLifetime(timeout)
-            projectServiceLifetime.intersect(actualProcessLifetime).intersect(timeoutLifetime).onTermination {
-                if (!processHandler.isProcessTerminated) {
-                    logger.info("Forcefully terminating process $processHandler after timeout of $timeout")
-                    processHandler.destroyProcess()
-                }
+            if (!projectServiceLifetime.intersect(actualProcessLifetime).intersect(timeoutLifetime).onTerminationIfAlive {
+                destroy()
+            }) {
+                destroy()
             }
         }
     }
