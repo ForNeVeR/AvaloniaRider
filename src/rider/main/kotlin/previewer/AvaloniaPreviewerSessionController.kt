@@ -23,6 +23,7 @@ import com.jetbrains.rider.projectView.workspace.getProjectModelEntities
 import com.jetbrains.rider.run.configurations.IProjectBasedRunConfiguration
 import com.jetbrains.rider.ui.SwingScheduler
 import com.jetbrains.rider.ui.components.utils.documentChanged
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.selects.select
 import me.fornever.avaloniarider.controlmessages.*
@@ -299,6 +300,8 @@ class AvaloniaPreviewerSessionController(
             } catch (ex: AvaloniaPreviewerInitializationException) {
                 criticalErrorSignal.fire(ex)
                 logger.warn(ex)
+            } catch (ex: CancellationException) {
+                logger.info("${xamlFile.name}: previewer session has been cancelled")
             } catch (t: Throwable) {
                 logger.error(t)
             } finally {
