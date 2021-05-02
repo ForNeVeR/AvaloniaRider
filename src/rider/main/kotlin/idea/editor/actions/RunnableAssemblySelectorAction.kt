@@ -6,6 +6,7 @@ import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.actionSystem.ex.ComboBoxAction
 import com.intellij.openapi.project.Project
 import com.jetbrains.rd.util.lifetime.Lifetime
+import com.jetbrains.rd.util.reactive.IOptProperty
 import com.jetbrains.rd.util.reactive.IPropertyView
 import com.jetbrains.rd.util.reactive.Property
 import com.jetbrains.rd.util.reactive.valueOrDefault
@@ -16,14 +17,28 @@ import java.nio.file.Path
 import java.nio.file.Paths
 import javax.swing.JComponent
 
-class RunnableAssemblySelectorAction(lifetime: Lifetime, project: Project) : ComboBoxAction() {
+class RunnableAssemblySelectorAction(
+    lifetime: Lifetime,
+    isSolutionLoading: IOptProperty<Boolean>,
+    runnableProjects: IOptProperty<List<RunnableProject>>
+) : ComboBoxAction() {
+    constructor(lifetime: Lifetime, project: Project) : this(
+        lifetime,
+        project.solution.isLoading,
+        project.solution.runnableProjectsModel.projects
+    )
+
+    init {
+        runnableProjects.advise(lifetime, ::fillWithActions)
+    }
+
     // TODO: Initial assembly selection
     // TODO: Filter by only referenced assemblies
     // TODO: Persist user selection; base initial assembly guess on already persisted files from the current assembly
-    private val group = object : DefaultActionGroup() {
+    val group: DefaultActionGroup = object : DefaultActionGroup() {
         override fun update(e: AnActionEvent) {
             super.update(e)
-            e.presentation.isEnabled = project.solution.isLoading.valueOrDefault(false)
+            e.presentation.isEnabled = !isSolutionLoading.valueOrDefault(false)
         }
     }
     override fun createPopupActionGroup(button: JComponent?) = group
@@ -42,7 +57,4 @@ class RunnableAssemblySelectorAction(lifetime: Lifetime, project: Project) : Com
         }
     }
 
-    init {
-        project.solution.runnableProjectsModel.projects.advise(lifetime, ::fillWithActions)
-    }
 }
