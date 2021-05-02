@@ -3,6 +3,12 @@
         This script publishes the plugin distribution from the $DistributionsLocation to the JetBrains Marketplace.
     .PARAMETER DistributionsLocation
         Path to the directory containing compressed plugin distribution.
+    .PARAMETER PluginXmlId
+        Plugin identifier.
+    .PARAMETER Channel
+        Channel name to publish the plugin.
+    .PARAMETER AuthToken
+        Token to authenticate to the Marketplace.
 #>
 param (
     [string] $DistributionsLocation = "$PSScriptRoot/../build/distributions",
