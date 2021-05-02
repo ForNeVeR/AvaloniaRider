@@ -28,10 +28,6 @@ class RunnableAssemblySelectorAction(
         project.solution.runnableProjectsModel.projects
     )
 
-    init {
-        runnableProjects.advise(lifetime, ::fillWithActions)
-    }
-
     // TODO: Initial assembly selection
     // TODO: Filter by only referenced assemblies
     // TODO: Persist user selection; base initial assembly guess on already persisted files from the current assembly
@@ -42,6 +38,10 @@ class RunnableAssemblySelectorAction(
         }
     }
     override fun createPopupActionGroup(button: JComponent?) = group
+
+    init {
+        runnableProjects.advise(lifetime, ::fillWithActions)
+    }
 
     private val selectedProjectPathProperty = Property<Path?>(null)
     val selectedProjectPath: IPropertyView<Path?> = selectedProjectPathProperty
