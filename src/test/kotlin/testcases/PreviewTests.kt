@@ -1,7 +1,7 @@
 package me.fornever.avaloniarider.testcases
 
 import com.jetbrains.rd.util.lifetime.Lifetime
-import com.jetbrains.rd.util.reactive.Property
+import com.jetbrains.rd.util.reactive.OptProperty
 import com.jetbrains.rdclient.util.idea.pumpMessages
 import com.jetbrains.rider.test.annotations.TestEnvironment
 import com.jetbrains.rider.test.asserts.shouldBeTrue
@@ -26,7 +26,7 @@ class PreviewTests : BaseTestWithSolution() {
         get() = getVirtualFileFromPath("Views/MainWindow.xaml", activeSolutionDirectory)
 
     private val projectFilePathProperty
-        get() = Property(solutionSourceRootDirectory.resolve("AvaloniaMvvm.csproj").toPath())
+        get() = OptProperty(solutionSourceRootDirectory.resolve("AvaloniaMvvm.csproj").toPath())
 
     @Test
     fun previewEditorProviderShouldHandleTheXamlFile() {

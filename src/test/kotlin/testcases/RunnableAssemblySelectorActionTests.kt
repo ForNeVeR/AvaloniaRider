@@ -1,9 +1,10 @@
-package testcases
+package me.fornever.avaloniarider.testcases
 
 import com.intellij.openapi.actionSystem.ActionPlaces
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.jetbrains.rd.util.lifetime.LifetimeDefinition
 import com.jetbrains.rd.util.reactive.OptProperty
+import com.jetbrains.rd.util.reactive.valueOrThrow
 import com.jetbrains.rider.model.RunnableProject
 import com.jetbrains.rider.model.RunnableProjectKind
 import com.jetbrains.rider.test.asserts.shouldBe
@@ -28,11 +29,22 @@ class RunnableAssemblySelectorActionTests : BaseTestWithShell() {
         testLifetime.terminate()
     }
 
+    private fun createTestProject() = RunnableProject(
+        "Project1",
+        "Project1",
+        "/tmp/Project1.csproj",
+        RunnableProjectKind.DotNetCore,
+        emptyList(),
+        emptyList(),
+        null,
+        emptyList()
+    )
+
     @Test
     fun groupEnabledTests() {
         val isSolutionLoading = OptProperty(true)
-        val action = RunnableAssemblySelectorAction(testLifetime, isSolutionLoading, OptProperty())
-        val group = action.group
+        val action = RunnableAssemblySelectorAction(testLifetime, null, null, isSolutionLoading, OptProperty())
+        val group = action.popupActionGroup
         val dataContext = { _: Any -> null }
         val event = AnActionEvent.createFromDataContext(ActionPlaces.UNKNOWN, null, dataContext)
         val presentation = event.presentation
@@ -48,25 +60,27 @@ class RunnableAssemblySelectorActionTests : BaseTestWithShell() {
     @Test
     fun groupShouldBeFilledTest() {
         val runnableProjects = OptProperty(emptyList<RunnableProject>())
-        val action = RunnableAssemblySelectorAction(testLifetime, OptProperty(false), runnableProjects)
-        val group = action.group
+        val action = RunnableAssemblySelectorAction(testLifetime, null, null, OptProperty(false), runnableProjects)
+        val group = action.popupActionGroup
 
         group.getChildren(null).size.shouldBe(0)
 
-        val project = RunnableProject(
-            "Project1",
-            "Project1",
-            "/tmp/Project1.csproj",
-            RunnableProjectKind.DotNetCore,
-            emptyList(),
-            emptyList(),
-            null,
-            emptyList()
-        )
+        val project = createTestProject()
         runnableProjects.set(listOf(project))
 
         val children = group.getChildren(null)
         children.size.shouldBe(1)
         children[0].templatePresentation.text.shouldBe(project.name)
+    }
+
+    @Test
+    fun firstAssemblyShouldBeSelectedAutomatically() {
+        val runnableProjects = OptProperty(emptyList<RunnableProject>())
+        val action = RunnableAssemblySelectorAction(testLifetime, null, null, OptProperty(false), runnableProjects)
+
+        val project = createTestProject()
+        runnableProjects.set(listOf(project))
+
+        action.selectedProjectPath.valueOrThrow.toString().shouldBe(project.projectFilePath)
     }
 }

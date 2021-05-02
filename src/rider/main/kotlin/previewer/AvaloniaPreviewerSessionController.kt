@@ -1,13 +1,11 @@
 package me.fornever.avaloniarider.previewer
 
-import com.intellij.execution.RunManager
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.debug
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Computable
-import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.workspaceModel.ide.WorkspaceModel
 import com.jetbrains.rd.platform.util.*
@@ -20,7 +18,6 @@ import com.jetbrains.rider.projectView.solution
 import com.jetbrains.rider.projectView.workspace.ProjectModelEntity
 import com.jetbrains.rider.projectView.workspace.containingProjectEntity
 import com.jetbrains.rider.projectView.workspace.getProjectModelEntities
-import com.jetbrains.rider.run.configurations.IProjectBasedRunConfiguration
 import com.jetbrains.rider.ui.SwingScheduler
 import com.jetbrains.rider.ui.components.utils.documentChanged
 import kotlinx.coroutines.CancellationException
@@ -31,7 +28,7 @@ import me.fornever.avaloniarider.exceptions.AvaloniaPreviewerInitializationExcep
 import me.fornever.avaloniarider.idea.concurrency.adviseOnUiThread
 import me.fornever.avaloniarider.idea.settings.AvaloniaPreviewerMethod
 import me.fornever.avaloniarider.idea.settings.AvaloniaSettings
-import me.fornever.avaloniarider.idea.settings.ExecutableProjectSelectionMode
+import me.fornever.avaloniarider.rd.compose
 import me.fornever.avaloniarider.rider.RiderProjectOutputHost
 import me.fornever.avaloniarider.rider.projectRelativeVirtualPath
 import java.io.EOFException
@@ -48,7 +45,7 @@ class AvaloniaPreviewerSessionController(
     private val project: Project,
     outerLifetime: Lifetime,
     private val xamlFile: VirtualFile,
-    projectFilePathProperty: IPropertyView<Path?>) {
+    projectFilePathProperty: IOptPropertyView<Path>) {
     companion object {
         private val logger = Logger.getInstance(AvaloniaPreviewerSessionController::class.java)
 
@@ -118,7 +115,7 @@ class AvaloniaPreviewerSessionController(
         controllerLifetime.onTermination { statusProperty.set(Status.Terminated) }
 
         val isBuildingProperty = BuildHost.getInstance(project).building
-        isBuildingProperty.compose(projectFilePathProperty, ::Pair)
+        compose(isBuildingProperty, projectFilePathProperty)
             .advise(controllerLifetime) { (isBuilding, projectFilePath) ->
                 logger.info("Controller state change: isBuilding = $isBuilding, projectFilePath = $projectFilePath")
                 if (isBuilding || projectFilePath == null) {
@@ -157,31 +154,6 @@ class AvaloniaPreviewerSessionController(
         }
 
         return result.await()
-    }
-
-    private suspend fun getRunnableProjectForPreviewer(
-        projectSelectionMode: ExecutableProjectSelectionMode,
-        xamlContainingProject: ProjectModelEntity
-    ): ProjectModelEntity {
-        application.assertIsDispatchThread()
-
-        if (projectSelectionMode == ExecutableProjectSelectionMode.RunConfiguration) {
-            val runConfiguration = RunManager.getInstance(project).selectedConfiguration?.configuration as? IProjectBasedRunConfiguration
-            if (runConfiguration != null) {
-                val projectFilePath = runConfiguration.getProjectFilePath()
-                logger.info("Project from run configuration: $projectFilePath")
-
-                val projectFile = LocalFileSystem.getInstance().refreshAndFindFileByPath(projectFilePath)
-                if (projectFile == null) {
-                    logger.warn("Project file not found in VFS")
-                    return xamlContainingProject
-                }
-
-                return getProjectContainingFile(projectFile)
-            }
-        }
-
-        return xamlContainingProject
     }
 
     private fun createSession(

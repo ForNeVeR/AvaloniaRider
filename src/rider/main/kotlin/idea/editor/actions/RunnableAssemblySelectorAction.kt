@@ -1,60 +1,89 @@
 package me.fornever.avaloniarider.idea.editor.actions
 
-import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.actionSystem.ex.ComboBoxAction
+import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.vfs.VfsUtil
+import com.intellij.workspaceModel.ide.WorkspaceModel
 import com.jetbrains.rd.util.lifetime.Lifetime
-import com.jetbrains.rd.util.reactive.IOptProperty
-import com.jetbrains.rd.util.reactive.IPropertyView
-import com.jetbrains.rd.util.reactive.Property
-import com.jetbrains.rd.util.reactive.valueOrDefault
+import com.jetbrains.rd.util.reactive.*
 import com.jetbrains.rider.model.RunnableProject
 import com.jetbrains.rider.model.runnableProjectsModel
+import com.jetbrains.rider.projectView.calculateIcon
 import com.jetbrains.rider.projectView.solution
+import com.jetbrains.rider.projectView.workspace.getProjectModelEntities
+import com.jetbrains.rider.projectView.workspace.isProject
+import com.jetbrains.rider.projectView.workspace.isUnloadedProject
+import me.fornever.avaloniarider.AvaloniaRiderBundle.message
 import java.nio.file.Path
 import java.nio.file.Paths
 import javax.swing.JComponent
 
+@Suppress("UnstableApiUsage")
 class RunnableAssemblySelectorAction(
     lifetime: Lifetime,
-    isSolutionLoading: IOptProperty<Boolean>,
+    private val project: Project?, // TODO: Make non-nullable
+    private val workspaceModel: WorkspaceModel?, // TODO: Make non-nullable
+    private val isSolutionLoading: IOptProperty<Boolean>, // TODO: Depend on components, not properties
     runnableProjects: IOptProperty<List<RunnableProject>>
 ) : ComboBoxAction() {
     constructor(lifetime: Lifetime, project: Project) : this(
         lifetime,
+        project,
+        WorkspaceModel.getInstance(project),
         project.solution.isLoading,
-        project.solution.runnableProjectsModel.projects
+        project.solution.runnableProjectsModel.projects,
     )
 
-    // TODO: Initial assembly selection
     // TODO: Filter by only referenced assemblies
     // TODO: Persist user selection; base initial assembly guess on already persisted files from the current assembly
-    val group: DefaultActionGroup = object : DefaultActionGroup() {
-        override fun update(e: AnActionEvent) {
-            super.update(e)
-            e.presentation.isEnabled = !isSolutionLoading.valueOrDefault(false)
-        }
+    val popupActionGroup: DefaultActionGroup = DefaultActionGroup()
+    override fun createPopupActionGroup(button: JComponent?) = popupActionGroup
+
+    private val selectedRunnableProjectProperty = OptProperty<RunnableProject>()
+    val selectedProjectPath: IOptPropertyView<Path> = selectedRunnableProjectProperty.map { p ->
+        Paths.get(p.projectFilePath)
     }
-    override fun createPopupActionGroup(button: JComponent?) = group
 
     init {
         runnableProjects.advise(lifetime, ::fillWithActions)
     }
 
-    private val selectedProjectPathProperty = Property<Path?>(null)
-    val selectedProjectPath: IPropertyView<Path?> = selectedProjectPathProperty
+    private fun calculateIcon(runnableProject: RunnableProject?) =
+        runnableProject?.let { VfsUtil.findFile(Paths.get(it.projectFilePath), false) }?.let { virtualFile ->
+            workspaceModel?.getProjectModelEntities(virtualFile, project!!)?.singleOrNull {
+                it.isProject() || it.isUnloadedProject()
+            }
+        }?.calculateIcon(project!!)
 
-    private fun fillWithActions(runnableProjects: List<RunnableProject>) {
-        group.removeAll()
-        for (runnableProject in runnableProjects) {
-            group.add(object : AnAction(runnableProject.name) {
-                override fun actionPerformed(event: AnActionEvent) {
-                    selectedProjectPathProperty.set(Paths.get(runnableProject.projectFilePath))
-                }
-            })
+    override fun update(e: AnActionEvent) {
+        val selectedProject = selectedRunnableProjectProperty.valueOrNull
+        val isSolutionLoading = isSolutionLoading.valueOrDefault(false)
+        e.presentation.apply {
+            isEnabled = !isSolutionLoading
+            icon = calculateIcon(selectedProject)
+
+            @Suppress("DialogTitleCapitalization")
+            text =
+                if (isSolutionLoading) message("assemblySelector.loading")
+                else selectedProject?.name ?: message("assemblySelector.unableToDetermineProject")
         }
     }
 
+    private fun fillWithActions(runnableProjects: List<RunnableProject>) {
+        popupActionGroup.removeAll()
+        for (runnableProject in runnableProjects) {
+            popupActionGroup.add(object : DumbAwareAction({ runnableProject.name }, calculateIcon(runnableProject)) {
+                override fun actionPerformed(event: AnActionEvent) {
+                    selectedRunnableProjectProperty.set(runnableProject)
+                }
+            })
+        }
+
+        if (selectedRunnableProjectProperty.valueOrNull == null && runnableProjects.any()) {
+            selectedRunnableProjectProperty.set(runnableProjects.first())
+        }
+    }
 }
