@@ -11,6 +11,7 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.jetbrains.rd.util.lifetime.Lifetime
 import com.jetbrains.rd.util.lifetime.LifetimeDefinition
 import me.fornever.avaloniarider.idea.editor.actions.RestartPreviewerAction
+import me.fornever.avaloniarider.idea.editor.actions.RunnableAssemblySelectorAction
 import me.fornever.avaloniarider.previewer.AvaloniaPreviewerSessionController
 import java.beans.PropertyChangeListener
 import javax.swing.JComponent
@@ -27,13 +28,17 @@ abstract class AvaloniaPreviewEditorBase(
 
     private val lifetimeDefinition = LifetimeDefinition()
     protected val lifetime: Lifetime = lifetimeDefinition
-    protected val sessionController = AvaloniaPreviewerSessionController(project, lifetime, file)
+
+    private val assemblySelectorAction = RunnableAssemblySelectorAction(lifetime, project)
+    private val selectedProjectPath = assemblySelectorAction.selectedProjectPath
+    protected val sessionController = AvaloniaPreviewerSessionController(project, lifetime, file, selectedProjectPath)
 
     abstract override fun getComponent(): JComponent
     override fun getPreferredFocusedComponent() = component
 
     open fun customizeEditorToolbar(group: DefaultActionGroup) {
-        group.add(RestartPreviewerAction(lifetime, sessionController))
+        group.add(assemblySelectorAction)
+        group.add(RestartPreviewerAction(lifetime, sessionController, selectedProjectPath))
     }
 
     override fun isModified() = false

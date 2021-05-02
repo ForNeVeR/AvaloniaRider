@@ -7,12 +7,9 @@ import com.intellij.workspaceModel.ide.toPath
 import com.jetbrains.rd.ide.model.RdProjectOutput
 import com.jetbrains.rd.platform.util.getLogger
 import com.jetbrains.rider.debugger.DebuggerHelperHost
-import com.jetbrains.rider.model.RunnableProject
+import com.jetbrains.rider.model.RdTargetFrameworkId
 import com.jetbrains.rider.model.runnableProjectsModel
 import com.jetbrains.rider.projectView.solution
-import com.jetbrains.rider.model.RdProjectDescriptor
-import com.jetbrains.rider.model.RdTargetFrameworkId
-import com.jetbrains.rider.model.RunnableProjectKind
 import com.jetbrains.rider.projectView.workspace.ProjectModelEntity
 import com.jetbrains.rider.run.environment.MSBuildEvaluator
 import com.jetbrains.rider.runtime.DotNetRuntime
@@ -22,6 +19,8 @@ import me.fornever.avaloniarider.exceptions.AvaloniaPreviewerInitializationExcep
 import org.jetbrains.concurrency.await
 import java.nio.file.Path
 import java.nio.file.Paths
+import kotlin.io.path.ExperimentalPathApi
+import kotlin.io.path.nameWithoutExtension
 
 @Service
 class MsBuildParameterCollector(private val project: Project) {
@@ -37,9 +36,10 @@ class MsBuildParameterCollector(private val project: Project) {
         else -> "AvaloniaPreviewerNetFullToolPath"
     }
 
+    @OptIn(ExperimentalPathApi::class)
     private fun createParameters(
         runtime: DotNetRuntime,
-        runnableProject: ProjectModelEntity,
+        runnableProjectFilePath: Path,
         avaloniaPreviewerPathKey: String,
         runnableProjectProperties: Map<String, String>,
         xamlContainingProjectProperties: Map<String, String>): AvaloniaPreviewerParameters {
@@ -57,7 +57,7 @@ class MsBuildParameterCollector(private val project: Project) {
             getProperty(
                 runnableProjectProperties,
                 avaloniaPreviewerPathKey,
-                "Avalonia could not be found. Please ensure project ${runnableProject.name} includes package Avalonia version 0.7 or higher"
+                "Avalonia could not be found. Please ensure project ${runnableProjectFilePath.nameWithoutExtension} includes package Avalonia version 0.7 or higher"
             )
         )
         val targetDir = Paths.get(getProperty(runnableProjectProperties, "TargetDir"))
@@ -72,9 +72,7 @@ class MsBuildParameterCollector(private val project: Project) {
     @Suppress("UnstableApiUsage")
     suspend fun getAvaloniaPreviewerParameters(
         project: Project,
-        projectFilePath: Path,
-        projectOutput: RdProjectOutput
-        runnableProject: ProjectModelEntity,
+        runnableProjectFilePath: Path,
         runnableProjectOutput: RdProjectOutput,
         xamlContainingProject: ProjectModelEntity
     ): AvaloniaPreviewerParameters {
@@ -83,24 +81,18 @@ class MsBuildParameterCollector(private val project: Project) {
 
         val runnableProjects = project.solution.runnableProjectsModel.projects.valueOrNull
         val runnableProject =
-            runnableProjects?.singleOrNull { FileUtil.pathsEqual(it.projectFilePath, projectFilePath.toString()) }
+            runnableProjects?.singleOrNull { FileUtil.pathsEqual(it.projectFilePath, runnableProjectFilePath.toString()) }
                 ?: run {
                     logger.warn(
-                        "Could not find runnable project for path $projectFilePath; all runnable projects are ${
+                        "Could not find runnable project for path $runnableProjectFilePath; all runnable projects are ${
                             runnableProjects?.joinToString { it.projectFilePath }
                         }"
                     )
                     throw AvaloniaPreviewerInitializationException(
-                        "Could not find runnable project for path ${FileUtil.getNameWithoutExtension(projectFilePath.toString())}"
+                        "Could not find runnable project for path ${FileUtil.getNameWithoutExtension(runnableProjectFilePath.toString())}"
                     )
                 }
-        val runnableProjectFilePath = runnableProject.url!!.toPath().toString()
         val xamlContainingProjectPath = xamlContainingProject.url!!.toPath().toString()
-
-        val projectKind = if ((runnableProject.descriptor as RdProjectDescriptor).isDotNetCore)
-            RunnableProjectKind.DotNetCore
-        else
-            RunnableProjectKind.Console
 
         val tfm = runnableProjectOutput.tfm
         val runtime = DotNetRuntime.detectRuntimeForProjectOrThrow(
@@ -120,7 +112,7 @@ class MsBuildParameterCollector(private val project: Project) {
 
         val runnableProjectProperties = msBuildEvaluator.evaluateProperties(
             MSBuildEvaluator.PropertyRequest(
-                runnableProjectFilePath,
+                runnableProjectFilePath.toString(),
                 null,
                 listOf(avaloniaPreviewerPathKey, "TargetDir", "TargetName", "TargetPath")
             )
@@ -135,7 +127,7 @@ class MsBuildParameterCollector(private val project: Project) {
 
         return createParameters(
             runtime,
-            runnableProject,
+            runnableProjectFilePath,
             avaloniaPreviewerPathKey,
             runnableProjectProperties.await(),
             xamlProjectProperties.await())

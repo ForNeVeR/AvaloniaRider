@@ -1,6 +1,7 @@
 package me.fornever.avaloniarider.testcases
 
 import com.jetbrains.rd.util.lifetime.Lifetime
+import com.jetbrains.rd.util.reactive.Property
 import com.jetbrains.rdclient.util.idea.pumpMessages
 import com.jetbrains.rider.test.annotations.TestEnvironment
 import com.jetbrains.rider.test.asserts.shouldBeTrue
@@ -24,6 +25,9 @@ class PreviewTests : BaseTestWithSolution() {
     private val mainWindowFile
         get() = getVirtualFileFromPath("Views/MainWindow.xaml", activeSolutionDirectory)
 
+    private val projectFilePathProperty
+        get() = Property(solutionSourceRootDirectory.resolve("AvaloniaMvvm.csproj").toPath())
+
     @Test
     fun previewEditorProviderShouldHandleTheXamlFile() {
         val provider = XamlPreviewEditorExtension.EP_NAME
@@ -38,10 +42,9 @@ class PreviewTests : BaseTestWithSolution() {
         buildSolutionWithReSharperBuild(Duration.ofMinutes(1L))
         var frameMsg: FrameMessage? = null
         Lifetime.using { lt ->
-            val controller = AvaloniaPreviewerSessionController(project, lt, mainWindowFile).apply {
+            AvaloniaPreviewerSessionController(project, lt, mainWindowFile, projectFilePathProperty).apply {
                 frame.advise(lt) { frameMsg = it }
             }
-            controller.start()
             pumpMessages { frameMsg != null }
         }
     }

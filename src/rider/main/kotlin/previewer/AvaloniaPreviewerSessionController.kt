@@ -21,7 +21,6 @@ import com.jetbrains.rider.projectView.workspace.ProjectModelEntity
 import com.jetbrains.rider.projectView.workspace.containingProjectEntity
 import com.jetbrains.rider.projectView.workspace.getProjectModelEntities
 import com.jetbrains.rider.run.configurations.IProjectBasedRunConfiguration
-import com.jetbrains.rider.projectView.ProjectModelViewHost
 import com.jetbrains.rider.ui.SwingScheduler
 import com.jetbrains.rider.ui.components.utils.documentChanged
 import kotlinx.coroutines.CancellationException
@@ -236,13 +235,21 @@ class AvaloniaPreviewerSessionController(
 
         statusProperty.set(Status.Connecting)
 
+        logger.info("Receiving the containing project for the file $xamlFile")
+        val xamlContainingProject = withUiContext(lifetime) { getProjectContainingFile(xamlFile) }
+
         logger.info("Calculating a project output for the project $projectFilePath")
         val riderProjectOutputHost = RiderProjectOutputHost.getInstance(project)
         val projectOutput = riderProjectOutputHost.getProjectOutput(lifetime, projectFilePath)
 
         logger.info("Calculating previewer start parameters for the project $projectFilePath, output $projectOutput")
         val msBuild = MsBuildParameterCollector.getInstance(project)
-        val parameters = msBuild.getAvaloniaPreviewerParameters(project, projectFilePath, projectOutput)
+        val parameters = msBuild.getAvaloniaPreviewerParameters(
+            project,
+            projectFilePath,
+            projectOutput,
+            xamlContainingProject
+        )
 
         val socket = withIOBackgroundContext(lifetime) {
             @Suppress("BlockingMethodInNonBlockingContext")
