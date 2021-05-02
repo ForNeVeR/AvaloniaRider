@@ -2,6 +2,8 @@
   <dictionary name="fried">
     <words>
       <w>avalonia</w>
+      <w>depsfile</w>
+      <w>runtimeconfig</w>
       <w>xaml</w>
     </words>
   </dictionary>

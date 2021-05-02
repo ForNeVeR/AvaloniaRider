@@ -2,15 +2,15 @@ package me.fornever.avaloniarider.rider
 
 import com.google.common.collect.Queues
 import com.jetbrains.rider.model.RdProjectDescriptor
-import com.jetbrains.rider.projectView.nodes.ProjectModelNode
+import com.jetbrains.rider.projectView.workspace.ProjectModelEntity
 
-val ProjectModelNode.projectRelativeVirtualPath: String
+val ProjectModelEntity.projectRelativeVirtualPath: String
     get() {
         val names = Queues.newArrayDeque<String>()
-        var current: ProjectModelNode? = this
+        var current: ProjectModelEntity? = this
         while (current != null && current.descriptor !is RdProjectDescriptor) {
             names.push(current.name)
-            current = current.parent
+            current = current.parentEntity
         }
         return names.joinToString("/")
     }

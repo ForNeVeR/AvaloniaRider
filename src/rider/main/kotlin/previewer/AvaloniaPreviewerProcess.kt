@@ -7,6 +7,7 @@ import com.intellij.execution.process.ProcessAdapter
 import com.intellij.execution.process.ProcessEvent
 import com.intellij.execution.process.ProcessHandler
 import com.intellij.execution.ui.ConsoleView
+import com.intellij.execution.ui.ConsoleViewContentType
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.rd.createNestedDisposable
@@ -14,15 +15,12 @@ import com.intellij.openapi.util.Key
 import com.intellij.util.io.BaseOutputReader
 import com.jetbrains.rd.framework.util.NetUtils
 import com.jetbrains.rd.platform.util.application
+import com.jetbrains.rd.platform.util.withUiContext
 import com.jetbrains.rd.util.lifetime.Lifetime
-import com.jetbrains.rd.util.lifetime.onTermination
 import com.jetbrains.rider.runtime.DotNetRuntime
 import com.jetbrains.rider.runtime.dotNetCore.DotNetCoreRuntime
 import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import me.fornever.avaloniarider.idea.AvaloniaToolWindowManager
-import me.fornever.avaloniarider.idea.concurrency.ApplicationAnyModality
 import java.nio.file.Path
 
 data class AvaloniaPreviewerParameters(
@@ -30,7 +28,14 @@ data class AvaloniaPreviewerParameters(
     val previewerBinary: Path,
     val targetDir: Path,
     val targetName: String,
-    val targetPath: Path
+    /**
+     * Path to the executable assembly.
+     */
+    val targetPath: Path,
+    /**
+     * Path to the assembly containing a XAML file in question.
+     */
+    val xamlContainingAssemblyPath: Path
 )
 
 class AvaloniaPreviewerProcess(
@@ -73,40 +78,66 @@ class AvaloniaPreviewerProcess(
         return consoleView
     }
 
-    private fun startProcess(commandLine: GeneralCommandLine, consoleView: ConsoleView): OSProcessHandler {
+    private fun startProcess(
+        lifetime: Lifetime,
+        project: Project,
+        commandLine: GeneralCommandLine,
+        consoleView: ConsoleView,
+        title: String
+    ): OSProcessHandler {
         val processHandler = object : OSProcessHandler(commandLine) {
             override fun readerOptions() =
                 BaseOutputReader.Options.forMostlySilentProcess()
 
             override fun notifyTextAvailable(text: String, outputType: Key<*>) {
-                if (application.isUnitTestMode)
-                    logger.info("$outputType: ${text}")
+                logger.info("$title [$outputType]: $text")
                 super.notifyTextAvailable(text, outputType)
+            }
+
+            override fun notifyProcessTerminated(exitCode: Int) {
+                consoleView.print("Process terminated with exit code $exitCode", ConsoleViewContentType.SYSTEM_OUTPUT)
+                logger.info("Process $title exited with $exitCode")
+                super.notifyProcessTerminated(exitCode)
             }
         }
 
+        consoleView.attachToProcess(processHandler)
+
         logger.info("Starting process ${commandLine.commandLineString}")
         processHandler.startNotify()
-        lifetime.onTermination { processHandler.destroyProcess() }
+        ProcessReaper.getInstance(project).registerProcess(lifetime, processHandler)
 
-        consoleView.attachToProcess(processHandler)
         return processHandler
     }
 
-    private suspend fun waitForTermination(process: ProcessHandler) {
+    private suspend fun waitForTermination(process: ProcessHandler, title: String) {
         val result = CompletableDeferred<Unit>()
         process.addProcessListener(object : ProcessAdapter() {
             override fun processTerminated(event: ProcessEvent) {
                 result.complete(Unit)
             }
         }, lifetime.createNestedDisposable("AvaloniaPreviewerProcess::waitForTermination"))
+        if (process.isProcessTerminated) {
+            logger.warn("Already terminated: $title")
+            return
+        }
         result.await()
     }
 
-    suspend fun run(project: Project, transport: PreviewerTransport, method: PreviewerMethod) {
+    suspend fun run(
+        lifetime: Lifetime,
+        project: Project,
+        transport: PreviewerTransport,
+        method: PreviewerMethod,
+        title: String
+    ) {
+        logger.info("1/4: generating process command line")
         val commandLine = getCommandLine(transport, method)
-        val consoleView = withContext(Dispatchers.ApplicationAnyModality) { registerNewConsoleView(project) }
-        val process = startProcess(commandLine, consoleView)
-        waitForTermination(process)
+        logger.info("2/4: creating a console view")
+        val consoleView = withUiContext { registerNewConsoleView(project) }
+        logger.info("3/4: starting a process")
+        val process = startProcess(lifetime, project, commandLine, consoleView, title)
+        logger.info("4/4: awaiting termination")
+        waitForTermination(process, title)
     }
 }

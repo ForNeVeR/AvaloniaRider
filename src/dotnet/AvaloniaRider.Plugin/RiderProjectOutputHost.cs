@@ -7,6 +7,7 @@ using JetBrains.ProjectModel.ProjectsHost;
 using JetBrains.ProjectModel.ProjectsHost.SolutionHost;
 using JetBrains.Rd.Tasks;
 using JetBrains.ReSharper.Host.Features;
+using JetBrains.ReSharper.Host.Features.ProjectModel.TargetFrameworks;
 using JetBrains.Rider.Model;
 using JetBrains.Util;
 
@@ -45,7 +46,9 @@ namespace ReSharperPlugin.AvaloniaRider
             var assemblyInfo = project.GetOutputAssemblyInfo(targetFramework).NotNull();
             _logger.Trace("Assembly file path detected for project {0}: {1}", args, assemblyInfo.Location);
             return RdTask<RdProjectOutput>.Successful(
-                new RdProjectOutput(targetFramework.Name, assemblyInfo.Location.ToString()));
+                new RdProjectOutput(
+                    targetFramework.ToRdTargetFrameworkInfo(),
+                    assemblyInfo.Location.ToString()));
         }
     }
 }

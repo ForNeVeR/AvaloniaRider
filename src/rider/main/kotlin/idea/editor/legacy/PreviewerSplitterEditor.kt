@@ -1,4 +1,4 @@
-package me.fornever.avaloniarider.idea.editor
+package me.fornever.avaloniarider.idea.editor.legacy
 
 import com.intellij.icons.AllIcons
 import com.intellij.ide.util.PropertiesComponent

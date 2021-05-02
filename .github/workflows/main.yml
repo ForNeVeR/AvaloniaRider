@@ -1,4 +1,4 @@
-name: Build and Test
+name: Main
 on:
   push:
     branches:
@@ -6,48 +6,30 @@ on:
   pull_request:
     branches:
       - master
+  schedule:
+    - cron: '0 0 * * 0'
 
 jobs:
   main:
     runs-on: ${{ matrix.image }}
     strategy:
       matrix:
-        image: [macos-10.15, ubuntu-18.04, windows-2019]
+        image: [macos-10.15, ubuntu-20.04, windows-2019]
     env:
-      NUGET_PACKAGES: ${{ github.workspace }}/.github/nuget-packages
-      GRADLE_USER_HOME: ${{ github.workspace }}/.github/gradle
+      DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+      DOTNET_CLI_TELEMETRY_OPTOUT: 1
     steps:
       - uses: actions/checkout@v2
 
       # RdGen
-      - name: Gradle JVM Cache
-        uses: actions/cache@v1.1.0
-        with:
-          path: build/gradle-jvm
-          key: ${{ runner.os }}.gradle-jvm.${{ hashFiles('**/*.gradle') }}+${{ hashFiles('gradle*') }}
-      - name: Gradle Wrapper Cache
-        uses: actions/cache@v1.1.0
-        with:
-          path: ${{ env.GRADLE_USER_HOME }}/wrapper
-          key: ${{ runner.os }}.gradle-wrapper.${{ hashFiles('gradle/**') }}
-      - name: Gradle Cache
-        uses: actions/cache@v1.1.0
-        with:
-          path: ${{ env.GRADLE_USER_HOME }}/caches/modules-2
-          key: ${{ runner.os }}.gradle.${{ hashFiles('**/*.gradle') }}
       - name: RdGen
         run: ./gradlew rdgen
 
       # Backend
-      - name: NuGet Cache
-        uses: actions/cache@v1.1.0
-        with:
-          path: ${{ env.NUGET_PACKAGES }}
-          key: ${{ runner.os }}.nuget.${{ hashFiles('src/dotnet/**/*.csproj') }}+${{ hashFiles('src/dotnet/**/*.props') }}
       - name: Setup .NET Core SDK
-        uses: actions/setup-dotnet@v1.7.2
+        uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: '3.1.101'
+          dotnet-version: '3.1.x'
       - name: Build Backend
         run: dotnet build -c Release
 
@@ -58,32 +40,28 @@ jobs:
           LOCAL_ENV_RUN: true
           NO_FS_ROOTS_ACCESS_CHECK: true
       - name: Upload Test Results
-        uses: actions/upload-artifact@v1.0.0
+        uses: actions/upload-artifact@v2
         with:
           name: ${{ runner.os }}.test-results
           path: build/reports/tests
 
       # Distribution
       - name: Build Distribution
-        if: matrix.image == 'ubuntu-18.04'
+        if: matrix.image == 'ubuntu-20.04'
         run: ./gradlew -PBuildConfiguration=Release -PbuildNumber=${{ github.run_id }} buildPlugin
       - name: Determine Version
-        if: matrix.image == 'ubuntu-18.04'
+        if: matrix.image == 'ubuntu-20.04'
         shell: pwsh
         run: |
           $version = ./scripts/Get-Version.ps1
           "AVALONIA_RIDER_VERSION=$version" | Out-File $env:GITHUB_ENV
       - name: Unpack Distribution # for the purpose of uploading
-        if: matrix.image == 'ubuntu-18.04'
+        if: matrix.image == 'ubuntu-20.04'
         shell: pwsh
         run: scripts/Unpack-Distribution.ps1
       - name: Upload Distribution
-        if: matrix.image == 'ubuntu-18.04'
+        if: matrix.image == 'ubuntu-20.04'
         uses: actions/upload-artifact@v2
         with:
           name: avaloniarider-${{ env.AVALONIA_RIDER_VERSION }}
           path: build/distributions/unpacked
-
-      # Finalize
-      - name: Stop Gradle Daemon # to collect Gradle cache
-        run: ./gradlew --stop

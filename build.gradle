@@ -22,7 +22,7 @@ dependencies {
 
 ext {
     pluginVersionBase = '1.0.0'
-    sdkVersion = '2020.3'
+    sdkVersion = '2021.1.0'
     rdLibDirectory = {
         new File(intellij.ideaDependency.classes, "lib/rd")
     }
@@ -96,7 +96,7 @@ intellij {
     type = 'RD'
     version = "$sdkVersion"
     downloadSources = false
-    plugins 'com.intellij.javafx:1.0.3'
+    plugins = ['com.intellij.javafx:1.0.3', 'com.jetbrains.xaml.previewer']
 }
 
 runIde {
@@ -157,6 +157,10 @@ patchPluginXml {
 }
 
 prepareSandbox {
+    def pluginId = "avalonia-rider"
+    def reSharperPluginDesc = "fvnever.$pluginId"
+    from('src/extensions', { into "${intellij.pluginName}/dotnet/Extensions/$reSharperPluginDesc" })
+
     def outputFolder = "$dotNetDir/$dotNetPluginId/bin/${dotNetPluginId}/$BuildConfiguration"
     def dllFiles = [
             "$outputFolder/${dotNetPluginId}.dll",
