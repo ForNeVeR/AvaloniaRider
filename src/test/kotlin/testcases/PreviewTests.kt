@@ -45,7 +45,7 @@ class PreviewTests : BaseTestWithSolution() {
             AvaloniaPreviewerSessionController(project, lt, mainWindowFile, projectFilePathProperty).apply {
                 frame.advise(lt) { frameMsg = it }
             }
-            pumpMessages { frameMsg != null }
+            pumpMessages { frameMsg != null }.shouldBeTrue()
         }
     }
 }
