@@ -6,9 +6,20 @@ import com.intellij.openapi.actionSystem.ex.ComboBoxAction
 import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VfsUtil
+import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.util.io.systemIndependentPath
 import com.intellij.workspaceModel.ide.WorkspaceModel
+import com.intellij.workspaceModel.ide.toPath
+import com.jetbrains.rd.ide.model.AvaloniaRiderProjectModel
+import com.jetbrains.rd.ide.model.RdGetReferencingProjectsRequest
+import com.jetbrains.rd.ide.model.avaloniaRiderProjectModel
+import com.jetbrains.rd.platform.util.getLogger
+import com.jetbrains.rd.platform.util.launchOnUi
 import com.jetbrains.rd.util.lifetime.Lifetime
-import com.jetbrains.rd.util.reactive.*
+import com.jetbrains.rd.util.reactive.IOptPropertyView
+import com.jetbrains.rd.util.reactive.OptProperty
+import com.jetbrains.rd.util.reactive.Property
+import com.jetbrains.rd.util.reactive.map
 import com.jetbrains.rider.model.RunnableProject
 import com.jetbrains.rider.model.runnableProjectsModel
 import com.jetbrains.rider.projectView.calculateIcon
@@ -17,27 +28,41 @@ import com.jetbrains.rider.projectView.workspace.getProjectModelEntities
 import com.jetbrains.rider.projectView.workspace.isProject
 import com.jetbrains.rider.projectView.workspace.isUnloadedProject
 import me.fornever.avaloniarider.AvaloniaRiderBundle.message
+import me.fornever.avaloniarider.rd.compose
+import me.fornever.avaloniarider.rider.getProjectContainingFile
 import java.nio.file.Path
 import java.nio.file.Paths
 import javax.swing.JComponent
 
 @Suppress("UnstableApiUsage")
 class RunnableAssemblySelectorAction(
-    lifetime: Lifetime,
+    private val lifetime: Lifetime,
     private val project: Project,
     private val workspaceModel: WorkspaceModel,
-    private val isSolutionLoading: IOptProperty<Boolean>,
-    runnableProjects: IOptProperty<List<RunnableProject>>
+    private val avaloniaRiderModel: AvaloniaRiderProjectModel,
+    isSolutionLoading: IOptPropertyView<Boolean>,
+    runnableProjects: IOptPropertyView<List<RunnableProject>>,
+    private val xamlFile: VirtualFile
 ) : ComboBoxAction() {
-    constructor(lifetime: Lifetime, project: Project) : this(
+
+    companion object {
+        private val logger = getLogger<RunnableAssemblySelectorAction>()
+    }
+
+    constructor(lifetime: Lifetime, project: Project, xamlFile: VirtualFile) : this(
         lifetime,
         project,
         WorkspaceModel.getInstance(project),
+        project.solution.avaloniaRiderProjectModel,
         project.solution.isLoading,
         project.solution.runnableProjectsModel.projects,
+        xamlFile
     )
 
-    // TODO: Filter by only referenced assemblies
+    private val isProcessingProjectList = Property(false)
+    private val isLoading = compose(isSolutionLoading, isProcessingProjectList)
+        .map { (isSolutionLoading, isProcessing) -> (isSolutionLoading ?: true) || isProcessing }
+
     // TODO: Persist user selection; base initial assembly guess on already persisted files from the current assembly
     val popupActionGroup: DefaultActionGroup = DefaultActionGroup()
     override fun createPopupActionGroup(button: JComponent?) = popupActionGroup
@@ -60,30 +85,54 @@ class RunnableAssemblySelectorAction(
 
     override fun update(e: AnActionEvent) {
         val selectedProject = selectedRunnableProjectProperty.valueOrNull
-        val isSolutionLoading = isSolutionLoading.valueOrDefault(true)
+        val isLoading = isLoading.value
         e.presentation.apply {
-            isEnabled = !isSolutionLoading
+            isEnabled = !isLoading
             icon = calculateIcon(selectedProject)
 
             @Suppress("DialogTitleCapitalization")
             text =
-                if (isSolutionLoading) message("assemblySelector.loading")
+                if (isLoading) message("assemblySelector.loading")
                 else selectedProject?.name ?: message("assemblySelector.unableToDetermineProject")
         }
     }
 
     private fun fillWithActions(runnableProjects: List<RunnableProject>) {
-        popupActionGroup.removeAll()
-        for (runnableProject in runnableProjects) {
-            popupActionGroup.add(object : DumbAwareAction({ runnableProject.name }, calculateIcon(runnableProject)) {
-                override fun actionPerformed(event: AnActionEvent) {
-                    selectedRunnableProjectProperty.set(runnableProject)
-                }
-            })
-        }
+        lifetime.launchOnUi {
+            val targetFileProjectEntity = xamlFile.getProjectContainingFile(lifetime, project)
+            val targetFileProjectPath = targetFileProjectEntity.url!!.toPath().toString()
+            val runnableProjectPaths = runnableProjects.map { it.projectFilePath }
+            val refRequest = RdGetReferencingProjectsRequest(targetFileProjectPath, runnableProjectPaths)
 
-        if (selectedRunnableProjectProperty.valueOrNull == null && runnableProjects.any()) {
-            selectedRunnableProjectProperty.set(runnableProjects.first())
+            logger.info("Calculating referencing projects for project $targetFileProjectPath among ${runnableProjectPaths.size} runnable projects")
+            val actuallyReferencedProjects = avaloniaRiderModel.getReferencingProjects.startSuspending(
+                lifetime,
+                refRequest
+            )
+
+            val runnableProjectPerPath = runnableProjects.map { r -> Paths.get(r.projectFilePath).systemIndependentPath to r }.toMap()
+
+            popupActionGroup.removeAll()
+            val selectableRunnableProjects = actuallyReferencedProjects.map { path ->
+                val normalizedPath = Paths.get(path).systemIndependentPath
+                val runnableProject = runnableProjectPerPath[normalizedPath]
+                if (runnableProject == null) {
+                    logger.error("Couldn't find runnable project for path $normalizedPath")
+                }
+                runnableProject
+            }.filterNotNull().sortedBy { it.name }
+
+            for (runnableProject in selectableRunnableProjects) {
+                popupActionGroup.add(object : DumbAwareAction({ runnableProject.name }, calculateIcon(runnableProject)) {
+                    override fun actionPerformed(event: AnActionEvent) {
+                        selectedRunnableProjectProperty.set(runnableProject)
+                    }
+                })
+            }
+
+            if (selectedRunnableProjectProperty.valueOrNull == null && selectableRunnableProjects.isNotEmpty()) {
+                selectedRunnableProjectProperty.set(selectableRunnableProjects.first())
+            }
         }
     }
 }

@@ -10,3 +10,9 @@ fun <T1, T2 : Any> compose(
     property2: IOptPropertyView<T2>
 ): IPropertyView<Pair<T1, T2?>> =
     property1.compose(property2.asNullable(), ::Pair)
+
+fun <T1 : Any, T2> compose(
+    property1: IOptPropertyView<T1>,
+    property2: IPropertyView<T2>
+): IPropertyView<Pair<T1?, T2>> =
+    property1.asNullable().compose(property2, ::Pair)

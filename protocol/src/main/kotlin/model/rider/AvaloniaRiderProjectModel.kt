@@ -1,14 +1,12 @@
 package model.rider
 
-import com.jetbrains.rd.generator.nova.Ext
+import com.jetbrains.rd.generator.nova.*
 import com.jetbrains.rd.generator.nova.PredefinedType.string
-import com.jetbrains.rd.generator.nova.call
-import com.jetbrains.rd.generator.nova.field
 import com.jetbrains.rider.model.nova.ide.SolutionModel
 import com.jetbrains.rider.model.nova.ide.rider.RunnableProjectsModel.rdTargetFrameworkId
 
 @Suppress("unused")
-object RiderProjectOutputModel : Ext(SolutionModel.Solution) {
+object AvaloniaRiderProjectModel : Ext(SolutionModel.Solution) {
 
     private val RdGetProjectOutputArgs = structdef {
         field("projectFilePath", string)
@@ -19,7 +17,14 @@ object RiderProjectOutputModel : Ext(SolutionModel.Solution) {
         field("outputPath", string)
     }
 
+    private val RdGetReferencingProjectsRequest = structdef {
+        field("targetProjectFilePath", string)
+        field("potentiallyReferencingProjects", immutableList(string))
+    }
+
     init {
         call("getProjectOutput", RdGetProjectOutputArgs, RdProjectOutput)
+        call("getReferencingProjects", RdGetReferencingProjectsRequest, immutableList(string))
+            .doc("Checks the potentially referencing projects, and returns only the ones actually referencing the target")
     }
 }

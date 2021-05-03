@@ -29,7 +29,7 @@ import me.fornever.avaloniarider.idea.concurrency.adviseOnUiThread
 import me.fornever.avaloniarider.idea.settings.AvaloniaPreviewerMethod
 import me.fornever.avaloniarider.idea.settings.AvaloniaSettings
 import me.fornever.avaloniarider.rd.compose
-import me.fornever.avaloniarider.rider.RiderProjectOutputHost
+import me.fornever.avaloniarider.rider.AvaloniaRiderProjectModelHost
 import me.fornever.avaloniarider.rider.projectRelativeVirtualPath
 import java.io.EOFException
 import java.net.ServerSocket
@@ -211,7 +211,7 @@ class AvaloniaPreviewerSessionController(
         val xamlContainingProject = withUiContext(lifetime) { getProjectContainingFile(xamlFile) }
 
         logger.info("Calculating a project output for the project $projectFilePath")
-        val riderProjectOutputHost = RiderProjectOutputHost.getInstance(project)
+        val riderProjectOutputHost = AvaloniaRiderProjectModelHost.getInstance(project)
         val projectOutput = riderProjectOutputHost.getProjectOutput(lifetime, projectFilePath)
 
         logger.info("Calculating previewer start parameters for the project $projectFilePath, output $projectOutput")

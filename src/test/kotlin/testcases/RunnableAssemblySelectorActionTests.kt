@@ -2,20 +2,31 @@ package me.fornever.avaloniarider.testcases
 
 import com.intellij.openapi.actionSystem.ActionPlaces
 import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.util.io.systemIndependentPath
 import com.intellij.workspaceModel.ide.WorkspaceModel
+import com.jetbrains.rd.ide.model.avaloniaRiderProjectModel
 import com.jetbrains.rd.util.lifetime.LifetimeDefinition
+import com.jetbrains.rd.util.reactive.IOptPropertyView
 import com.jetbrains.rd.util.reactive.OptProperty
+import com.jetbrains.rd.util.reactive.hasValue
 import com.jetbrains.rd.util.reactive.valueOrThrow
+import com.jetbrains.rdclient.util.idea.pumpMessages
 import com.jetbrains.rider.model.RunnableProject
 import com.jetbrains.rider.model.RunnableProjectKind
+import com.jetbrains.rider.model.runnableProjectsModel
+import com.jetbrains.rider.projectView.solution
 import com.jetbrains.rider.test.asserts.shouldBe
+import com.jetbrains.rider.test.asserts.shouldBeTrue
+import com.jetbrains.rider.test.asserts.shouldContains
 import com.jetbrains.rider.test.base.BaseTestWithSolution
 import me.fornever.avaloniarider.idea.editor.actions.RunnableAssemblySelectorAction
 import org.testng.Assert.assertFalse
 import org.testng.annotations.AfterMethod
 import org.testng.annotations.BeforeMethod
 import org.testng.annotations.Test
+import java.nio.file.Paths
+import java.time.Duration
 import kotlin.test.assertTrue
 
 class RunnableAssemblySelectorActionTests : BaseTestWithSolution() {
@@ -44,20 +55,33 @@ class RunnableAssemblySelectorActionTests : BaseTestWithSolution() {
         emptyList()
     )
 
-    @Suppress("UnstableApiUsage")
-    private val workspaceModel
-        get() = WorkspaceModel.getInstance(project)
+    private val testXamlFile
+        get() = VfsUtil.findFileByIoFile(
+            tempTestDirectory.resolve("MultiProjectSolution/ClassLibrary1/MyControl.axaml"), true
+        )!!
+
+    private fun createMockSelector(
+        isSolutionLoading: IOptPropertyView<Boolean> = OptProperty(),
+        runnableProjects: IOptPropertyView<List<RunnableProject>> = OptProperty()
+    ): RunnableAssemblySelectorAction {
+        return RunnableAssemblySelectorAction(
+            testLifetime,
+            project,
+            @Suppress("UnstableApiUsage") WorkspaceModel.getInstance(project),
+            project.solution.avaloniaRiderProjectModel,
+            isSolutionLoading,
+            runnableProjects,
+            testXamlFile
+        )
+    }
+
+    private fun createSelector() =
+        RunnableAssemblySelectorAction(testLifetime, project, testXamlFile)
 
     @Test
     fun actionEnabledTests() {
         val isSolutionLoading = OptProperty(true)
-        val action = RunnableAssemblySelectorAction(
-            testLifetime,
-            project,
-            workspaceModel,
-            isSolutionLoading,
-            OptProperty()
-        )
+        val action = createMockSelector(isSolutionLoading)
         val dataContext = { _: Any -> null }
         val event = AnActionEvent.createFromDataContext(ActionPlaces.UNKNOWN, null, dataContext)
         val presentation = event.presentation
@@ -73,13 +97,7 @@ class RunnableAssemblySelectorActionTests : BaseTestWithSolution() {
     @Test
     fun groupShouldBeFilledTest() {
         val runnableProjects = OptProperty(emptyList<RunnableProject>())
-        val action = RunnableAssemblySelectorAction(
-            testLifetime,
-            project,
-            workspaceModel,
-            OptProperty(false),
-            runnableProjects
-        )
+        val action = createMockSelector(OptProperty(false), runnableProjects)
         val group = action.popupActionGroup
 
         group.getChildren(null).size.shouldBe(0)
@@ -89,23 +107,28 @@ class RunnableAssemblySelectorActionTests : BaseTestWithSolution() {
 
         val children = group.getChildren(null)
         children.size.shouldBe(1)
-        children[0].templatePresentation.text.shouldBe(project.name)
+        children[0].templateText.shouldBe(project.name)
     }
 
     @Test
     fun firstAssemblyShouldBeSelectedAutomatically() {
-        val runnableProjects = OptProperty(emptyList<RunnableProject>())
-        val action = RunnableAssemblySelectorAction(
-            testLifetime,
-            project,
-            workspaceModel,
-            OptProperty(false),
-            runnableProjects
-        )
+        val action = createSelector()
+        pumpMessages(Duration.ofSeconds(5L)) { action.selectedProjectPath.hasValue }.shouldBeTrue()
 
-        val project = createTestProject()
-        runnableProjects.set(listOf(project))
+        val expectedPath = project.solution.runnableProjectsModel.projects.valueOrThrow
+            .single { it.name == "AvaloniaApp1" }
+            .projectFilePath.let(Paths::get).systemIndependentPath
+        action.selectedProjectPath.valueOrThrow.systemIndependentPath.shouldBe(expectedPath)
+    }
 
-        action.selectedProjectPath.valueOrThrow.systemIndependentPath.shouldBe(project.projectFilePath)
+    @Test
+    fun onlyReferencedAssembliesShouldBeAvailable() {
+        pumpMessages { project.solution.runnableProjectsModel.projects.valueOrNull?.isNotEmpty() ?: false }
+
+        val action = createSelector()
+        val items = action.popupActionGroup.getChildren(null).map { it.templateText }
+        items.size.shouldBe(2)
+        items.shouldContains { it == "AvaloniaApp1" }
+        items.shouldContains { it == "AvaloniaApp2" }
     }
 }

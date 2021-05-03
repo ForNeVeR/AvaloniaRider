@@ -51,7 +51,7 @@ abstract class AvaloniaPreviewEditorBase(
     private val lifetimeDefinition = LifetimeDefinition()
     protected val lifetime: Lifetime = lifetimeDefinition
 
-    private val assemblySelectorAction = RunnableAssemblySelectorAction(lifetime, project)
+    private val assemblySelectorAction = RunnableAssemblySelectorAction(lifetime, project, currentFile)
     private val selectedProjectPath = assemblySelectorAction.selectedProjectPath
     protected val sessionController = AvaloniaPreviewerSessionController(project, lifetime, file, selectedProjectPath)
     init {

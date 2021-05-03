@@ -1,8 +1,10 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using JetBrains.Application.Components;
 using JetBrains.Diagnostics;
 using JetBrains.Lifetimes;
 using JetBrains.ProjectModel;
+using JetBrains.ProjectModel.Model2.Assemblies.Interfaces;
 using JetBrains.ProjectModel.ProjectsHost;
 using JetBrains.ProjectModel.ProjectsHost.SolutionHost;
 using JetBrains.Rd.Tasks;
@@ -14,29 +16,40 @@ using JetBrains.Util;
 namespace ReSharperPlugin.AvaloniaRider
 {
     [SolutionComponent]
-    public class RiderProjectOutputHost
+    public class AvaloniaRiderProjectModelHost
     {
         private readonly ISolution _solution;
         private readonly ILogger _logger;
+        private readonly IModuleReferencesResolveStore _moduleReferencesResolveStore;
 
-        public RiderProjectOutputHost(ISolution solution, ILogger logger)
+        public AvaloniaRiderProjectModelHost(
+            ISolution solution,
+            ILogger logger,
+            IModuleReferencesResolveStore moduleReferencesResolveStore)
         {
             _solution = solution;
             _logger = logger;
+            _moduleReferencesResolveStore = moduleReferencesResolveStore;
 
-            var riderProjectOutputModel = solution.GetProtocolSolution().GetRiderProjectOutputModel();
+            var riderProjectOutputModel = solution.GetProtocolSolution().GetAvaloniaRiderProjectModel();
             riderProjectOutputModel.GetProjectOutput.Set(GetProjectOutputModel);
+            riderProjectOutputModel.GetReferencingProjects.Set(GetReferencingProjects);
         }
 
-        private RdTask<RdProjectOutput> GetProjectOutputModel(Lifetime lifetime, RdGetProjectOutputArgs args)
+        private IProject GetProject(FileSystemPath projectFilePath)
         {
             var projectsHostContainer = _solution.ProjectsHostContainer();
             var solutionStructureContainer = projectsHostContainer.GetComponent<ISolutionStructureContainer>();
             var projectMark = solutionStructureContainer
-                .GetProjectsByLocation(FileSystemPath.Parse(args.ProjectFilePath))
+                .GetProjectsByLocation(projectFilePath)
                 .First();
 
-            var project = _solution.GetProjectByMark(projectMark).NotNull();
+            return _solution.GetProjectByMark(projectMark).NotNull();
+        }
+
+        private RdTask<RdProjectOutput> GetProjectOutputModel(Lifetime lifetime, RdGetProjectOutputArgs args)
+        {
+            var project = GetProject(FileSystemPath.Parse(args.ProjectFilePath));
             var targetFramework = project.TargetFrameworkIds
                 // Take .NET Core first, then .NET Framework, and then .NET Standard. The comparer below will hold this order.
                 .OrderBy(tfm => (!tfm.IsNetCoreApp, !tfm.IsNetFramework, !tfm.IsNetStandard))
@@ -49,6 +62,20 @@ namespace ReSharperPlugin.AvaloniaRider
                 new RdProjectOutput(
                     targetFramework.ToRdTargetFrameworkInfo(),
                     assemblyInfo.Location.ToString()));
+        }
+
+        private List<string> GetReferencingProjects(RdGetReferencingProjectsRequest request)
+        {
+            var targetProject = GetProject(FileSystemPath.Parse(request.TargetProjectFilePath));
+            var referencingProjects = targetProject.GetReferencingProjects(_moduleReferencesResolveStore);
+            var potentialPaths = request.PotentiallyReferencingProjects
+                .Select(s => FileSystemPath.Parse(s))
+                .ToSet();
+            return referencingProjects
+                .Select(p => p.ProjectFileLocation)
+                .Where(potentialPaths.Contains)
+                .Select(p => p.ToString())
+                .ToList();
         }
     }
 }
