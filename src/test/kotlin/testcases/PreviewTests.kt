@@ -26,7 +26,7 @@ class PreviewTests : BaseTestWithSolution() {
         get() = getVirtualFileFromPath("Views/MainWindow.xaml", activeSolutionDirectory)
 
     private val projectFilePathProperty
-        get() = OptProperty(solutionSourceRootDirectory.resolve("AvaloniaMvvm.csproj").toPath())
+        get() = OptProperty(activeSolutionDirectory.resolve("AvaloniaMvvm.csproj").toPath())
 
     @Test
     fun previewEditorProviderShouldHandleTheXamlFile() {
@@ -45,7 +45,7 @@ class PreviewTests : BaseTestWithSolution() {
             AvaloniaPreviewerSessionController(project, lt, mainWindowFile, projectFilePathProperty).apply {
                 frame.advise(lt) { frameMsg = it }
             }
-            pumpMessages { frameMsg != null }.shouldBeTrue()
+            pumpMessages(Duration.ofMinutes(1L)) { frameMsg != null }.shouldBeTrue()
         }
     }
 }
