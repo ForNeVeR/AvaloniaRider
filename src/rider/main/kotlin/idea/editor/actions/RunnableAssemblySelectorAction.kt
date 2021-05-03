@@ -24,7 +24,7 @@ import javax.swing.JComponent
 @Suppress("UnstableApiUsage")
 class RunnableAssemblySelectorAction(
     lifetime: Lifetime,
-    private val project: Project?, // TODO: Make non-nullable
+    private val project: Project,
     private val workspaceModel: WorkspaceModel?, // TODO: Make non-nullable
     private val isSolutionLoading: IOptProperty<Boolean>, // TODO: Depend on components, not properties
     runnableProjects: IOptProperty<List<RunnableProject>>
@@ -53,14 +53,14 @@ class RunnableAssemblySelectorAction(
 
     private fun calculateIcon(runnableProject: RunnableProject?) =
         runnableProject?.let { VfsUtil.findFile(Paths.get(it.projectFilePath), false) }?.let { virtualFile ->
-            workspaceModel?.getProjectModelEntities(virtualFile, project!!)?.singleOrNull {
+            workspaceModel?.getProjectModelEntities(virtualFile, project)?.singleOrNull {
                 it.isProject() || it.isUnloadedProject()
             }
-        }?.calculateIcon(project!!)
+        }?.calculateIcon(project)
 
     override fun update(e: AnActionEvent) {
         val selectedProject = selectedRunnableProjectProperty.valueOrNull
-        val isSolutionLoading = isSolutionLoading.valueOrDefault(false)
+        val isSolutionLoading = isSolutionLoading.valueOrDefault(true)
         e.presentation.apply {
             isEnabled = !isSolutionLoading
             icon = calculateIcon(selectedProject)

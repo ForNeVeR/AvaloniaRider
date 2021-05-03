@@ -2,13 +2,14 @@ package me.fornever.avaloniarider.testcases
 
 import com.intellij.openapi.actionSystem.ActionPlaces
 import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.util.io.systemIndependentPath
 import com.jetbrains.rd.util.lifetime.LifetimeDefinition
 import com.jetbrains.rd.util.reactive.OptProperty
 import com.jetbrains.rd.util.reactive.valueOrThrow
 import com.jetbrains.rider.model.RunnableProject
 import com.jetbrains.rider.model.RunnableProjectKind
 import com.jetbrains.rider.test.asserts.shouldBe
-import com.jetbrains.rider.test.base.BaseTestWithShell
+import com.jetbrains.rider.test.base.BaseTestWithSolution
 import me.fornever.avaloniarider.idea.editor.actions.RunnableAssemblySelectorAction
 import org.testng.Assert.assertFalse
 import org.testng.annotations.AfterMethod
@@ -16,7 +17,9 @@ import org.testng.annotations.BeforeMethod
 import org.testng.annotations.Test
 import kotlin.test.assertTrue
 
-class RunnableAssemblySelectorActionTests : BaseTestWithShell() {
+class RunnableAssemblySelectorActionTests : BaseTestWithSolution() {
+    override fun getSolutionDirectoryName() = "MultiProjectSolution"
+
     private lateinit var testLifetime: LifetimeDefinition
 
     @BeforeMethod
@@ -41,26 +44,25 @@ class RunnableAssemblySelectorActionTests : BaseTestWithShell() {
     )
 
     @Test
-    fun groupEnabledTests() {
+    fun actionEnabledTests() {
         val isSolutionLoading = OptProperty(true)
-        val action = RunnableAssemblySelectorAction(testLifetime, null, null, isSolutionLoading, OptProperty())
-        val group = action.popupActionGroup
+        val action = RunnableAssemblySelectorAction(testLifetime, project, null, isSolutionLoading, OptProperty())
         val dataContext = { _: Any -> null }
         val event = AnActionEvent.createFromDataContext(ActionPlaces.UNKNOWN, null, dataContext)
         val presentation = event.presentation
 
-        group.update(event)
+        action.update(event)
         assertFalse(presentation.isEnabled)
 
         isSolutionLoading.set(false)
-        group.update(event)
+        action.update(event)
         assertTrue(presentation.isEnabled)
     }
 
     @Test
     fun groupShouldBeFilledTest() {
         val runnableProjects = OptProperty(emptyList<RunnableProject>())
-        val action = RunnableAssemblySelectorAction(testLifetime, null, null, OptProperty(false), runnableProjects)
+        val action = RunnableAssemblySelectorAction(testLifetime, project, null, OptProperty(false), runnableProjects)
         val group = action.popupActionGroup
 
         group.getChildren(null).size.shouldBe(0)
@@ -76,11 +78,11 @@ class RunnableAssemblySelectorActionTests : BaseTestWithShell() {
     @Test
     fun firstAssemblyShouldBeSelectedAutomatically() {
         val runnableProjects = OptProperty(emptyList<RunnableProject>())
-        val action = RunnableAssemblySelectorAction(testLifetime, null, null, OptProperty(false), runnableProjects)
+        val action = RunnableAssemblySelectorAction(testLifetime, project, null, OptProperty(false), runnableProjects)
 
         val project = createTestProject()
         runnableProjects.set(listOf(project))
 
-        action.selectedProjectPath.valueOrThrow.toString().shouldBe(project.projectFilePath)
+        action.selectedProjectPath.valueOrThrow.systemIndependentPath.shouldBe(project.projectFilePath)
     }
 }
