@@ -2,7 +2,6 @@ package me.fornever.avaloniarider.testcases
 
 import com.intellij.openapi.actionSystem.ActionPlaces
 import com.intellij.openapi.actionSystem.AnActionEvent
-import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.util.io.systemIndependentPath
 import com.intellij.workspaceModel.ide.WorkspaceModel
 import com.jetbrains.rd.ide.model.avaloniaRiderProjectModel
@@ -20,6 +19,7 @@ import com.jetbrains.rider.test.asserts.shouldBe
 import com.jetbrains.rider.test.asserts.shouldBeTrue
 import com.jetbrains.rider.test.asserts.shouldContains
 import com.jetbrains.rider.test.base.BaseTestWithSolution
+import com.jetbrains.rider.test.scriptingApi.getVirtualFileFromPath
 import me.fornever.avaloniarider.idea.editor.actions.RunnableAssemblySelectorAction
 import org.testng.Assert.assertFalse
 import org.testng.annotations.AfterMethod
@@ -56,9 +56,7 @@ class RunnableAssemblySelectorActionTests : BaseTestWithSolution() {
     )
 
     private val testXamlFile
-        get() = VfsUtil.findFileByIoFile(
-            tempTestDirectory.resolve("MultiProjectSolution/ClassLibrary1/MyControl.axaml"), true
-        )!!
+        get() = getVirtualFileFromPath("ClassLibrary1/MyControl.axaml", activeSolutionDirectory)
 
     private fun createMockSelector(
         isSolutionLoading: IOptPropertyView<Boolean> = OptProperty(),
