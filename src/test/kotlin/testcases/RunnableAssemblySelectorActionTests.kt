@@ -3,6 +3,7 @@ package me.fornever.avaloniarider.testcases
 import com.intellij.openapi.actionSystem.ActionPlaces
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.util.io.systemIndependentPath
+import com.intellij.workspaceModel.ide.WorkspaceModel
 import com.jetbrains.rd.util.lifetime.LifetimeDefinition
 import com.jetbrains.rd.util.reactive.OptProperty
 import com.jetbrains.rd.util.reactive.valueOrThrow
@@ -43,10 +44,20 @@ class RunnableAssemblySelectorActionTests : BaseTestWithSolution() {
         emptyList()
     )
 
+    @Suppress("UnstableApiUsage")
+    private val workspaceModel
+        get() = WorkspaceModel.getInstance(project)
+
     @Test
     fun actionEnabledTests() {
         val isSolutionLoading = OptProperty(true)
-        val action = RunnableAssemblySelectorAction(testLifetime, project, null, isSolutionLoading, OptProperty())
+        val action = RunnableAssemblySelectorAction(
+            testLifetime,
+            project,
+            workspaceModel,
+            isSolutionLoading,
+            OptProperty()
+        )
         val dataContext = { _: Any -> null }
         val event = AnActionEvent.createFromDataContext(ActionPlaces.UNKNOWN, null, dataContext)
         val presentation = event.presentation
@@ -62,7 +73,13 @@ class RunnableAssemblySelectorActionTests : BaseTestWithSolution() {
     @Test
     fun groupShouldBeFilledTest() {
         val runnableProjects = OptProperty(emptyList<RunnableProject>())
-        val action = RunnableAssemblySelectorAction(testLifetime, project, null, OptProperty(false), runnableProjects)
+        val action = RunnableAssemblySelectorAction(
+            testLifetime,
+            project,
+            workspaceModel,
+            OptProperty(false),
+            runnableProjects
+        )
         val group = action.popupActionGroup
 
         group.getChildren(null).size.shouldBe(0)
@@ -78,7 +95,13 @@ class RunnableAssemblySelectorActionTests : BaseTestWithSolution() {
     @Test
     fun firstAssemblyShouldBeSelectedAutomatically() {
         val runnableProjects = OptProperty(emptyList<RunnableProject>())
-        val action = RunnableAssemblySelectorAction(testLifetime, project, null, OptProperty(false), runnableProjects)
+        val action = RunnableAssemblySelectorAction(
+            testLifetime,
+            project,
+            workspaceModel,
+            OptProperty(false),
+            runnableProjects
+        )
 
         val project = createTestProject()
         runnableProjects.set(listOf(project))

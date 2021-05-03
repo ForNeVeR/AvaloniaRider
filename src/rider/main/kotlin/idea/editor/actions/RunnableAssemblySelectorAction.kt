@@ -25,8 +25,8 @@ import javax.swing.JComponent
 class RunnableAssemblySelectorAction(
     lifetime: Lifetime,
     private val project: Project,
-    private val workspaceModel: WorkspaceModel?, // TODO: Make non-nullable
-    private val isSolutionLoading: IOptProperty<Boolean>, // TODO: Depend on components, not properties
+    private val workspaceModel: WorkspaceModel,
+    private val isSolutionLoading: IOptProperty<Boolean>,
     runnableProjects: IOptProperty<List<RunnableProject>>
 ) : ComboBoxAction() {
     constructor(lifetime: Lifetime, project: Project) : this(
@@ -53,7 +53,7 @@ class RunnableAssemblySelectorAction(
 
     private fun calculateIcon(runnableProject: RunnableProject?) =
         runnableProject?.let { VfsUtil.findFile(Paths.get(it.projectFilePath), false) }?.let { virtualFile ->
-            workspaceModel?.getProjectModelEntities(virtualFile, project)?.singleOrNull {
+            workspaceModel.getProjectModelEntities(virtualFile, project).singleOrNull {
                 it.isProject() || it.isUnloadedProject()
             }
         }?.calculateIcon(project)
