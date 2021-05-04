@@ -12,7 +12,6 @@ import com.jetbrains.rd.util.reactive.hasValue
 import com.jetbrains.rd.util.reactive.valueOrThrow
 import com.jetbrains.rdclient.util.idea.pumpMessages
 import com.jetbrains.rider.model.RunnableProject
-import com.jetbrains.rider.model.RunnableProjectKind
 import com.jetbrains.rider.model.runnableProjectsModel
 import com.jetbrains.rider.projectView.solution
 import com.jetbrains.rider.test.asserts.shouldBe
@@ -43,17 +42,6 @@ class RunnableAssemblySelectorActionTests : BaseTestWithSolution() {
     fun afterMethod() {
         testLifetime.terminate()
     }
-
-    private fun createTestProject() = RunnableProject(
-        "Project1",
-        "Project1",
-        "/tmp/Project1.csproj",
-        RunnableProjectKind.DotNetCore,
-        emptyList(),
-        emptyList(),
-        null,
-        emptyList()
-    )
 
     private val testXamlFile
         get() = getVirtualFileFromPath("ClassLibrary1/MyControl.axaml", activeSolutionDirectory)
@@ -100,8 +88,9 @@ class RunnableAssemblySelectorActionTests : BaseTestWithSolution() {
 
         group.getChildren(null).size.shouldBe(0)
 
-        val project = createTestProject()
+        val project = project.solution.runnableProjectsModel.projects.valueOrThrow.single { it.name == "AvaloniaApp1" }
         runnableProjects.set(listOf(project))
+        pumpMessages(Duration.ofSeconds(5L)) { !action.isLoading.value }.shouldBeTrue()
 
         val children = group.getChildren(null)
         children.size.shouldBe(1)

@@ -62,7 +62,7 @@ class RunnableAssemblySelectorAction(
     )
 
     private val isProcessingProjectList = Property(false)
-    private val isLoading = compose(isSolutionLoading, isProcessingProjectList)
+    val isLoading = compose(isSolutionLoading, isProcessingProjectList)
         .map { (isSolutionLoading, isProcessing) -> (isSolutionLoading ?: true) || isProcessing }
 
     // TODO: Persist user selection; base initial assembly guess on already persisted files from the current assembly
@@ -101,8 +101,8 @@ class RunnableAssemblySelectorAction(
 
     @OptIn(ExperimentalPathApi::class)
     private fun fillWithActions(runnableProjects: List<RunnableProject>) {
+        isProcessingProjectList.set(true)
         lifetime.launchOnUi {
-            isProcessingProjectList.set(true)
             try {
                 val targetFileProjectEntity = xamlFile.getProjectContainingFile(lifetime, project)
                 val targetFileProjectPath = targetFileProjectEntity.url!!.toPath()
