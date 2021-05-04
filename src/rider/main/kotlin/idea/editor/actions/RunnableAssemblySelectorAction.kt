@@ -33,6 +33,8 @@ import me.fornever.avaloniarider.rider.getProjectContainingFile
 import java.nio.file.Path
 import java.nio.file.Paths
 import javax.swing.JComponent
+import kotlin.io.path.ExperimentalPathApi
+import kotlin.io.path.nameWithoutExtension
 
 @Suppress("UnstableApiUsage")
 class RunnableAssemblySelectorAction(
@@ -97,41 +99,52 @@ class RunnableAssemblySelectorAction(
         }
     }
 
+    @OptIn(ExperimentalPathApi::class)
     private fun fillWithActions(runnableProjects: List<RunnableProject>) {
         lifetime.launchOnUi {
-            val targetFileProjectEntity = xamlFile.getProjectContainingFile(lifetime, project)
-            val targetFileProjectPath = targetFileProjectEntity.url!!.toPath().toString()
-            val runnableProjectPaths = runnableProjects.map { it.projectFilePath }
-            val refRequest = RdGetReferencingProjectsRequest(targetFileProjectPath, runnableProjectPaths)
+            isProcessingProjectList.set(true)
+            try {
+                val targetFileProjectEntity = xamlFile.getProjectContainingFile(lifetime, project)
+                val targetFileProjectPath = targetFileProjectEntity.url!!.toPath()
+                val runnableProjectPaths = runnableProjects.map { it.projectFilePath }
+                val refRequest = RdGetReferencingProjectsRequest(targetFileProjectPath.toString(), runnableProjectPaths)
 
-            logger.info("Calculating referencing projects for project $targetFileProjectPath among ${runnableProjectPaths.size} runnable projects")
-            val actuallyReferencedProjects = avaloniaRiderModel.getReferencingProjects.startSuspending(
-                lifetime,
-                refRequest
-            )
+                logger.info("Calculating referencing projects for project ${targetFileProjectPath.nameWithoutExtension} among ${runnableProjectPaths.size} runnable projects")
+                val actuallyReferencedProjects = avaloniaRiderModel.getReferencingProjects.startSuspending(
+                    lifetime,
+                    refRequest
+                )
+                logger.info("There are ${actuallyReferencedProjects.size} projects referencing ${targetFileProjectPath.nameWithoutExtension} among the passed ones")
 
-            val runnableProjectPerPath = runnableProjects.map { r -> Paths.get(r.projectFilePath).systemIndependentPath to r }.toMap()
+                val runnableProjectPerPath =
+                    runnableProjects.map { r -> Paths.get(r.projectFilePath).systemIndependentPath to r }.toMap()
 
-            popupActionGroup.removeAll()
-            val selectableRunnableProjects = actuallyReferencedProjects.map { path ->
-                val normalizedPath = Paths.get(path).systemIndependentPath
-                val runnableProject = runnableProjectPerPath[normalizedPath]
-                if (runnableProject == null) {
-                    logger.error("Couldn't find runnable project for path $normalizedPath")
-                }
-                runnableProject
-            }.filterNotNull().sortedBy { it.name }
-
-            for (runnableProject in selectableRunnableProjects) {
-                popupActionGroup.add(object : DumbAwareAction({ runnableProject.name }, calculateIcon(runnableProject)) {
-                    override fun actionPerformed(event: AnActionEvent) {
-                        selectedRunnableProjectProperty.set(runnableProject)
+                popupActionGroup.removeAll()
+                val selectableRunnableProjects = actuallyReferencedProjects.map { path ->
+                    val normalizedPath = Paths.get(path).systemIndependentPath
+                    val runnableProject = runnableProjectPerPath[normalizedPath]
+                    if (runnableProject == null) {
+                        logger.error("Couldn't find runnable project for path $normalizedPath")
                     }
-                })
-            }
+                    runnableProject
+                }.filterNotNull().sortedBy { it.name }
 
-            if (selectedRunnableProjectProperty.valueOrNull == null && selectableRunnableProjects.isNotEmpty()) {
-                selectedRunnableProjectProperty.set(selectableRunnableProjects.first())
+                for (runnableProject in selectableRunnableProjects) {
+                    popupActionGroup.add(object : DumbAwareAction(
+                        { runnableProject.name },
+                        calculateIcon(runnableProject)
+                    ) {
+                        override fun actionPerformed(event: AnActionEvent) {
+                            selectedRunnableProjectProperty.set(runnableProject)
+                        }
+                    })
+                }
+
+                if (selectedRunnableProjectProperty.valueOrNull == null && selectableRunnableProjects.isNotEmpty()) {
+                    selectedRunnableProjectProperty.set(selectableRunnableProjects.first())
+                }
+            } finally {
+                isProcessingProjectList.set(false)
             }
         }
     }
