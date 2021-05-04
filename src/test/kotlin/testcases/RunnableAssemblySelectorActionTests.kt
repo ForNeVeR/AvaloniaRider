@@ -110,9 +110,13 @@ class RunnableAssemblySelectorActionTests : BaseTestWithSolution() {
 
     @Test
     fun onlyReferencedAssembliesShouldBeAvailable() {
-        pumpMessages { project.solution.runnableProjectsModel.projects.valueOrNull?.isNotEmpty() ?: false }
+        val runnableProjectsModel = project.solution.runnableProjectsModel
+        pumpMessages { runnableProjectsModel.projects.valueOrNull?.isNotEmpty() ?: false }
+        runnableProjectsModel.projects.valueOrThrow.size.shouldBe(3)
 
         val action = createSelector()
+        pumpMessages(Duration.ofSeconds(5L)) { !action.isLoading.value }.shouldBeTrue()
+
         val items = action.popupActionGroup.getChildren(null).map { it.templateText }
         items.size.shouldBe(2)
         items.shouldContains { it == "AvaloniaApp1" }
