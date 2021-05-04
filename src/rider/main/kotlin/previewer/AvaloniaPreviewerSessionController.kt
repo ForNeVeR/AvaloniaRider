@@ -286,7 +286,7 @@ class AvaloniaPreviewerSessionController(
                 logger.error(t)
             } finally {
                 session = null
-                currentSessionLifetime!!.terminate()
+                lt.terminate()
             }
         }
     }
