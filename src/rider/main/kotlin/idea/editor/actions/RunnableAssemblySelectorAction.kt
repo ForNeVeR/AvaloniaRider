@@ -5,6 +5,7 @@ import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.actionSystem.ex.ComboBoxAction
 import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.io.FileUtil
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.util.io.systemIndependentPath
@@ -28,6 +29,7 @@ import com.jetbrains.rider.projectView.workspace.getProjectModelEntities
 import com.jetbrains.rider.projectView.workspace.isProject
 import com.jetbrains.rider.projectView.workspace.isUnloadedProject
 import me.fornever.avaloniarider.AvaloniaRiderBundle.message
+import me.fornever.avaloniarider.idea.settings.AvaloniaProjectSettings
 import me.fornever.avaloniarider.rd.compose
 import me.fornever.avaloniarider.rider.getProjectContainingFile
 import java.nio.file.Path
@@ -42,6 +44,7 @@ class RunnableAssemblySelectorAction(
     private val project: Project,
     private val workspaceModel: WorkspaceModel,
     private val avaloniaRiderModel: AvaloniaRiderProjectModel,
+    private val avaloniaProjectSettings: AvaloniaProjectSettings,
     isSolutionLoading: IOptPropertyView<Boolean>,
     runnableProjects: IOptPropertyView<List<RunnableProject>>,
     private val xamlFile: VirtualFile
@@ -56,6 +59,7 @@ class RunnableAssemblySelectorAction(
         project,
         WorkspaceModel.getInstance(project),
         project.solution.avaloniaRiderProjectModel,
+        AvaloniaProjectSettings.getInstance(project),
         project.solution.isLoading,
         project.solution.runnableProjectsModel.projects,
         xamlFile
@@ -65,7 +69,6 @@ class RunnableAssemblySelectorAction(
     val isLoading = compose(isSolutionLoading, isProcessingProjectList)
         .map { (isSolutionLoading, isProcessing) -> (isSolutionLoading ?: true) || isProcessing }
 
-    // TODO: Persist user selection; base initial assembly guess on already persisted files from the current assembly
     val popupActionGroup: DefaultActionGroup = DefaultActionGroup()
     override fun createPopupActionGroup(button: JComponent?) = popupActionGroup
 
@@ -76,6 +79,9 @@ class RunnableAssemblySelectorAction(
 
     init {
         runnableProjects.advise(lifetime, ::fillWithActions)
+        selectedRunnableProjectProperty.advise(lifetime) { project ->
+            avaloniaProjectSettings.storeSelection(xamlFile.toNioPath(), Paths.get(project.projectFilePath))
+        }
     }
 
     private fun calculateIcon(runnableProject: RunnableProject?) =
@@ -141,7 +147,21 @@ class RunnableAssemblySelectorAction(
                 }
 
                 if (selectedRunnableProjectProperty.valueOrNull == null && selectableRunnableProjects.isNotEmpty()) {
-                    selectedRunnableProjectProperty.set(selectableRunnableProjects.first())
+                    val savedProjectPath = avaloniaProjectSettings.getSelection(xamlFile.toNioPath())
+                    val savedRunnableProject = savedProjectPath?.let {
+                        selectableRunnableProjects.firstOrNull {
+                            FileUtil.pathsEqual(it.projectFilePath, savedProjectPath.toString())
+                        }
+                    }
+                    if (savedRunnableProject == null) {
+                        if (savedProjectPath != null)
+                            logger.warn("Could not found project \"$savedProjectPath\" saved for XAML file \"$xamlFile\" among ${selectableRunnableProjects.size} selectable runnable projects")
+
+                        selectedRunnableProjectProperty.set(selectableRunnableProjects.first())
+                    }
+                    else {
+                        selectedRunnableProjectProperty.set(savedRunnableProject)
+                    }
                 }
             } finally {
                 isProcessingProjectList.set(false)

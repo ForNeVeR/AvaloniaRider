@@ -20,6 +20,7 @@ import com.jetbrains.rider.test.asserts.shouldContains
 import com.jetbrains.rider.test.base.BaseTestWithSolution
 import com.jetbrains.rider.test.scriptingApi.getVirtualFileFromPath
 import me.fornever.avaloniarider.idea.editor.actions.RunnableAssemblySelectorAction
+import me.fornever.avaloniarider.idea.settings.AvaloniaProjectSettings
 import org.testng.Assert.assertFalse
 import org.testng.annotations.AfterMethod
 import org.testng.annotations.BeforeMethod
@@ -55,6 +56,7 @@ class RunnableAssemblySelectorActionTests : BaseTestWithSolution() {
             project,
             @Suppress("UnstableApiUsage") WorkspaceModel.getInstance(project),
             project.solution.avaloniaRiderProjectModel,
+            AvaloniaProjectSettings.getInstance(project),
             isSolutionLoading,
             runnableProjects,
             testXamlFile
