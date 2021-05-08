@@ -44,6 +44,7 @@ jobs:
         with:
           name: ${{ runner.os }}.test-results
           path: build/reports/tests
+        if: ${{ always() }}
 
       # Distribution
       - name: Build Distribution
