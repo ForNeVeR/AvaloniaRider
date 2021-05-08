@@ -32,7 +32,7 @@ Build
 
 - OpenJDK-compatible JDK version 11 or later, should include JavaFX (will be
   downloaded automatically during build)
-- .NET Core SDK 3.1 or later
+- .NET SDK 5.0 or later
 
 ### Build
 
