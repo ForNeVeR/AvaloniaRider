@@ -25,6 +25,7 @@ import com.jetbrains.rd.platform.util.launchOnUi
 import com.jetbrains.rd.util.lifetime.Lifetime
 import com.jetbrains.rd.util.reactive.*
 import com.jetbrains.rider.model.RunnableProject
+import com.jetbrains.rider.model.RunnableProjectKind
 import com.jetbrains.rider.model.runnableProjectsModel
 import com.jetbrains.rider.projectView.calculateIcon
 import com.jetbrains.rider.projectView.solution
@@ -206,6 +207,10 @@ class RunnableAssemblySelectorAction(
             try {
                 val targetFileProjectEntity = xamlFile.getProjectContainingFile(lifetime, project)
                 val targetFileProjectPath = targetFileProjectEntity.url!!.toPath()
+                val runnableProjects = runnableProjects
+                    .filter { it.kind == RunnableProjectKind.DotNetCore || it.kind == RunnableProjectKind.Console }
+                    .sortedBy { it.kind != RunnableProjectKind.DotNetCore }
+                    .distinctBy { it.projectFilePath }
                 val runnableProjectPaths = runnableProjects.map { it.projectFilePath }
                 val refRequest = RdGetReferencingProjectsRequest(targetFileProjectPath.toString(), runnableProjectPaths)
 

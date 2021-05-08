@@ -13,13 +13,13 @@ import com.jetbrains.rd.util.reactive.hasValue
 import com.jetbrains.rd.util.reactive.valueOrThrow
 import com.jetbrains.rdclient.util.idea.pumpMessages
 import com.jetbrains.rider.model.RunnableProject
+import com.jetbrains.rider.model.RunnableProjectKind
 import com.jetbrains.rider.model.runnableProjectsModel
 import com.jetbrains.rider.projectView.solution
 import com.jetbrains.rider.test.asserts.shouldBe
 import com.jetbrains.rider.test.asserts.shouldBeTrue
 import com.jetbrains.rider.test.asserts.shouldContains
 import com.jetbrains.rider.test.base.BaseTestWithSolution
-import com.jetbrains.rider.test.framework.frameworkLogger
 import com.jetbrains.rider.test.scriptingApi.getVirtualFileFromPath
 import me.fornever.avaloniarider.idea.editor.actions.RunnableAssemblySelectorAction
 import me.fornever.avaloniarider.idea.settings.AvaloniaProjectSettings
@@ -96,7 +96,9 @@ class RunnableAssemblySelectorActionTests : BaseTestWithSolution() {
 
         group.getChildren(null).size.shouldBe(0)
 
-        val project = project.solution.runnableProjectsModel.projects.valueOrThrow.single { it.name == "AvaloniaApp1" }
+        val project = project.solution.runnableProjectsModel.projects.valueOrThrow.single {
+            it.name == "AvaloniaApp1" && it.kind == RunnableProjectKind.DotNetCore
+        }
         runnableProjects.set(listOf(project))
         pumpMessages(Duration.ofSeconds(5L)) { !action.isLoading.value }.shouldBeTrue()
 
@@ -110,9 +112,8 @@ class RunnableAssemblySelectorActionTests : BaseTestWithSolution() {
         val action = createSelector()
         pumpMessages(Duration.ofSeconds(5L)) { action.selectedProjectPath.hasValue }.shouldBeTrue()
 
-        frameworkLogger.info("runnableProjects: ${project.solution.runnableProjectsModel.projects.valueOrThrow.joinToString()}")
         val expectedPath = project.solution.runnableProjectsModel.projects.valueOrThrow
-            .single { it.name == "AvaloniaApp1" }
+            .single { it.name == "AvaloniaApp1" && it.kind == RunnableProjectKind.DotNetCore }
             .projectFilePath.let(Paths::get).systemIndependentPath
         action.selectedProjectPath.valueOrThrow.systemIndependentPath.shouldBe(expectedPath)
     }
