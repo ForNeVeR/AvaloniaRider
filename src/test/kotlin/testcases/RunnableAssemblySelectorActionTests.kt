@@ -1,5 +1,6 @@
 package me.fornever.avaloniarider.testcases
 
+import com.intellij.execution.RunManager
 import com.intellij.openapi.actionSystem.ActionPlaces
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.util.io.systemIndependentPath
@@ -21,6 +22,7 @@ import com.jetbrains.rider.test.base.BaseTestWithSolution
 import com.jetbrains.rider.test.scriptingApi.getVirtualFileFromPath
 import me.fornever.avaloniarider.idea.editor.actions.RunnableAssemblySelectorAction
 import me.fornever.avaloniarider.idea.settings.AvaloniaProjectSettings
+import me.fornever.avaloniarider.idea.settings.AvaloniaSettings
 import org.testng.Assert.assertFalse
 import org.testng.annotations.AfterMethod
 import org.testng.annotations.BeforeMethod
@@ -55,8 +57,11 @@ class RunnableAssemblySelectorActionTests : BaseTestWithSolution() {
             testLifetime,
             project,
             @Suppress("UnstableApiUsage") WorkspaceModel.getInstance(project),
-            project.solution.avaloniaRiderProjectModel,
+            project.messageBus,
+            RunManager.getInstance(project),
+            AvaloniaSettings.getInstance(project),
             AvaloniaProjectSettings.getInstance(project),
+            project.solution.avaloniaRiderProjectModel,
             isSolutionLoading,
             runnableProjects,
             testXamlFile

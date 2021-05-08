@@ -1,26 +1,29 @@
 package me.fornever.avaloniarider.idea.editor.actions
 
+import com.intellij.execution.RunManager
+import com.intellij.execution.RunManagerListener
+import com.intellij.execution.RunnerAndConfigurationSettings
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.actionSystem.ex.ComboBoxAction
 import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.rd.createNestedDisposable
 import com.intellij.openapi.util.io.FileUtil
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.util.io.systemIndependentPath
+import com.intellij.util.messages.MessageBus
 import com.intellij.workspaceModel.ide.WorkspaceModel
 import com.intellij.workspaceModel.ide.toPath
 import com.jetbrains.rd.ide.model.AvaloniaRiderProjectModel
 import com.jetbrains.rd.ide.model.RdGetReferencingProjectsRequest
 import com.jetbrains.rd.ide.model.avaloniaRiderProjectModel
+import com.jetbrains.rd.platform.util.application
 import com.jetbrains.rd.platform.util.getLogger
 import com.jetbrains.rd.platform.util.launchOnUi
 import com.jetbrains.rd.util.lifetime.Lifetime
-import com.jetbrains.rd.util.reactive.IOptPropertyView
-import com.jetbrains.rd.util.reactive.OptProperty
-import com.jetbrains.rd.util.reactive.Property
-import com.jetbrains.rd.util.reactive.map
+import com.jetbrains.rd.util.reactive.*
 import com.jetbrains.rider.model.RunnableProject
 import com.jetbrains.rider.model.runnableProjectsModel
 import com.jetbrains.rider.projectView.calculateIcon
@@ -28,8 +31,10 @@ import com.jetbrains.rider.projectView.solution
 import com.jetbrains.rider.projectView.workspace.getProjectModelEntities
 import com.jetbrains.rider.projectView.workspace.isProject
 import com.jetbrains.rider.projectView.workspace.isUnloadedProject
+import com.jetbrains.rider.run.configurations.IProjectBasedRunConfiguration
 import me.fornever.avaloniarider.AvaloniaRiderBundle.message
 import me.fornever.avaloniarider.idea.settings.AvaloniaProjectSettings
+import me.fornever.avaloniarider.idea.settings.AvaloniaSettings
 import me.fornever.avaloniarider.rd.compose
 import me.fornever.avaloniarider.rider.getProjectContainingFile
 import java.nio.file.Path
@@ -43,8 +48,11 @@ class RunnableAssemblySelectorAction(
     private val lifetime: Lifetime,
     private val project: Project,
     private val workspaceModel: WorkspaceModel,
-    private val avaloniaRiderModel: AvaloniaRiderProjectModel,
+    messageBus: MessageBus,
+    private val runManager: RunManager,
+    private val avaloniaSettings: AvaloniaSettings,
     private val avaloniaProjectSettings: AvaloniaProjectSettings,
+    private val avaloniaRiderModel: AvaloniaRiderProjectModel,
     isSolutionLoading: IOptPropertyView<Boolean>,
     runnableProjects: IOptPropertyView<List<RunnableProject>>,
     private val xamlFile: VirtualFile
@@ -58,8 +66,11 @@ class RunnableAssemblySelectorAction(
         lifetime,
         project,
         WorkspaceModel.getInstance(project),
-        project.solution.avaloniaRiderProjectModel,
+        project.messageBus,
+        RunManager.getInstance(project),
+        AvaloniaSettings.getInstance(project),
         AvaloniaProjectSettings.getInstance(project),
+        project.solution.avaloniaRiderProjectModel,
         project.solution.isLoading,
         project.solution.runnableProjectsModel.projects,
         xamlFile
@@ -69,6 +80,8 @@ class RunnableAssemblySelectorAction(
     val isLoading = compose(isSolutionLoading, isProcessingProjectList)
         .map { (isSolutionLoading, isProcessing) -> (isSolutionLoading ?: true) || isProcessing }
 
+    private val availableProjects = Property<List<RunnableProject>>(emptyList())
+
     val popupActionGroup: DefaultActionGroup = DefaultActionGroup()
     override fun createPopupActionGroup(button: JComponent?) = popupActionGroup
 
@@ -77,11 +90,92 @@ class RunnableAssemblySelectorAction(
         Paths.get(p.projectFilePath)
     }
 
+    private fun updateActionGroup() {
+        application.assertIsDispatchThread()
+
+        for (runnableProject in availableProjects.value) {
+            popupActionGroup.add(object : DumbAwareAction(
+                { runnableProject.name },
+                calculateIcon(runnableProject)
+            ) {
+                override fun actionPerformed(event: AnActionEvent) {
+                    selectedRunnableProjectProperty.set(runnableProject)
+                }
+            })
+        }
+    }
+
+    private fun autoSelectProject() {
+        application.assertIsDispatchThread()
+
+        val availableProjects = availableProjects.value
+        val nothingSelected = !selectedRunnableProjectProperty.hasValue
+        val shouldSynchronize = avaloniaSettings.synchronizeWithRunConfiguration
+
+        fun getRunnableProject(projectFilePath: Path?): RunnableProject? =
+            availableProjects.firstOrNull {
+                FileUtil.pathsEqual(it.projectFilePath, projectFilePath.toString())
+            }
+
+        fun getTargetProject(): RunnableProject {
+            logger.info("Determining target project path")
+            if (shouldSynchronize) {
+                val currentConfiguration = runManager.selectedConfiguration?.configuration as? IProjectBasedRunConfiguration
+                if (currentConfiguration != null) {
+                    logger.info("Trying to synchronize with run configuration $currentConfiguration")
+                    val currentProjectFilePath = Paths.get(currentConfiguration.getProjectFilePath())
+                    val currentProject = getRunnableProject(currentProjectFilePath)
+                    if (currentProject != null) {
+                        logger.info("Synchronization success: $currentProjectFilePath")
+                        return currentProject
+                    } else {
+                        logger.info("Synchronization failed: $currentProjectFilePath")
+                    }
+                }
+            }
+
+            logger.info("Trying to load saved project")
+            val savedProjectFilePath =  avaloniaProjectSettings.getSelection(xamlFile.toNioPath())
+            if (savedProjectFilePath != null) {
+                logger.info("Saved project file path: $savedProjectFilePath")
+                val savedProject = getRunnableProject(savedProjectFilePath)
+                if (savedProject != null) {
+                    logger.info("Synchronization with saved project file: success")
+                    return savedProject
+                } else {
+                    logger.warn("Could not found project \"$savedProjectFilePath\" saved for XAML file \"$xamlFile\" among ${availableProjects.size} available runnable projects")
+                }
+            }
+
+            logger.info("Returning first available project")
+            return availableProjects.first()
+        }
+
+        if (availableProjects.isNotEmpty() && (nothingSelected || shouldSynchronize)) {
+            val targetProject = getTargetProject()
+            selectedRunnableProjectProperty.set(targetProject)
+        }
+    }
+
     init {
         runnableProjects.advise(lifetime, ::fillWithActions)
+        availableProjects.advise(lifetime) {
+            updateActionGroup()
+            autoSelectProject()
+        }
         selectedRunnableProjectProperty.advise(lifetime) { project ->
             avaloniaProjectSettings.storeSelection(xamlFile.toNioPath(), Paths.get(project.projectFilePath))
         }
+        messageBus.connect(lifetime.createNestedDisposable("RunnableAssemblySelectorAction"))
+            .subscribe(RunManagerListener.TOPIC, object : RunManagerListener {
+                override fun runConfigurationSelected(settings: RunnerAndConfigurationSettings?) {
+                    autoSelectProject()
+                }
+
+                override fun runConfigurationChanged(settings: RunnerAndConfigurationSettings) {
+                    autoSelectProject()
+                }
+            })
     }
 
     private fun calculateIcon(runnableProject: RunnableProject?) =
@@ -123,46 +217,18 @@ class RunnableAssemblySelectorAction(
                 logger.info("There are ${actuallyReferencedProjects.size} projects referencing ${targetFileProjectPath.nameWithoutExtension} among the passed ones")
 
                 val runnableProjectPerPath =
-                    runnableProjects.map { r -> Paths.get(r.projectFilePath).systemIndependentPath to r }.toMap()
+                    runnableProjects.associateBy { r -> Paths.get(r.projectFilePath).systemIndependentPath }
 
                 popupActionGroup.removeAll()
-                val selectableRunnableProjects = actuallyReferencedProjects.map { path ->
+                val selectableRunnableProjects = actuallyReferencedProjects.mapNotNull { path ->
                     val normalizedPath = Paths.get(path).systemIndependentPath
                     val runnableProject = runnableProjectPerPath[normalizedPath]
                     if (runnableProject == null) {
                         logger.error("Couldn't find runnable project for path $normalizedPath")
                     }
                     runnableProject
-                }.filterNotNull().sortedBy { it.name }
-
-                for (runnableProject in selectableRunnableProjects) {
-                    popupActionGroup.add(object : DumbAwareAction(
-                        { runnableProject.name },
-                        calculateIcon(runnableProject)
-                    ) {
-                        override fun actionPerformed(event: AnActionEvent) {
-                            selectedRunnableProjectProperty.set(runnableProject)
-                        }
-                    })
-                }
-
-                if (selectedRunnableProjectProperty.valueOrNull == null && selectableRunnableProjects.isNotEmpty()) {
-                    val savedProjectPath = avaloniaProjectSettings.getSelection(xamlFile.toNioPath())
-                    val savedRunnableProject = savedProjectPath?.let {
-                        selectableRunnableProjects.firstOrNull {
-                            FileUtil.pathsEqual(it.projectFilePath, savedProjectPath.toString())
-                        }
-                    }
-                    if (savedRunnableProject == null) {
-                        if (savedProjectPath != null)
-                            logger.warn("Could not found project \"$savedProjectPath\" saved for XAML file \"$xamlFile\" among ${selectableRunnableProjects.size} selectable runnable projects")
-
-                        selectedRunnableProjectProperty.set(selectableRunnableProjects.first())
-                    }
-                    else {
-                        selectedRunnableProjectProperty.set(savedRunnableProject)
-                    }
-                }
+                }.sortedBy { it.name }
+                availableProjects.set(selectableRunnableProjects)
             } finally {
                 isProcessingProjectList.set(false)
             }

@@ -11,14 +11,13 @@ enum class AvaloniaPreviewerMethod {
     Html
 }
 
-enum class ExecutableProjectSelectionMode {
-    Automatic,
-    RunConfiguration
-}
-
 class AvaloniaSettingsState : BaseState() {
     var previewerMethod by enum(AvaloniaPreviewerMethod.AvaloniaRemote)
-    var projectSelectionMode by enum(ExecutableProjectSelectionMode.Automatic)
+
+    /**
+     * Synchronize current run configuration and selected project, when possible.
+     */
+    var synchronizeWithRunConfiguration by property(false)
 }
 
 @State(name = "Avalonia")
@@ -31,6 +30,6 @@ class AvaloniaSettings : SimplePersistentStateComponent<AvaloniaSettingsState>(A
     val previewerTransportType: AvaloniaPreviewerMethod
         get() = state.previewerMethod
 
-    val projectSelectionMode: ExecutableProjectSelectionMode
-        get() = state.projectSelectionMode
+    val synchronizeWithRunConfiguration: Boolean
+        get() = state.synchronizeWithRunConfiguration
 }

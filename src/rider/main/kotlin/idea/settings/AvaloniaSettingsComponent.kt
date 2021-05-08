@@ -1,7 +1,9 @@
 package me.fornever.avaloniarider.idea.settings
 
 import com.intellij.openapi.ui.ComboBox
+import com.intellij.ui.components.CheckBox
 import com.intellij.ui.components.JBLabel
+import me.fornever.avaloniarider.AvaloniaRiderBundle
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
 import javax.swing.JPanel
@@ -18,33 +20,32 @@ class AvaloniaSettingsComponent(state: AvaloniaSettingsState) : JPanel() {
             previewerTransportTypeSelector.selectedItem = value
         }
 
-    private val projectSelectionModeSelector = ComboBox(ExecutableProjectSelectionMode.values())
-    private var projectSelectionMode: ExecutableProjectSelectionMode
-        get() = projectSelectionModeSelector.selectedItem as ExecutableProjectSelectionMode
+    private val synchronizeWithRunConfigurationEditor = CheckBox(AvaloniaRiderBundle.message("settings.synchronizeWithRunConfiguration"))
+    private var synchronizeWithRunConfiguration: Boolean
+        get() = synchronizeWithRunConfigurationEditor.isSelected
         set(value) {
-            projectSelectionModeSelector.selectedItem = value
+            synchronizeWithRunConfigurationEditor.isSelected = value
         }
 
     init {
         previewerMethod = initialState.previewerMethod
-        projectSelectionMode = initialState.projectSelectionMode
+        synchronizeWithRunConfiguration = initialState.synchronizeWithRunConfiguration
 
         layout = GridBagLayout()
         add(JBLabel("Previewer Method:"), GridBagConstraints().apply { anchor = GridBagConstraints.LINE_START })
         add(previewerTransportTypeSelector, GridBagConstraints().apply { gridx = 1 })
 
-        add(JBLabel("Project Selection Mode:"), GridBagConstraints().apply { gridy = 1 })
-        add(projectSelectionModeSelector, GridBagConstraints().apply { gridx = 1; gridy = 1 })
+        add(synchronizeWithRunConfigurationEditor, GridBagConstraints().apply { gridy = 1; gridwidth = 2 })
     }
 
     var currentState: AvaloniaSettingsState
         get() = AvaloniaSettingsState().apply {
             previewerMethod = this@AvaloniaSettingsComponent.previewerMethod
-            projectSelectionMode = this@AvaloniaSettingsComponent.projectSelectionMode
+            synchronizeWithRunConfiguration = this@AvaloniaSettingsComponent.synchronizeWithRunConfiguration
         }
         set(value) {
             previewerMethod = value.previewerMethod
-            projectSelectionMode = value.projectSelectionMode
+            synchronizeWithRunConfiguration = value.synchronizeWithRunConfiguration
         }
 
     val isModified: Boolean
