@@ -19,6 +19,7 @@ import com.jetbrains.rider.test.asserts.shouldBe
 import com.jetbrains.rider.test.asserts.shouldBeTrue
 import com.jetbrains.rider.test.asserts.shouldContains
 import com.jetbrains.rider.test.base.BaseTestWithSolution
+import com.jetbrains.rider.test.framework.frameworkLogger
 import com.jetbrains.rider.test.scriptingApi.getVirtualFileFromPath
 import me.fornever.avaloniarider.idea.editor.actions.RunnableAssemblySelectorAction
 import me.fornever.avaloniarider.idea.settings.AvaloniaProjectSettings
@@ -109,6 +110,7 @@ class RunnableAssemblySelectorActionTests : BaseTestWithSolution() {
         val action = createSelector()
         pumpMessages(Duration.ofSeconds(5L)) { action.selectedProjectPath.hasValue }.shouldBeTrue()
 
+        frameworkLogger.info("runnableProjects: ${project.solution.runnableProjectsModel.projects.valueOrThrow.joinToString()}")
         val expectedPath = project.solution.runnableProjectsModel.projects.valueOrThrow
             .single { it.name == "AvaloniaApp1" }
             .projectFilePath.let(Paths::get).systemIndependentPath
