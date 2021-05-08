@@ -4,6 +4,7 @@ import com.intellij.openapi.components.*
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.io.FileUtil
 import com.intellij.util.io.systemIndependentPath
+import com.jetbrains.rd.platform.util.application
 import com.jetbrains.rider.util.idea.getService
 import java.io.File
 import java.nio.file.Path
@@ -30,12 +31,16 @@ class AvaloniaProjectSettings(private val project: Project) : SimplePersistentSt
     }
 
     fun storeSelection(xamlFilePath: Path, projectFilePath: Path) {
+        application.assertIsDispatchThread()
+
         val relativeXamlPath = getProjectRelativeSystemIndependentPath(xamlFilePath)
         val relativeProjectPath = getProjectRelativeSystemIndependentPath(projectFilePath)
         state.projectPerEditor[relativeXamlPath] = relativeProjectPath
     }
 
     fun getSelection(xamlFilePath: Path): Path? {
+        application.assertIsDispatchThread()
+
         val relativeXamlPath = getProjectRelativeSystemIndependentPath(xamlFilePath)
         val relativeProjectPath = state.projectPerEditor[relativeXamlPath] ?: return null
         val basePath = project.basePath ?: return Paths.get(relativeProjectPath)
