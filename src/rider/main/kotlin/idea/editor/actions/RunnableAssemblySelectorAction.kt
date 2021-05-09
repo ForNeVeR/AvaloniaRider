@@ -207,25 +207,40 @@ class RunnableAssemblySelectorAction(
             try {
                 val targetFileProjectEntity = xamlFile.getProjectContainingFile(lifetime, project)
                 val targetFileProjectPath = targetFileProjectEntity.url!!.toPath()
-                val runnableProjects = runnableProjects
+                val filteredProjects = runnableProjects
                     .filter { it.kind == RunnableProjectKind.DotNetCore || it.kind == RunnableProjectKind.Console }
                     .sortedBy { it.kind != RunnableProjectKind.DotNetCore }
                     .distinctBy { it.projectFilePath }
-                val runnableProjectPaths = runnableProjects.map { it.projectFilePath }
-                val refRequest = RdGetReferencingProjectsRequest(targetFileProjectPath.toString(), runnableProjectPaths)
+                val runnableProjectPaths = filteredProjects
+                    .filter { !FileUtil.pathsEqual(it.projectFilePath, targetFileProjectPath.toString()) }
+                    .map { it.projectFilePath }
+                val availableProjectPaths = mutableListOf<String>()
+                if (runnableProjectPaths.isNotEmpty()) {
+                    val refRequest =
+                        RdGetReferencingProjectsRequest(targetFileProjectPath.toString(), runnableProjectPaths)
 
-                logger.info("Calculating referencing projects for project ${targetFileProjectPath.nameWithoutExtension} among ${runnableProjectPaths.size} runnable projects")
-                val actuallyReferencedProjects = avaloniaRiderModel.getReferencingProjects.startSuspending(
-                    lifetime,
-                    refRequest
-                )
-                logger.info("There are ${actuallyReferencedProjects.size} projects referencing ${targetFileProjectPath.nameWithoutExtension} among the passed ones")
+                    logger.info("Calculating referencing projects for project ${targetFileProjectPath.nameWithoutExtension} among ${runnableProjectPaths.size} runnable projects")
+                    val actuallyReferencedProjects = avaloniaRiderModel.getReferencingProjects.startSuspending(
+                        lifetime,
+                        refRequest
+                    )
+                    logger.info("There are ${actuallyReferencedProjects.size} projects referencing ${targetFileProjectPath.nameWithoutExtension} among the passed ones")
+
+                    availableProjectPaths.addAll(actuallyReferencedProjects)
+                }
+
+                if (filteredProjects.any {
+                        FileUtil.pathsEqual(it.projectFilePath, targetFileProjectPath.toString())
+                    }) {
+                    logger.info("Target project path \"${targetFileProjectPath}\" is also available for selection")
+                    availableProjectPaths.add(targetFileProjectPath.toString())
+                }
 
                 val runnableProjectPerPath =
-                    runnableProjects.associateBy { r -> Paths.get(r.projectFilePath).systemIndependentPath }
+                    filteredProjects.associateBy { r -> Paths.get(r.projectFilePath).systemIndependentPath }
 
                 popupActionGroup.removeAll()
-                val selectableRunnableProjects = actuallyReferencedProjects.mapNotNull { path ->
+                val selectableRunnableProjects = availableProjectPaths.mapNotNull { path ->
                     val normalizedPath = Paths.get(path).systemIndependentPath
                     val runnableProject = runnableProjectPerPath[normalizedPath]
                     if (runnableProject == null) {

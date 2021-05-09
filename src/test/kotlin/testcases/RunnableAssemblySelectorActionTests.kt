@@ -16,6 +16,7 @@ import com.jetbrains.rider.model.RunnableProject
 import com.jetbrains.rider.model.RunnableProjectKind
 import com.jetbrains.rider.model.runnableProjectsModel
 import com.jetbrains.rider.projectView.solution
+import com.jetbrains.rider.test.annotations.TestEnvironment
 import com.jetbrains.rider.test.asserts.shouldBe
 import com.jetbrains.rider.test.asserts.shouldBeTrue
 import com.jetbrains.rider.test.asserts.shouldContains
@@ -131,5 +132,23 @@ class RunnableAssemblySelectorActionTests : BaseTestWithSolution() {
         items.size.shouldBe(2)
         items.shouldContains { it == "AvaloniaApp1" }
         items.shouldContains { it == "AvaloniaApp2" }
+    }
+
+    @TestEnvironment(solution = "AvaloniaMvvm")
+    @Test
+    fun targetProjectItselfShouldBeAvailable() {
+        val runnableProjectsModel = project.solution.runnableProjectsModel
+        pumpMessages { runnableProjectsModel.projects.valueOrNull?.isNotEmpty() ?: false }
+
+        val action = RunnableAssemblySelectorAction(
+            testLifetime,
+            project,
+            getVirtualFileFromPath("Views/MainWindow.xaml", activeSolutionDirectory)
+        )
+        pumpMessages(Duration.ofSeconds(5L)) { !action.isLoading.value }.shouldBeTrue()
+
+        val items = action.popupActionGroup.getChildren(null).map { it.templateText }
+        items.size.shouldBe(1)
+        items.shouldContains { it == "AvaloniaMvvm" }
     }
 }
