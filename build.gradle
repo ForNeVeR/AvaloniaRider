@@ -71,14 +71,14 @@ sourceSets {
 }
 
 tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
-    kotlinOptions { jvmTarget = "11" }
+    kotlinOptions {
+        jvmTarget = "11"
+        freeCompilerArgs += "-Xopt-in=kotlin.RequiresOptIn"
+    }
 }
 
 compileKotlin {
     dependsOn 'rdgen'
-    kotlinOptions {
-        freeCompilerArgs += "-Xopt-in=kotlin.RequiresOptIn"
-    }
 }
 
 task compileDotNet {
