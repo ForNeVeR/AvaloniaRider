@@ -25,8 +25,6 @@ import com.jetbrains.rd.platform.util.launchOnUi
 import com.jetbrains.rd.util.lifetime.Lifetime
 import com.jetbrains.rd.util.reactive.*
 import com.jetbrains.rider.model.RunnableProject
-import com.jetbrains.rider.model.RunnableProjectKind
-import com.jetbrains.rider.model.runnableProjectsModel
 import com.jetbrains.rider.projectView.calculateIcon
 import com.jetbrains.rider.projectView.solution
 import com.jetbrains.rider.projectView.workspace.getProjectModelEntities
@@ -37,6 +35,7 @@ import me.fornever.avaloniarider.AvaloniaRiderBundle.message
 import me.fornever.avaloniarider.idea.settings.AvaloniaProjectSettings
 import me.fornever.avaloniarider.idea.settings.AvaloniaSettings
 import me.fornever.avaloniarider.rd.compose
+import me.fornever.avaloniarider.rider.AvaloniaRiderProjectModelHost
 import me.fornever.avaloniarider.rider.getProjectContainingFile
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -55,7 +54,7 @@ class RunnableAssemblySelectorAction(
     private val avaloniaProjectSettings: AvaloniaProjectSettings,
     private val avaloniaRiderModel: AvaloniaRiderProjectModel,
     isSolutionLoading: IOptPropertyView<Boolean>,
-    runnableProjects: IOptPropertyView<List<RunnableProject>>,
+    runnableProjects: IOptPropertyView<Sequence<RunnableProject>>,
     private val xamlFile: VirtualFile
 ) : ComboBoxAction() {
 
@@ -73,7 +72,7 @@ class RunnableAssemblySelectorAction(
         AvaloniaProjectSettings.getInstance(project),
         project.solution.avaloniaRiderProjectModel,
         project.solution.isLoading,
-        project.solution.runnableProjectsModel.projects,
+        AvaloniaRiderProjectModelHost.getInstance(project).filteredRunnableProjects,
         xamlFile
     )
 
@@ -94,6 +93,7 @@ class RunnableAssemblySelectorAction(
     private fun updateActionGroup() {
         application.assertIsDispatchThread()
 
+        popupActionGroup.removeAll()
         for (runnableProject in availableProjects.value) {
             popupActionGroup.add(object : DumbAwareAction(
                 { runnableProject.name },
@@ -201,17 +201,14 @@ class RunnableAssemblySelectorAction(
     }
 
     @OptIn(ExperimentalPathApi::class)
-    private fun fillWithActions(runnableProjects: List<RunnableProject>) {
+    private fun fillWithActions(filteredProjects: Sequence<RunnableProject>) {
         isProcessingProjectList.set(true)
         lifetime.launchOnUi {
             try {
+                val filteredProjectList = filteredProjects.toList()
                 val targetFileProjectEntity = xamlFile.getProjectContainingFile(lifetime, project)
                 val targetFileProjectPath = targetFileProjectEntity.url!!.toPath()
-                val filteredProjects = runnableProjects
-                    .filter { it.kind == RunnableProjectKind.DotNetCore || it.kind == RunnableProjectKind.Console }
-                    .sortedBy { it.kind != RunnableProjectKind.DotNetCore }
-                    .distinctBy { it.projectFilePath }
-                val runnableProjectPaths = filteredProjects
+                val runnableProjectPaths = filteredProjectList
                     .filter { !FileUtil.pathsEqual(it.projectFilePath, targetFileProjectPath.toString()) }
                     .map { it.projectFilePath }
                 val availableProjectPaths = mutableListOf<String>()
@@ -229,7 +226,7 @@ class RunnableAssemblySelectorAction(
                     availableProjectPaths.addAll(actuallyReferencedProjects)
                 }
 
-                if (filteredProjects.any {
+                if (filteredProjectList.any {
                         FileUtil.pathsEqual(it.projectFilePath, targetFileProjectPath.toString())
                     }) {
                     logger.info("Target project path \"${targetFileProjectPath}\" is also available for selection")
@@ -237,9 +234,8 @@ class RunnableAssemblySelectorAction(
                 }
 
                 val runnableProjectPerPath =
-                    filteredProjects.associateBy { r -> Paths.get(r.projectFilePath).systemIndependentPath }
+                    filteredProjectList.associateBy { r -> Paths.get(r.projectFilePath).systemIndependentPath }
 
-                popupActionGroup.removeAll()
                 val selectableRunnableProjects = availableProjectPaths.mapNotNull { path ->
                     val normalizedPath = Paths.get(path).systemIndependentPath
                     val runnableProject = runnableProjectPerPath[normalizedPath]

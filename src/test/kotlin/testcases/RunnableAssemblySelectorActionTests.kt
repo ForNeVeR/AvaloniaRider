@@ -53,7 +53,7 @@ class RunnableAssemblySelectorActionTests : BaseTestWithSolution() {
 
     private fun createMockSelector(
         isSolutionLoading: IOptPropertyView<Boolean> = OptProperty(),
-        runnableProjects: IOptPropertyView<List<RunnableProject>> = OptProperty()
+        runnableProjects: IOptPropertyView<Sequence<RunnableProject>> = OptProperty()
     ): RunnableAssemblySelectorAction {
         return RunnableAssemblySelectorAction(
             testLifetime,
@@ -91,7 +91,7 @@ class RunnableAssemblySelectorActionTests : BaseTestWithSolution() {
 
     @Test
     fun groupShouldBeFilledTest() {
-        val runnableProjects = OptProperty(emptyList<RunnableProject>())
+        val runnableProjects = OptProperty(emptySequence<RunnableProject>())
         val action = createMockSelector(OptProperty(false), runnableProjects)
         val group = action.popupActionGroup
 
@@ -100,7 +100,7 @@ class RunnableAssemblySelectorActionTests : BaseTestWithSolution() {
         val project = project.solution.runnableProjectsModel.projects.valueOrThrow.single {
             it.name == "AvaloniaApp1" && it.kind == RunnableProjectKind.DotNetCore
         }
-        runnableProjects.set(listOf(project))
+        runnableProjects.set(sequenceOf(project))
         pumpMessages(Duration.ofSeconds(5L)) { !action.isLoading.value }.shouldBeTrue()
 
         val children = group.getChildren(null)

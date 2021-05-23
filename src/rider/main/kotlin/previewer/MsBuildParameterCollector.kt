@@ -8,14 +8,13 @@ import com.jetbrains.rd.ide.model.RdProjectOutput
 import com.jetbrains.rd.platform.util.getLogger
 import com.jetbrains.rider.debugger.DebuggerHelperHost
 import com.jetbrains.rider.model.RdTargetFrameworkId
-import com.jetbrains.rider.model.runnableProjectsModel
-import com.jetbrains.rider.projectView.solution
 import com.jetbrains.rider.projectView.workspace.ProjectModelEntity
 import com.jetbrains.rider.run.environment.MSBuildEvaluator
 import com.jetbrains.rider.runtime.DotNetRuntime
 import com.jetbrains.rider.runtime.RiderDotNetActiveRuntimeHost
 import com.jetbrains.rider.runtime.dotNetCore.DotNetCoreRuntime
 import me.fornever.avaloniarider.exceptions.AvaloniaPreviewerInitializationException
+import me.fornever.avaloniarider.rider.AvaloniaRiderProjectModelHost
 import org.jetbrains.concurrency.await
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -79,7 +78,7 @@ class MsBuildParameterCollector(private val project: Project) {
         val runtimeHost = RiderDotNetActiveRuntimeHost.getInstance(this.project)
         val msBuildEvaluator = MSBuildEvaluator.getInstance(this.project)
 
-        val runnableProjects = project.solution.runnableProjectsModel.projects.valueOrNull
+        val runnableProjects = AvaloniaRiderProjectModelHost.getInstance(project).filteredRunnableProjects.valueOrNull
         val runnableProject =
             runnableProjects?.singleOrNull { FileUtil.pathsEqual(it.projectFilePath, runnableProjectFilePath.toString()) }
                 ?: run {
