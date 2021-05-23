@@ -217,7 +217,6 @@ class AvaloniaPreviewerSessionController(
         logger.info("Calculating previewer start parameters for the project $projectFilePath, output $projectOutput")
         val msBuild = MsBuildParameterCollector.getInstance(project)
         val parameters = msBuild.getAvaloniaPreviewerParameters(
-            project,
             projectFilePath,
             projectOutput,
             xamlContainingProject

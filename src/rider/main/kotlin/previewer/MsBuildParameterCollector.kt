@@ -70,13 +70,12 @@ class MsBuildParameterCollector(private val project: Project) {
 
     @Suppress("UnstableApiUsage")
     suspend fun getAvaloniaPreviewerParameters(
-        project: Project,
         runnableProjectFilePath: Path,
         runnableProjectOutput: RdProjectOutput,
         xamlContainingProject: ProjectModelEntity
     ): AvaloniaPreviewerParameters {
-        val runtimeHost = RiderDotNetActiveRuntimeHost.getInstance(this.project)
-        val msBuildEvaluator = MSBuildEvaluator.getInstance(this.project)
+        val runtimeHost = RiderDotNetActiveRuntimeHost.getInstance(project)
+        val msBuildEvaluator = MSBuildEvaluator.getInstance(project)
 
         val runnableProjects = AvaloniaRiderProjectModelHost.getInstance(project).filteredRunnableProjects.valueOrNull
         val runnableProject =
@@ -97,7 +96,7 @@ class MsBuildParameterCollector(private val project: Project) {
         val runtime = DotNetRuntime.detectRuntimeForProjectOrThrow(
             runnableProject.kind,
             runtimeHost,
-            DebuggerHelperHost.getInstance(this.project),
+            DebuggerHelperHost.getInstance(project),
             null,
             runnableProjectOutput.outputPath,
             RdTargetFrameworkId(

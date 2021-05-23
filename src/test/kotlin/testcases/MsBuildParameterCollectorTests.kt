@@ -34,7 +34,6 @@ class MsBuildParameterCollectorTests : BaseTestWithSolution() {
         val projectModelEntity = workspaceModel.getProjectModelEntities(projectFilePath, project).single()
         val parameters = runPumping {
             collector.getAvaloniaPreviewerParameters(
-                project,
                 projectFilePath,
                 RdProjectOutput(projectOutput.tfm.shouldNotBeNull(), projectOutput.exePath),
                 projectModelEntity
