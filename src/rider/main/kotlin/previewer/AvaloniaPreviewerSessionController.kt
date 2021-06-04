@@ -31,11 +31,13 @@ import me.fornever.avaloniarider.idea.settings.AvaloniaSettings
 import me.fornever.avaloniarider.rd.compose
 import me.fornever.avaloniarider.rider.AvaloniaRiderProjectModelHost
 import me.fornever.avaloniarider.rider.projectRelativeVirtualPath
+import me.fornever.avaloniarider.statistics.PreviewerUsageLogger
 import java.io.EOFException
 import java.net.ServerSocket
 import java.net.SocketException
 import java.nio.file.Path
 import java.time.Duration
+import java.util.concurrent.atomic.AtomicBoolean
 
 /**
  * The sources on this class are thread-free. Make sure to schedule them onto the proper threads if necessary.
@@ -84,6 +86,7 @@ class AvaloniaPreviewerSessionController(
         Terminated
     }
 
+    private val previewReported = AtomicBoolean()
     private val workspaceModel = WorkspaceModel.getInstance(project)
 
     private val statusProperty = Property(Status.Idle)
@@ -111,6 +114,27 @@ class AvaloniaPreviewerSessionController(
     private val sessionLifetimeSource = SequentialLifetimes(controllerLifetime)
     private var currentSessionLifetime: LifetimeDefinition? = null
 
+    private fun enableStatistics() {
+        val statisticsReporterLifetime = controllerLifetime.createNested()
+
+        fun report(action: () -> Unit) {
+            if (previewReported.getAndSet(true)) return
+            action()
+            statisticsReporterLifetime.terminate(true)
+        }
+
+        status.advise(statisticsReporterLifetime) { status ->
+            when (status) {
+                Status.XamlError -> report { PreviewerUsageLogger.logPreviewError(project) }
+                Status.Terminated -> report { PreviewerUsageLogger.logPreviewCriticalFailure(project) }
+                else -> {}
+            }
+        }
+        frame.advise(statisticsReporterLifetime) {
+            report { PreviewerUsageLogger.logPreviewSuccess(project) }
+        }
+    }
+
     init {
         controllerLifetime.onTermination { statusProperty.set(Status.Terminated) }
 
@@ -126,6 +150,8 @@ class AvaloniaPreviewerSessionController(
                     start(projectFilePath, true)
                 }
             }
+
+        enableStatistics()
     }
 
     private suspend fun getProjectContainingFile(virtualFile: VirtualFile): ProjectModelEntity {
