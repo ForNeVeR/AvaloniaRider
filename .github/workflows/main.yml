@@ -46,6 +46,12 @@ jobs:
           name: ${{ runner.os }}.test-results
           path: build/reports/tests
         if: ${{ always() }}
+      - name: Upload Test Logs
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{ runner.os }}.test-logs
+          path: build/idea-sandbox/system-test/log
+        if: ${{ always() }}
 
       # Distribution
       - name: Build Distribution
