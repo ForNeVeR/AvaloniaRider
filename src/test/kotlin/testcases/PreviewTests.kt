@@ -1,5 +1,6 @@
 package me.fornever.avaloniarider.testcases
 
+import com.jetbrains.rd.platform.diagnostics.RdLogTraceScenarios
 import com.jetbrains.rd.util.lifetime.Lifetime
 import com.jetbrains.rd.util.reactive.OptProperty
 import com.jetbrains.rdclient.util.idea.pumpMessages
@@ -21,6 +22,7 @@ class PreviewTests : BaseTestWithSolution() {
     override fun getSolutionDirectoryName() = "AvaloniaMvvm"
     override val restoreNuGetPackages = true
     override val backendLoadedTimeout: Duration = Duration.ofMinutes(2L)
+    override val traceScenarios = setOf(RdLogTraceScenarios.Commands)
 
     private val mainWindowFile
         get() = getVirtualFileFromPath("Views/MainWindow.xaml", activeSolutionDirectory)
