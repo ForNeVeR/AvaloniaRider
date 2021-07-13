@@ -41,10 +41,10 @@ wrapper {
 }
 
 jvmWrapper {
-    // https://confluence.jetbrains.com/display/JBR/Release+notes
-    linuxJvmUrl = 'https://bintray.com/jetbrains/intellij-jbr/download_file?file_path=jbrsdk-11_0_6-linux-x64-b765.15.tar.gz'
-    macJvmUrl = 'https://bintray.com/jetbrains/intellij-jbr/download_file?file_path=jbrsdk-11_0_6-osx-x64-b765.15.tar.gz'
-    windowsJvmUrl = 'https://bintray.com/jetbrains/intellij-jbr/download_file?file_path=jbrsdk-11_0_6-windows-x64-b765.15.tar.gz'
+    // https://confluence.jetbrains.com/display/JBR/Release+notes+and+builds
+    linuxJvmUrl = 'https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_11-linux-x64-b1341.60.tar.gz'
+    macJvmUrl = 'https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_11-osx-x64-b1341.60.tar.gz'
+    windowsJvmUrl = 'https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_11-windows-x64-b1341.60.tar.gz'
 }
 
 if (!ext.has("BuildConfiguration"))
