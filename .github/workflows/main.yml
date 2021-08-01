@@ -2,10 +2,10 @@ name: Main
 on:
   push:
     branches:
-      - master
+      - net212
   pull_request:
     branches:
-      - master
+      - net212
   schedule:
     - cron: '0 0 * * 0'
 

@@ -5,25 +5,12 @@ Install
 
 ### Development releases (may be unstable)
 
-To install a development release (automatically published for every push into
-the `master` branch), first add the custom plugin repository into your IDE (see
-[the documentation][ide.channels] on how to do that).
+To install a development release (automatically published for every push into a development branch), first add the custom plugin repository into your IDE (see [the documentation][ide.channels] on how to do that).
 
 **Custom plugin repository address:**
 `https://plugins.jetbrains.com/plugins/dev/14839`
 
 Then, install the plugin as usual via the IDE plugin settings screen.
-
-### Install from GitHub (any build from the master branch or PR; may be unstable)
-
-To install a plugin distribution built by GitHub Actions, open the Actions page
-for the commit you want to install (e.g. [here's a build list for the `master`
-branch][github-actions.master]), and then download the artifact named
-`avaloniarider-{version}`.
-
-After that, open Rider, and go to the Rider **Settings → Plugins**. Click a
-gear icon, choose **Install Plugin from Disk** action, and then point it to the
-ZIP file you've downloaded.
 
 Build
 -----
@@ -87,6 +74,5 @@ After running `./gradlew` at least once, set up your project SDK to the folder
 `build/gradle-jvm/<sdk-name>/<subdirectory>`. This JDK is guaranteed to contain
 all the components necessary to build the plugin.
 
-[github-actions.master]: https://github.com/ForNeVeR/AvaloniaRider/actions?query=branch%3Amaster
 [gradle-jvm-wrapper]: https://github.com/mfilippov/gradle-jvm-wrapper
 [ide.channels]: https://www.jetbrains.com/help/idea/managing-plugins.html#repos
