@@ -192,7 +192,7 @@ prepareTestingSandbox {
 
     dllFiles.forEach({ f ->
         def file = file(f)
-        from(file, { into "$intellij.pluginName/dotnet" })
+        from(file, { into "$rootProject.name/dotnet" })
     })
 
     doLast {
