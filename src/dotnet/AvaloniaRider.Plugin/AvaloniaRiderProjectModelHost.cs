@@ -8,8 +8,8 @@ using JetBrains.ProjectModel.Model2.Assemblies.Interfaces;
 using JetBrains.ProjectModel.ProjectsHost;
 using JetBrains.ProjectModel.ProjectsHost.SolutionHost;
 using JetBrains.Rd.Tasks;
-using JetBrains.ReSharper.Host.Features;
-using JetBrains.ReSharper.Host.Features.ProjectModel.TargetFrameworks;
+using JetBrains.RdBackend.Common.Features;
+using JetBrains.RdBackend.Common.Features.ProjectModel.TargetFrameworks;
 using JetBrains.Rider.Model;
 using JetBrains.Util;
 

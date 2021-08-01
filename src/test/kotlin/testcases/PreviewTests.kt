@@ -4,13 +4,14 @@ import com.jetbrains.rd.platform.diagnostics.RdLogTraceScenarios
 import com.jetbrains.rd.util.lifetime.Lifetime
 import com.jetbrains.rd.util.reactive.OptProperty
 import com.jetbrains.rdclient.util.idea.pumpMessages
+import com.jetbrains.rider.model.PreviewPlatformKind
 import com.jetbrains.rider.test.annotations.TestEnvironment
 import com.jetbrains.rider.test.asserts.shouldBeTrue
 import com.jetbrains.rider.test.base.BaseTestWithSolution
 import com.jetbrains.rider.test.enums.CoreVersion
 import com.jetbrains.rider.test.scriptingApi.buildSolutionWithReSharperBuild
 import com.jetbrains.rider.test.scriptingApi.getVirtualFileFromPath
-import com.jetbrains.rider.xaml.XamlPreviewEditorExtension
+import com.jetbrains.rider.xaml.core.XamlPreviewEditorExtension
 import me.fornever.avaloniarider.controlmessages.FrameMessage
 import me.fornever.avaloniarider.idea.editor.AvaloniaPreviewerXamlEditorExtension
 import me.fornever.avaloniarider.previewer.AvaloniaPreviewerSessionController
@@ -36,7 +37,7 @@ class PreviewTests : BaseTestWithSolution() {
             .getExtensionList(project)
             .filterIsInstance<AvaloniaPreviewerXamlEditorExtension>()
             .single()
-        provider.accepts(mainWindowFile).shouldBeTrue()
+        provider.accepts(mainWindowFile, PreviewPlatformKind.AVALONIA).shouldBeTrue()
     }
 
     @Test

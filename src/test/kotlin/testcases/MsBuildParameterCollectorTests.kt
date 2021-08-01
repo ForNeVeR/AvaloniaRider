@@ -2,6 +2,7 @@ package testcases
 
 import com.intellij.workspaceModel.ide.WorkspaceModel
 import com.jetbrains.rd.ide.model.RdProjectOutput
+import com.jetbrains.rd.util.lifetime.Lifetime
 import com.jetbrains.rider.model.RunnableProjectKind
 import com.jetbrains.rider.model.runnableProjectsModel
 import com.jetbrains.rider.projectView.solution
@@ -33,11 +34,14 @@ class MsBuildParameterCollectorTests : BaseTestWithSolution() {
             .projectOutputs.single()
         val projectModelEntity = workspaceModel.getProjectModelEntities(projectFilePath, project).single()
         val parameters = runPumping {
-            collector.getAvaloniaPreviewerParameters(
-                projectFilePath,
-                RdProjectOutput(projectOutput.tfm.shouldNotBeNull(), projectOutput.exePath),
-                projectModelEntity
-            )
+            Lifetime.using { lt ->
+                collector.getAvaloniaPreviewerParameters(
+                    lt,
+                    projectFilePath,
+                    RdProjectOutput(projectOutput.tfm.shouldNotBeNull(), projectOutput.exePath),
+                    projectModelEntity
+                )
+            }
         }
 
         val previewerPathForTest = activeSolutionDirectory.toPath().resolve("PreviewerForTest.exe")

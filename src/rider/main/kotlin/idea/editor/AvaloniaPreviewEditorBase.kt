@@ -16,11 +16,10 @@ import com.jetbrains.rd.util.lifetime.LifetimeDefinition
 import com.jetbrains.rd.util.reactive.IPropertyView
 import com.jetbrains.rd.util.reactive.Property
 import com.jetbrains.rd.util.reactive.adviseUntil
-import com.jetbrains.rider.xaml.FocusableEditor
-import com.jetbrains.rider.xaml.PreviewEditorToolbar
-import com.jetbrains.rider.xaml.XamlPreviewEditor
-import com.jetbrains.rider.xaml.preview.editor.XamlPreviewEditorSplitLayout
-import com.jetbrains.rider.xaml.preview.editor.XamlPreviewerSplitEditor
+import com.jetbrains.rider.xaml.core.XamlPreviewEditor
+import com.jetbrains.rider.xaml.previewEditor.PreviewEditorToolbar
+import com.jetbrains.rider.xaml.splitEditor.XamlSplitEditor
+import com.jetbrains.rider.xaml.splitEditor.XamlSplitEditorSplitLayout
 import me.fornever.avaloniarider.idea.editor.actions.RestartPreviewerAction
 import me.fornever.avaloniarider.idea.editor.actions.RunnableAssemblySelectorAction
 import me.fornever.avaloniarider.previewer.AvaloniaPreviewerSessionController
@@ -34,10 +33,9 @@ abstract class AvaloniaPreviewEditorBase(
     private val currentFile: VirtualFile
 ) : UserDataHolderBase(), XamlPreviewEditor {
 
-    override var parentEditor: FocusableEditor? = null
+    override val parentEditor: XamlSplitEditor? = null
     final override val toolbar: PreviewEditorToolbar? = null
     override val virtualFilePath: String = currentFile.path
-    override val zoomFactor: Double = 1.0
     override val zoomFactorLive: IPropertyView<Double> = Property(1.0)
 
     override fun updateLayout() {
@@ -59,8 +57,8 @@ abstract class AvaloniaPreviewEditorBase(
             when (status) {
                 AvaloniaPreviewerSessionController.Status.Working -> {
                     lifetime.launchOnUi {
-                        (parentEditor as? XamlPreviewerSplitEditor<*, *>)?.triggerLayoutChange(
-                            XamlPreviewEditorSplitLayout.SPLIT,
+                        parentEditor?.triggerLayoutChange(
+                            XamlSplitEditorSplitLayout.SPLIT,
                             false
                         )
                     }
