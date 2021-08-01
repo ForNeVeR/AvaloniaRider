@@ -34,7 +34,7 @@ class PreviewTests : BaseTestWithSolution() {
     @Test
     fun previewEditorProviderShouldHandleTheXamlFile() {
         val provider = XamlPreviewEditorExtension.EP_NAME
-            .getExtensionList(project)
+            .extensionList
             .filterIsInstance<AvaloniaPreviewerXamlEditorExtension>()
             .single()
         provider.accepts(mainWindowFile, PreviewPlatformKind.AVALONIA).shouldBeTrue()
