@@ -12,7 +12,7 @@ plugins {
     id 'java'
     id 'me.filippov.gradle.jvm.wrapper' version '0.9.3'
     id 'org.jetbrains.kotlin.jvm' version '1.4.10'
-    id 'org.jetbrains.intellij' version '0.6.5'
+    id 'org.jetbrains.intellij' version '1.1.4'
 }
 
 dependencies {
@@ -24,7 +24,7 @@ ext {
     pluginVersionBase = '1.0.0'
     sdkVersion = '2021.1.0'
     rdLibDirectory = {
-        new File(intellij.ideaDependency.classes, "lib/rd")
+        new File(intellij.getIdeaDependency(project).classes, "lib/rd")
     }
     dotNetDir = new File(projectDir, "src/dotnet")
     dotNetPluginId = "AvaloniaRider.Plugin"
@@ -164,7 +164,7 @@ patchPluginXml {
 prepareSandbox {
     def pluginId = "avalonia-rider"
     def reSharperPluginDesc = "fvnever.$pluginId"
-    from('src/extensions', { into "${intellij.pluginName}/dotnet/Extensions/$reSharperPluginDesc" })
+    from('src/extensions', { into "${rootProject.name}/dotnet/Extensions/$reSharperPluginDesc" })
 
     def outputFolder = "$dotNetDir/$dotNetPluginId/bin/${dotNetPluginId}/$BuildConfiguration"
     def dllFiles = [
@@ -174,7 +174,7 @@ prepareSandbox {
 
     dllFiles.forEach({ f ->
         def file = file(f)
-        from(file, { into "$intellij.pluginName/dotnet" })
+        from(file, { into "$rootProject.name/dotnet" })
     })
 
     doLast {
