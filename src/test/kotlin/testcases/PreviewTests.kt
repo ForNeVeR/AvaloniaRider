@@ -42,7 +42,7 @@ class PreviewTests : BaseTestWithSolution() {
 
     @Test
     fun previewControllerShouldRenderTheFrame() {
-        buildSolutionWithReSharperBuild(Duration.ofMinutes(1L))
+        buildSolutionWithReSharperBuild(timeout = Duration.ofMinutes(1L))
         var frameMsg: FrameMessage? = null
         Lifetime.using { lt ->
             AvaloniaPreviewerSessionController(project, lt, mainWindowFile, projectFilePathProperty).apply {

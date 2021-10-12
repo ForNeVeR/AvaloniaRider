@@ -36,7 +36,7 @@ namespace ReSharperPlugin.AvaloniaRider
             riderProjectOutputModel.GetReferencingProjects.Set(GetReferencingProjects);
         }
 
-        private IProject GetProject(FileSystemPath projectFilePath)
+        private IProject GetProject(VirtualFileSystemPath projectFilePath)
         {
             var projectsHostContainer = _solution.ProjectsHostContainer();
             var solutionStructureContainer = projectsHostContainer.GetComponent<ISolutionStructureContainer>();
@@ -49,7 +49,8 @@ namespace ReSharperPlugin.AvaloniaRider
 
         private RdTask<RdProjectOutput> GetProjectOutputModel(Lifetime lifetime, RdGetProjectOutputArgs args)
         {
-            var project = GetProject(FileSystemPath.Parse(args.ProjectFilePath));
+            var project = GetProject(
+                VirtualFileSystemPath.Parse(args.ProjectFilePath, InteractionContext.SolutionContext));
             var targetFramework = project.TargetFrameworkIds
                 // Take .NET Core first, then .NET Framework, and then .NET Standard. The comparer below will hold this order.
                 .OrderBy(tfm => (!tfm.IsNetCoreApp, !tfm.IsNetFramework, !tfm.IsNetStandard))
@@ -66,11 +67,12 @@ namespace ReSharperPlugin.AvaloniaRider
 
         private List<string> GetReferencingProjects(RdGetReferencingProjectsRequest request)
         {
-            var targetProject = GetProject(FileSystemPath.Parse(request.TargetProjectFilePath));
+            var targetProject = GetProject(
+                VirtualFileSystemPath.Parse(request.TargetProjectFilePath, InteractionContext.Local));
             var targetFramework = targetProject.TargetFrameworkIds.FirstOrDefault(); // TODO: Determine from the document context [project.solution.projectModelTasks.targetFrameworks[projectEntityId] on frontend]
             var referencingProjects = targetProject.GetReferencingProjects(_moduleReferencesResolveStore, targetFramework);
             var potentialPaths = request.PotentiallyReferencingProjects
-                .Select(s => FileSystemPath.Parse(s))
+                .Select(s => VirtualFileSystemPath.Parse(s, InteractionContext.SolutionContext))
                 .ToSet();
             return referencingProjects
                 .Select(p => p.ProjectFileLocation)

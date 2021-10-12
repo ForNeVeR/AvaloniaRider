@@ -36,7 +36,6 @@ class MsBuildParameterCollectorTests : BaseTestWithSolution() {
         val parameters = runPumping {
             Lifetime.using { lt ->
                 collector.getAvaloniaPreviewerParameters(
-                    lt,
                     projectFilePath,
                     RdProjectOutput(projectOutput.tfm.shouldNotBeNull(), projectOutput.exePath),
                     projectModelEntity

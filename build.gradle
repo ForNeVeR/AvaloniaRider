@@ -22,7 +22,7 @@ dependencies {
 
 ext {
     pluginVersionBase = '1.0.0'
-    sdkVersion = '2021.2-EAP9-SNAPSHOT'
+    sdkVersion = '2021.3-EAP3-SNAPSHOT'
     rdLibDirectory = {
         new File(intellij.getIdeaDependency(project).classes, "lib/rd")
     }

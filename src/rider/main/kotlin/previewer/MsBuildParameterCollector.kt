@@ -6,8 +6,6 @@ import com.intellij.openapi.util.io.FileUtil
 import com.intellij.workspaceModel.ide.toPath
 import com.jetbrains.rd.ide.model.RdProjectOutput
 import com.jetbrains.rd.platform.util.getLogger
-import com.jetbrains.rd.util.lifetime.Lifetime
-import com.jetbrains.rider.debugger.DebuggerHelperHost
 import com.jetbrains.rider.model.RdTargetFrameworkId
 import com.jetbrains.rider.projectView.workspace.ProjectModelEntity
 import com.jetbrains.rider.run.environment.MSBuildEvaluator
@@ -71,7 +69,6 @@ class MsBuildParameterCollector(private val project: Project) {
 
     @Suppress("UnstableApiUsage")
     suspend fun getAvaloniaPreviewerParameters(
-        lifetime: Lifetime,
         runnableProjectFilePath: Path,
         runnableProjectOutput: RdProjectOutput,
         xamlContainingProject: ProjectModelEntity
@@ -96,10 +93,8 @@ class MsBuildParameterCollector(private val project: Project) {
 
         val tfm = runnableProjectOutput.tfm
         val runtime = DotNetRuntime.detectRuntimeForProjectOrThrow(
-            lifetime,
             runnableProject.kind,
             runtimeHost,
-            DebuggerHelperHost.getInstance(project),
             null,
             runnableProjectOutput.outputPath,
             RdTargetFrameworkId(
