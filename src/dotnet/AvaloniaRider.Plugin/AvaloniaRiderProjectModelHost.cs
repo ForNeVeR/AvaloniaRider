@@ -68,7 +68,7 @@ namespace ReSharperPlugin.AvaloniaRider
         private List<string> GetReferencingProjects(RdGetReferencingProjectsRequest request)
         {
             var targetProject = GetProject(
-                VirtualFileSystemPath.Parse(request.TargetProjectFilePath, InteractionContext.Local));
+                VirtualFileSystemPath.Parse(request.TargetProjectFilePath, InteractionContext.SolutionContext));
             var targetFramework = targetProject.TargetFrameworkIds.FirstOrDefault(); // TODO: Determine from the document context [project.solution.projectModelTasks.targetFrameworks[projectEntityId] on frontend]
             var referencingProjects = targetProject.GetReferencingProjects(_moduleReferencesResolveStore, targetFramework);
             var potentialPaths = request.PotentiallyReferencingProjects
