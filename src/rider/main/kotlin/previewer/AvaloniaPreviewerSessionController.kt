@@ -5,10 +5,14 @@ import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.debug
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.rd.util.launchLongBackground
+import com.intellij.openapi.rd.util.startIOBackgroundAsync
+import com.intellij.openapi.rd.util.withIOBackgroundContext
+import com.intellij.openapi.rd.util.withUiContext
 import com.intellij.openapi.util.Computable
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.util.application
 import com.intellij.workspaceModel.ide.WorkspaceModel
-import com.jetbrains.rd.platform.util.*
 import com.jetbrains.rd.util.lifetime.*
 import com.jetbrains.rd.util.reactive.*
 import com.jetbrains.rd.util.throttleLast
