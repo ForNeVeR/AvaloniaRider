@@ -36,7 +36,7 @@ jobs:
 
       # Frontend
       - name: Test
-        run: ./gradlew -PBuildConfiguration=Release -PbuildNumber=${{ github.run_id }} test
+        run: ./gradlew -PbuildConfiguration=Release -PbuildNumber=${{ github.run_id }} test
         env:
           LOCAL_ENV_RUN: true
           NO_FS_ROOTS_ACCESS_CHECK: true
@@ -56,7 +56,7 @@ jobs:
       # Distribution
       - name: Build Distribution
         if: matrix.image == 'ubuntu-20.04'
-        run: ./gradlew -PBuildConfiguration=Release -PbuildNumber=${{ github.run_id }} buildPlugin
+        run: ./gradlew -PbuildConfiguration=Release -PbuildNumber=${{ github.run_id }} buildPlugin
       - name: Determine Version
         if: matrix.image == 'ubuntu-20.04'
         shell: pwsh
