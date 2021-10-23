@@ -1,17 +1,16 @@
 buildscript {
     repositories {
-        maven { setUrl("https://cache-redirector.jetbrains.com/www.myget.org/F/rd-snapshots/maven") }
         mavenCentral()
     }
 
-    // https://www.myget.org/feed/rd-snapshots/package/maven/com.jetbrains.rd/rd-gen
-    dependencies { classpath "com.jetbrains.rd:rd-gen:0.212.318" }
+    // https://search.maven.org/artifact/com.jetbrains.rd/rd-gen
+    dependencies { classpath "com.jetbrains.rd:rd-gen:2021.3.4" }
 }
 
 plugins {
     id 'java'
-    id 'me.filippov.gradle.jvm.wrapper' version '0.9.3'
-    id 'org.jetbrains.kotlin.jvm' version '1.4.10'
+    id 'me.filippov.gradle.jvm.wrapper' version '0.10.0'
+    id 'org.jetbrains.kotlin.jvm' version '1.5.31'
     id 'org.jetbrains.intellij' version '1.2.0'
 }
 
