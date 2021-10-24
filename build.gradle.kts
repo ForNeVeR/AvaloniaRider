@@ -45,12 +45,6 @@ repositories {
     maven { setUrl("https://cache-redirector.jetbrains.com/maven-central") }
 }
 
-tasks.wrapper {
-    gradleVersion = "7.2"
-    distributionType = Wrapper.DistributionType.ALL
-    distributionUrl = "https://cache-redirector.jetbrains.com/services.gradle.org/distributions/gradle-${gradleVersion}-all.zip"
-}
-
 jvmWrapper {
     // https://confluence.jetbrains.com/display/JBR/Release+notes+and+builds
     linuxJvmUrl = "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_11-linux-x64-b1341.60.tar.gz"
@@ -105,6 +99,13 @@ intellij {
 }
 
 tasks {
+    wrapper {
+        gradleVersion = "7.2"
+        distributionType = Wrapper.DistributionType.ALL
+        distributionUrl = "https://cache-redirector.jetbrains.com/services.gradle.org/distributions/gradle-${gradleVersion}-all.zip"
+    }
+
+
     val rdgen by existing
 
     val compileDotNet by registering {
