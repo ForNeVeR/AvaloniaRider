@@ -48,10 +48,7 @@ $ ./gradlew runIde
 
 ### Test
 
-First, set `LOCAL_ENV_RUN` and `NO_FS_ROOTS_ACCESS_CHECK` environment variables
-to `true` (to prevent downloading of test environment from JetBrains servers,
-and allow tests to access locally-installed tools), and then execute the
-following command:
+Execute the following shell command:
 
 ```console
 $ ./gradlew test

@@ -142,6 +142,7 @@ tasks {
             showStandardStreams = true
             exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
         }
+        environment["LOCAL_ENV_RUN"] = "true"
     }
 
     withType<org.jetbrains.intellij.tasks.PrepareSandboxTask> {
