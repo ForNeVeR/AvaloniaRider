@@ -131,6 +131,8 @@ tasks {
     }
 
     runIde {
+        dependsOn(compileDotNet)
+
         // For statistics:
         // jvmArgs("-Xmx1500m", "-Didea.is.internal=true", "-Dfus.internal.test.mode=true")
         jvmArgs("-Xmx1500m")
