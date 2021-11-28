@@ -64,7 +64,7 @@ apply(plugin = "com.jetbrains.rdgen")
 configure<com.jetbrains.rd.generator.gradle.RdGenExtension> {
     val modelDir = file("$projectDir/protocol/src/main/kotlin/model")
     val csOutput = file("$projectDir/src/dotnet/AvaloniaRider.Plugin/Model")
-    val ktOutput = file("$projectDir/src/rider/main/kotlin/model")
+    val ktOutput = file("$projectDir/src/rider/main/kotlin/me/fornever/avaloniarider/model")
 
     verbose = true
     classpath({
@@ -78,7 +78,6 @@ configure<com.jetbrains.rd.generator.gradle.RdGenExtension> {
         language = "kotlin"
         transform = "asis"
         root = "com.jetbrains.rider.model.nova.ide.IdeRoot"
-        namespace = "me.fornever.avaloniarider.model"
         directory = "$ktOutput"
     }
 
@@ -86,7 +85,6 @@ configure<com.jetbrains.rd.generator.gradle.RdGenExtension> {
         language = "csharp"
         transform = "reversed"
         root = "com.jetbrains.rider.model.nova.ide.IdeRoot"
-        namespace = "AvaloniaRider.Model"
         directory = "$csOutput"
     }
 }
@@ -117,7 +115,7 @@ tasks {
         }
     }
 
-    compileKotlin {
+    withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
         dependsOn(rdgen)
         kotlinOptions {
             jvmTarget = "11"

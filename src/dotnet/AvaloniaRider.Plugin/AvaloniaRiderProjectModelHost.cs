@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using AvaloniaRider.Model;
 using JetBrains.Application.Components;
 using JetBrains.Diagnostics;
 using JetBrains.Lifetimes;
@@ -10,7 +11,6 @@ using JetBrains.ProjectModel.ProjectsHost.SolutionHost;
 using JetBrains.Rd.Tasks;
 using JetBrains.RdBackend.Common.Features;
 using JetBrains.RdBackend.Common.Features.ProjectModel.TargetFrameworks;
-using JetBrains.Rider.Model;
 using JetBrains.Util;
 
 namespace ReSharperPlugin.AvaloniaRider

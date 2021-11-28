@@ -16,9 +16,6 @@
         <component>
             <implementation-class>me.fornever.avaloniarider.controlmessages.AvaloniaMessages</implementation-class>
         </component>
-        <component>
-            <implementation-class>me.fornever.avaloniarider.idea.AvaloniaRiderNotifications</implementation-class>
-        </component>
     </application-components>
     <extensions defaultExtensionNs="com.intellij">
         <projectService serviceImplementation="me.fornever.avaloniarider.idea.AvaloniaToolWindowManager"/>
