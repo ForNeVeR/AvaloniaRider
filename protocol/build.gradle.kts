@@ -3,10 +3,11 @@ plugins {
     id("org.jetbrains.kotlin.jvm")
 }
 
+val rdLibDirectory: () -> File by rootProject.extra
+
 repositories {
     maven { setUrl("https://cache-redirector.jetbrains.com/maven-central") }
     flatDir {
-        @Suppress("UNCHECKED_CAST") val rdLibDirectory = rootProject.extra["rdLibDirectory"] as () -> File
         dir(rdLibDirectory())
     }
 }
