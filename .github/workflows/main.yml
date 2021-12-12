@@ -44,7 +44,7 @@ jobs:
           path: build/reports/tests
         if: ${{ always() }}
       - name: Upload Test Logs
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v2.2.4
         with:
           name: ${{ runner.os }}.test-logs
           path: build/idea-sandbox/system-test/log
