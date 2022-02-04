@@ -5,7 +5,7 @@ buildscript {
 
     // https://search.maven.org/artifact/com.jetbrains.rd/rd-gen
     dependencies {
-        classpath("com.jetbrains.rd:rd-gen:2021.3.4")
+        classpath("com.jetbrains.rd:rd-gen:2022.1.3")
     }
 }
 
@@ -13,7 +13,7 @@ plugins {
     id("java")
     id("me.filippov.gradle.jvm.wrapper") version "0.10.0"
     id("org.jetbrains.kotlin.jvm") version "1.5.31"
-    id("org.jetbrains.intellij") version "1.2.0"
+    id("org.jetbrains.intellij") version "1.2.1"
 }
 
 apply {

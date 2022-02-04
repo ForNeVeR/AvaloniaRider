@@ -10,7 +10,7 @@ using JetBrains.ProjectModel.ProjectsHost;
 using JetBrains.ProjectModel.ProjectsHost.SolutionHost;
 using JetBrains.Rd.Tasks;
 using JetBrains.RdBackend.Common.Features;
-using JetBrains.RdBackend.Common.Features.ProjectModel.TargetFrameworks;
+using JetBrains.ReSharper.Features.Running;
 using JetBrains.Util;
 
 namespace ReSharperPlugin.AvaloniaRider
