@@ -13,7 +13,7 @@ plugins {
     id("java")
     id("me.filippov.gradle.jvm.wrapper") version "0.10.0"
     id("org.jetbrains.kotlin.jvm") version "1.5.31"
-    id("org.jetbrains.intellij") version "1.2.1"
+    id("org.jetbrains.intellij") version "1.3.0"
 }
 
 apply {
@@ -34,7 +34,7 @@ val pluginVersionBase: String by project
 val buildConfiguration = ext.properties["buildConfiguration"] ?: "Debug"
 val buildNumber = ext.properties["buildNumber"] ?: "0"
 
-val rdLibDirectory: () -> File = { file("${intellij.ideaDependency.get().classes}/lib/rd") }
+val rdLibDirectory: () -> File = { file("${tasks.setupDependencies.get().idea.get().classes}/lib/rd") }
 extra["rdLibDirectory"] = rdLibDirectory
 
 val dotNetDir = File(projectDir, "src/dotnet")
