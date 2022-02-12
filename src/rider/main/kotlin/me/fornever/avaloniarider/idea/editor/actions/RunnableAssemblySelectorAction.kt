@@ -40,7 +40,6 @@ import me.fornever.avaloniarider.rider.getProjectContainingFile
 import java.nio.file.Path
 import java.nio.file.Paths
 import javax.swing.JComponent
-import kotlin.io.path.ExperimentalPathApi
 import kotlin.io.path.nameWithoutExtension
 
 @Suppress("UnstableApiUsage")
@@ -200,7 +199,6 @@ class RunnableAssemblySelectorAction(
         }
     }
 
-    @OptIn(ExperimentalPathApi::class)
     private fun fillWithActions(filteredProjects: Sequence<RunnableProject>) {
         isProcessingProjectList.set(true)
         lifetime.launchOnUi {
