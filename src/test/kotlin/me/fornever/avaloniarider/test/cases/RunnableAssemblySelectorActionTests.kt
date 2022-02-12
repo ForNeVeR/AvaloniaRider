@@ -123,7 +123,9 @@ class RunnableAssemblySelectorActionTests : BaseTestWithSolution() {
     fun onlyReferencedAssembliesShouldBeAvailable() {
         val runnableProjectsModel = project.solution.runnableProjectsModel
         pumpMessages { runnableProjectsModel.projects.valueOrNull?.isNotEmpty() ?: false }
-        runnableProjectsModel.projects.valueOrThrow.size.shouldBe(3)
+        runnableProjectsModel.projects.valueOrThrow
+            .filter { it.kind == RunnableProjectKind.DotNetCore || it.kind == RunnableProjectKind.Console }
+            .size.shouldBe(3)
 
         val action = createSelector()
         pumpMessages(Duration.ofSeconds(5L)) { !action.isLoading.value }.shouldBeTrue()
