@@ -1,5 +1,6 @@
 package me.fornever.avaloniarider.test.cases
 
+import com.intellij.openapi.project.Project
 import com.intellij.workspaceModel.ide.WorkspaceModel
 import com.jetbrains.rider.model.RunnableProjectKind
 import com.jetbrains.rider.model.runnableProjectsModel
@@ -17,6 +18,16 @@ import org.testng.annotations.Test
 class MsBuildParameterCollectorTests : BaseTestWithSolution() {
 
     override fun getSolutionDirectoryName() = "MSBuildParameters"
+
+    override fun openSolution(solutionDirectoryName: String, params: OpenSolutionParams): Project {
+        val ci = System.getenv("CI")
+        if (ci.equals("true", ignoreCase = true) || ci == "1") {
+            // This may take a long time on GitHub Actions agent.
+            params.projectModelReadyTimeout = params.projectModelReadyTimeout.multipliedBy(2L)
+        }
+
+        return super.openSolution(solutionDirectoryName, params)
+    }
 
     @Suppress("UnstableApiUsage")
     @Test
