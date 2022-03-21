@@ -53,7 +53,7 @@ class AvaloniaPreviewerProcess(
             transport.getOptions() +
             method.getOptions { NetUtils.findFreePort(5000) } +
             parameters.targetPath.toAbsolutePath().toString()
-        return when (parameters.runtime) {
+        val commandLine = when (parameters.runtime) {
             is DotNetCoreRuntime -> GeneralCommandLine().withExePath(parameters.runtime.cliExePath)
                 .withParameters(
                     "exec",
@@ -64,6 +64,7 @@ class AvaloniaPreviewerProcess(
             else -> GeneralCommandLine().withExePath(parameters.previewerBinary.toAbsolutePath().toString())
                 .withParameters(previewerArguments)
         }
+        return commandLine.withWorkDirectory(parameters.targetDir.toFile())
     }
 
     private fun registerNewConsoleView(project: Project): ConsoleView {
