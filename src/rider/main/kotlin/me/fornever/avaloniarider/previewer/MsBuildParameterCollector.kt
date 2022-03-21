@@ -109,14 +109,14 @@ class MsBuildParameterCollector(private val project: Project) {
         val runnableProjectProperties = msBuildEvaluator.evaluateProperties(
             MSBuildEvaluator.PropertyRequest(
                 runnableProjectFilePath.toString(),
-                null,
+                tfm,
                 listOf(avaloniaPreviewerPathKey, "TargetDir", "TargetName", "TargetPath")
             )
         )
         val xamlProjectProperties = msBuildEvaluator.evaluateProperties(
             MSBuildEvaluator.PropertyRequest(
                 xamlContainingProjectPath,
-                null,
+                tfm,
                 listOf("TargetPath")
             )
         )
