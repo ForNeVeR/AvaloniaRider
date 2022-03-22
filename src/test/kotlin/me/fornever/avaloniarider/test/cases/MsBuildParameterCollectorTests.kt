@@ -23,7 +23,7 @@ class MsBuildParameterCollectorTests : BaseTestWithSolution() {
         val ci = System.getenv("CI")
         if (ci.equals("true", ignoreCase = true) || ci == "1") {
             // This may take a long time on GitHub Actions agent.
-            params.projectModelReadyTimeout = params.projectModelReadyTimeout.multipliedBy(2L)
+            params.projectModelReadyTimeout = params.projectModelReadyTimeout.multipliedBy(10L)
         }
 
         return super.openSolution(solutionDirectoryName, params)
