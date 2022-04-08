@@ -12,6 +12,31 @@ To install a development release (automatically published for every push into a 
 
 Then, install the plugin as usual via the IDE plugin settings screen.
 
+How to Use
+----------
+
+### Previewer
+
+Make sure your Avalonia project is built, open a XAML file, and you'll see a XAML preview in Rider.
+
+![Preview Screenshot][preview-screenshot]
+
+### File templates
+
+Right-click a directory or an Avalonia-enabled project, and choose among the available file templates:
+- Avalonia User Control
+- Avalonia Templated control
+- Avalonia Window
+- Avalonia Resource Dictionary
+- Avalonia Styles
+
+### Live templates
+
+Type in editor to use [Live templates][live-templates]:
+- `directProperty`
+- `styledProperty`
+- `attachedAvaloniaProperty`
+
 Build
 -----
 
@@ -73,3 +98,5 @@ all the components necessary to build the plugin.
 
 [gradle-jvm-wrapper]: https://github.com/mfilippov/gradle-jvm-wrapper
 [ide.channels]: https://www.jetbrains.com/help/idea/managing-plugins.html#repos
+[live-templates]: https://www.jetbrains.com/help/rider/Using_Live_Templates.html
+[preview-screenshot]: ./docs/preview-screenshot.png
