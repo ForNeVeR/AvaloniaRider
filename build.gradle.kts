@@ -38,9 +38,21 @@ val buildNumber = ext.properties["buildNumber"] ?: "0"
 val rdLibDirectory: () -> File = { file("${tasks.setupDependencies.get().idea.get().classes}/lib/rd") }
 extra["rdLibDirectory"] = rdLibDirectory
 
-val dotNetDir = File(projectDir, "src/dotnet")
+val dotNetSrcDir = File(projectDir, "src/dotnet")
+
+val dotNetSdkGeneratedPropsFile = File("build", "DotNetSdkPath.Generated.props")
+val nuGetConfigFile = File("nuget.config")
 
 version = "$pluginVersionBase.$buildNumber"
+
+fun File.writeTextIfChanged(content: String) {
+    val bytes = content.toByteArray()
+
+    if (!exists() || !readBytes().contentEquals(bytes)) {
+        println("Writing $path")
+        writeBytes(bytes)
+    }
+}
 
 repositories {
     maven { setUrl("https://cache-redirector.jetbrains.com/maven-central") }
@@ -104,10 +116,45 @@ tasks {
         distributionUrl = "https://cache-redirector.jetbrains.com/services.gradle.org/distributions/gradle-${gradleVersion}-all.zip"
     }
 
+    val riderSdkPath by lazy {
+        val path = setupDependencies.get().idea.get().classes.resolve("lib/DotNetSdkForRdPlugins")
+        if (!path.isDirectory) error("$path does not exist or not a directory")
+
+        println("Rider SDK path: $path")
+        return@lazy path
+    }
+
+    val generateDotNetSdkProperties by registering {
+        doLast {
+            dotNetSdkGeneratedPropsFile.writeTextIfChanged("""<Project>
+  <PropertyGroup>
+    <DotNetSdkPath>$riderSdkPath</DotNetSdkPath>
+  </PropertyGroup>
+</Project>
+""")
+        }
+    }
+
+    val generateNuGetConfig by registering {
+        doLast {
+            nuGetConfigFile.writeTextIfChanged("""<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+  <packageSources>
+    <add key="rider-sdk" value="$riderSdkPath" />
+  </packageSources>
+</configuration>
+""")
+        }
+    }
+
     val rdgen by existing
 
+    register("prepare") {
+        dependsOn(rdgen, generateDotNetSdkProperties, generateNuGetConfig)
+    }
+
     val compileDotNet by registering {
-        dependsOn(rdgen)
+        dependsOn(rdgen, generateDotNetSdkProperties, generateNuGetConfig)
         doLast {
             exec {
                 executable("dotnet")
@@ -149,7 +196,7 @@ tasks {
         val reSharperPluginDesc = "fvnever.$intellijPluginId"
         from("src/extensions") { into("${rootProject.name}/dotnet/Extensions/$reSharperPluginDesc") }
 
-        val outputFolder = file("$dotNetDir/$dotNetPluginId/bin/${dotNetPluginId}/$buildConfiguration")
+        val outputFolder = file("$dotNetSrcDir/$dotNetPluginId/bin/${dotNetPluginId}/$buildConfiguration")
         val dllFiles = listOf(
             "$outputFolder/${dotNetPluginId}.dll",
             "$outputFolder/${dotNetPluginId}.pdb"

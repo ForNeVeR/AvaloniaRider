@@ -3,6 +3,7 @@
 !/.idea/dictionaries
 !/.idea/runConfigurations
 /.gradle/
+/nuget.config
 
 bin/
 build/

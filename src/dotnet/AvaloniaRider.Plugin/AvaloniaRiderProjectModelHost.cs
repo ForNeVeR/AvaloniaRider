@@ -13,7 +13,7 @@ using JetBrains.RdBackend.Common.Features;
 using JetBrains.ReSharper.Features.Running;
 using JetBrains.Util;
 
-namespace ReSharperPlugin.AvaloniaRider
+namespace AvaloniaRider
 {
     [SolutionComponent]
     public class AvaloniaRiderProjectModelHost

@@ -48,7 +48,7 @@ Build
 
 ### Build
 
-To build from terminal, execute this command:
+To build the plugin, execute this shell command:
 
 ```console
 $ ./gradlew buildPlugin
@@ -89,6 +89,16 @@ frontend one (written in Kotlin). Each part requires a corresponding IDE. To
 develop a backend, it's recommended to open `AvaloniaRider.sln` with JetBrains
 Rider. To develop a frontend, it's recommended to use IntelliJ IDEA (Community
 edition should be enough).
+
+## Getting Started
+
+If you just want to start developing the plugin and don't want to build it (yet), then execute this shell command:
+
+```console
+$ ./gradlew prepare
+```
+
+This will download the initial set of dependencies necessary for the plugin development and set up Rider SDK for .NET part of the project. After that, open either the frontend part of the plugin (the directory containing `build.gradle.kts`) using IntelliJ IDEA, or the `AvaloniaRider.sln` using Rider.
 
 ## IDE Setup
 
