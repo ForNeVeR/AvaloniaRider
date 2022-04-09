@@ -13,9 +13,9 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      # RdGen
-      - name: RdGen
-        run: ./gradlew rdgen
+      # Common preparation
+      - name: Prepare build
+        run: ./gradlew prepare
 
       # Backend
       - name: Set up .NET SDK
