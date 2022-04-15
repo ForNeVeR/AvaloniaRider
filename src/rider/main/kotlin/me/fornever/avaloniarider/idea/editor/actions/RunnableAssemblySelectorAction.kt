@@ -232,10 +232,10 @@ class RunnableAssemblySelectorAction(
                 }
 
                 val runnableProjectPerPath =
-                    filteredProjectList.associateBy { r -> Paths.get(r.projectFilePath).systemIndependentPath }
+                    filteredProjectList.associateBy { r -> Paths.get(r.projectFilePath).toRealPath().systemIndependentPath }
 
                 val selectableRunnableProjects = availableProjectPaths.mapNotNull { path ->
-                    val normalizedPath = Paths.get(path).systemIndependentPath
+                    val normalizedPath = Paths.get(path).toRealPath().systemIndependentPath
                     val runnableProject = runnableProjectPerPath[normalizedPath]
                     if (runnableProject == null) {
                         logger.error("Couldn't find runnable project for path $normalizedPath")
