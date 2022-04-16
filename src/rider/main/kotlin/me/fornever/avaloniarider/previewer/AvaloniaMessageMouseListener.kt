@@ -3,17 +3,16 @@ package me.fornever.avaloniarider.previewer
 import com.jetbrains.rd.util.reactive.ISource
 import com.jetbrains.rd.util.reactive.Signal
 import me.fornever.avaloniarider.controlmessages.*
+import me.fornever.avaloniarider.idea.editor.PreviewImageView
 import java.awt.event.MouseEvent
 import java.awt.event.MouseWheelEvent
-import javax.swing.JLabel
-import javax.swing.SwingConstants
 import javax.swing.event.MouseInputAdapter
 
 /**
- * Pass the JLabel instance in order to find out the position of the pointer to the Icon
+ * Pass the PreviewImageView instance in order to find out the position of the pointer to the image.
  */
 internal class AvaloniaMessageMouseListener(
-    private val frameView: JLabel
+    private val frameView: PreviewImageView
 ) : MouseInputAdapter() {
 
     private val avaloniaInputEventSignal = Signal<AvaloniaInputEventMessage>()
@@ -65,7 +64,8 @@ internal class AvaloniaMessageMouseListener(
         val message = PointerMovedEventMessage(
             e.avaloniaModifiers(),
             coordinates.first,
-            coordinates.second)
+            coordinates.second
+        )
         avaloniaInputEventSignal.fire(message)
     }
 
@@ -73,17 +73,17 @@ internal class AvaloniaMessageMouseListener(
         this.preciseWheelRotation * this.scrollAmount
 
     private fun MouseEvent.pointerPositionOrNull(): Pair<Double, Double>? {
-        frameView.icon ?: return null
+        frameView.buffer ?: return null
 
-        val iconX = this.x - frameView.shiftIconX()
-        val isContainsX = 0 <= iconX && iconX <= frameView.icon.iconWidth
+        val iconX = this.x - frameView.shiftImageX
+        val isContainsX = 0 <= iconX && iconX <= (frameView.buffer?.width ?: 0)
         if (!isContainsX) return null
 
-        val iconY = this.y - frameView.shiftIconY()
-        val isContainsY = 0 <= iconY && iconY <= frameView.icon.iconHeight
+        val iconY = this.y - frameView.shiftImageY
+        val isContainsY = 0 <= iconY && iconY <= (frameView.buffer?.height ?: 0)
         if (!isContainsY) return null
 
-        return iconX to iconY
+        return iconX.toDouble() to iconY.toDouble()
     }
 
     private fun MouseEvent.avaloniaModifiers(): Array<Int> {
@@ -113,17 +113,5 @@ internal class AvaloniaMessageMouseListener(
         MouseEvent.BUTTON2 -> MouseButton.Middle.ordinal
         MouseEvent.BUTTON3 -> MouseButton.Right.ordinal
         else -> MouseButton.None.ordinal
-    }
-
-    private fun JLabel.shiftIconX(): Double = when (this.horizontalAlignment) {
-        SwingConstants.CENTER -> (this.width - this.icon.iconWidth) / 2.0
-        SwingConstants.RIGHT -> (this.width - this.icon.iconWidth).toDouble()
-        else -> 0.0
-    }
-
-    private fun JLabel.shiftIconY(): Double = when (this.verticalAlignment) {
-        SwingConstants.CENTER -> (this.height - this.icon.iconHeight) / 2.0
-        SwingConstants.BOTTOM -> (this.height - this.icon.iconHeight).toDouble()
-        else -> 0.0
     }
 }

@@ -6,21 +6,16 @@ import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.util.application
 import com.intellij.util.ui.AsyncProcessIcon
-import com.intellij.util.ui.UIUtil
 import com.jetbrains.rd.util.lifetime.Lifetime
 import me.fornever.avaloniarider.controlmessages.FrameMessage
 import me.fornever.avaloniarider.controlmessages.UpdateXamlResultMessage
 import me.fornever.avaloniarider.idea.concurrency.adviseOnUiThread
 import me.fornever.avaloniarider.plainTextToHtml
-import me.fornever.avaloniarider.previewer.AvaloniaMessageMouseListener
 import me.fornever.avaloniarider.previewer.AvaloniaPreviewerSessionController
 import me.fornever.avaloniarider.previewer.AvaloniaPreviewerSessionController.Status
 import me.fornever.avaloniarider.previewer.nonTransparent
-import me.fornever.avaloniarider.previewer.renderFrame
 import java.awt.BorderLayout
 import java.awt.GridBagLayout
-import java.awt.image.BufferedImage
-import javax.swing.ImageIcon
 import javax.swing.JLabel
 import javax.swing.JPanel
 
@@ -31,15 +26,7 @@ class BitmapPreviewEditorComponent(lifetime: Lifetime, controller: AvaloniaPrevi
 
     private val mainScrollView = JBScrollPane()
     private val frameBufferView = lazy {
-        JLabel().apply {
-            val listener = AvaloniaMessageMouseListener(this)
-            listener.avaloniaInputEvent.advise(lifetime) { message ->
-                controller.sendInputEventMessage(message)
-            }
-            addMouseListener(listener)
-            addMouseMotionListener(listener)
-            addMouseWheelListener(listener)
-        }
+        PreviewImageView(lifetime, controller)
     }
     private val spinnerView = lazy { AsyncProcessIcon.Big("Loading") }
     private val errorLabel = lazy {
@@ -100,13 +87,11 @@ class BitmapPreviewEditorComponent(lifetime: Lifetime, controller: AvaloniaPrevi
 
         val frameBuffer = frameBufferView.value
         if (frame.height <= 0 || frame.width <= 0) {
-            frameBuffer.icon = null
+            frameBuffer.resetImage() // icon = null
             return
         }
 
-        val image = UIUtil.createImage(this, frame.width, frame.height, BufferedImage.TYPE_INT_RGB)
-        image.renderFrame(frame)
-        frameBuffer.icon = ImageIcon(image) // TODO[F]: Find a clever way to update that (#40)
+        frameBuffer.render(frame)
     }
 
     private fun handleXamlResult(message: UpdateXamlResultMessage) {
