@@ -36,7 +36,7 @@ jobs:
 
       # Frontend
       - name: Test
-        run: ./gradlew -PbuildConfiguration=Release -PbuildNumber=${{ github.run_id }} test
+        run: ./gradlew -PbuildConfiguration=Release -PbuildNumber=${{ github.run_number }} test
       - name: Upload Test Results
         uses: actions/upload-artifact@v2
         with:
@@ -53,7 +53,7 @@ jobs:
       # Distribution
       - name: Build Distribution
         if: matrix.image == 'ubuntu-20.04'
-        run: ./gradlew -PbuildConfiguration=Release -PbuildNumber=${{ github.run_id }} buildPlugin
+        run: ./gradlew -PbuildConfiguration=Release -PbuildNumber=${{ github.run_number }} buildPlugin
       - name: Determine Version
         if: matrix.image == 'ubuntu-20.04'
         shell: pwsh

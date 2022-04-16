@@ -33,7 +33,7 @@ val riderSdkVersion: String by project
 val pluginVersionBase: String by project
 
 val buildConfiguration = ext.properties["buildConfiguration"] ?: "Debug"
-val buildNumber = ext.properties["buildNumber"] ?: "0"
+val buildNumber = (ext.properties["buildNumber"] as String?)?.toInt() ?: 0
 
 val rdLibDirectory: () -> File = { file("${tasks.setupDependencies.get().idea.get().classes}/lib/rd") }
 extra["rdLibDirectory"] = rdLibDirectory
@@ -43,7 +43,7 @@ val dotNetSrcDir = File(projectDir, "src/dotnet")
 val dotNetSdkGeneratedPropsFile = File("build", "DotNetSdkPath.Generated.props")
 val nuGetConfigFile = File("nuget.config")
 
-version = "$pluginVersionBase.$buildNumber"
+version = "$pluginVersionBase.${2140933433 + buildNumber}" // TODO: 2140933433 here is to keep compatibility with previous versioning scheme
 
 fun File.writeTextIfChanged(content: String) {
     val bytes = content.toByteArray()
