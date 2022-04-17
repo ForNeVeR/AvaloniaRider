@@ -6,7 +6,10 @@ import com.intellij.ui.components.JBLabel
 import me.fornever.avaloniarider.AvaloniaRiderBundle
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
+import javax.swing.JComponent
 import javax.swing.JPanel
+import javax.swing.JSpinner
+import javax.swing.SpinnerNumberModel
 
 class AvaloniaSettingsComponent(state: AvaloniaSettingsState) : JPanel() {
     private val initialState = AvaloniaSettingsState().apply {
@@ -27,25 +30,43 @@ class AvaloniaSettingsComponent(state: AvaloniaSettingsState) : JPanel() {
             synchronizeWithRunConfigurationEditor.isSelected = value
         }
 
+    private val fpsLimitEditor = JSpinner(SpinnerNumberModel(0, 0, Int.MAX_VALUE, 1))
+    private var fpsLimit: Int
+        get() = fpsLimitEditor.model.value as Int
+        set(value) {
+            fpsLimitEditor.model.value = value
+        }
+
     init {
         previewerMethod = initialState.previewerMethod
         synchronizeWithRunConfiguration = initialState.synchronizeWithRunConfiguration
 
         layout = GridBagLayout()
-        add(JBLabel(AvaloniaRiderBundle.message("settings.previewerMethod")), GridBagConstraints().apply { anchor = GridBagConstraints.LINE_START })
-        add(previewerTransportTypeSelector, GridBagConstraints().apply { gridx = 1 })
+        fun addComponent(component: JComponent, constraints: GridBagConstraints.() -> Unit) {
+            add(component, GridBagConstraints().apply(constraints))
+        }
 
-        add(synchronizeWithRunConfigurationEditor, GridBagConstraints().apply { gridy = 1; gridwidth = 2 })
+        addComponent(JBLabel(AvaloniaRiderBundle.message("settings.previewerMethod"))) {
+            anchor = GridBagConstraints.LINE_START
+        }
+        addComponent(previewerTransportTypeSelector) { gridx = 1 }
+
+        addComponent(synchronizeWithRunConfigurationEditor) { gridy = 1; gridwidth = 2 }
+
+        addComponent(JBLabel(AvaloniaRiderBundle.message("settings.fpsLimit"))) { gridy = 2 }
+        addComponent(fpsLimitEditor) { gridy = 2; gridx = 1 }
     }
 
     var currentState: AvaloniaSettingsState
         get() = AvaloniaSettingsState().apply {
             previewerMethod = this@AvaloniaSettingsComponent.previewerMethod
             synchronizeWithRunConfiguration = this@AvaloniaSettingsComponent.synchronizeWithRunConfiguration
+            fpsLimit = this@AvaloniaSettingsComponent.fpsLimit
         }
         set(value) {
             previewerMethod = value.previewerMethod
             synchronizeWithRunConfiguration = value.synchronizeWithRunConfiguration
+            fpsLimit = value.fpsLimit
         }
 
     val isModified: Boolean

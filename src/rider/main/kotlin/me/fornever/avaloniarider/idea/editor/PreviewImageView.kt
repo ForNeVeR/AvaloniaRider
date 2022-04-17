@@ -1,6 +1,5 @@
 package me.fornever.avaloniarider.idea.editor
 
-import com.intellij.openapi.diagnostic.logger
 import com.intellij.util.application
 import com.intellij.util.ui.UIUtil
 import com.jetbrains.rd.util.lifetime.Lifetime

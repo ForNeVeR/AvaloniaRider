@@ -18,6 +18,8 @@ class AvaloniaSettingsState : BaseState() {
      * Synchronize current run configuration and selected project, when possible.
      */
     var synchronizeWithRunConfiguration by property(false)
+
+    var fpsLimit by property(0)
 }
 
 @State(name = "Avalonia")
