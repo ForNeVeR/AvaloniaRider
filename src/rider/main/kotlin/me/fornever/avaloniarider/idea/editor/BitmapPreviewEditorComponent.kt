@@ -22,7 +22,7 @@ import javax.swing.JPanel
 
 class BitmapPreviewEditorComponent(
     lifetime: Lifetime,
-    controller: AvaloniaPreviewerSessionController,
+    private val controller: AvaloniaPreviewerSessionController,
     settings: AvaloniaSettings
 ) : JPanel() {
     companion object {
@@ -63,9 +63,12 @@ class BitmapPreviewEditorComponent(
         controller.criticalError.adviseOnUiThread(lifetime, ::handleCriticalError)
 
         controller.frame.adviseOnUiThread(lifetime) { frame ->
-            if (nonTransparent(frame)) // TODO[F]: Remove after fix of https://github.com/AvaloniaUI/Avalonia/issues/4264
-                handleFrame(frame)
-            else controller.acknowledgeFrame(frame)
+            if (nonTransparent(frame)) { // TODO[F]: Remove after fix of https://github.com/AvaloniaUI/Avalonia/issues/4264
+                if (!handleFrame(frame))
+                    controller.acknowledgeFrame(frame)
+            } else {
+                controller.acknowledgeFrame(frame)
+            }
         }
     }
 
@@ -83,20 +86,24 @@ class BitmapPreviewEditorComponent(
         logger.info("Status: $status")
     }
 
-    private fun handleFrame(frame: FrameMessage) {
+    /**
+     * Returns whether it has got the ownership of the frame. If it isn't, then the caller should call acknowledgeFrame.
+     */
+    private fun handleFrame(frame: FrameMessage): Boolean {
         application.assertIsDispatchThread()
         if (status != Status.Working) {
             logger.warn("Had to skip a frame because it came during status $status")
-            return
+            return false
         }
 
         val frameBuffer = frameBufferView.value
         if (frame.height <= 0 || frame.width <= 0) {
             frameBuffer.resetImage()
-            return
+            return false
         }
 
         frameBuffer.render(frame)
+        return true
     }
 
     private fun handleXamlResult(message: UpdateXamlResultMessage) {
