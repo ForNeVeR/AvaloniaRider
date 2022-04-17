@@ -87,7 +87,7 @@ class BitmapPreviewEditorComponent(lifetime: Lifetime, controller: AvaloniaPrevi
 
         val frameBuffer = frameBufferView.value
         if (frame.height <= 0 || frame.width <= 0) {
-            frameBuffer.resetImage() // icon = null
+            frameBuffer.resetImage()
             return
         }
 

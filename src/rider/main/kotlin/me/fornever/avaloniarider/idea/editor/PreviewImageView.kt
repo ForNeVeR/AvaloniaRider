@@ -1,5 +1,6 @@
 package me.fornever.avaloniarider.idea.editor
 
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.util.application
 import com.intellij.util.ui.UIUtil
 import com.jetbrains.rd.util.lifetime.Lifetime
@@ -35,6 +36,9 @@ class PreviewImageView(lifetime: Lifetime, controller: AvaloniaPreviewerSessionC
         return buffer?.let { Dimension(it.width, it.height) } ?: super.getPreferredSize()
     }
 
+    // TODO[F]: FPS limiter
+    // TODO[F]: Stop the preview if the control/editor is invisible (or only send the frame message on paint?)
+
     override fun paintComponent(g: Graphics) {
         super.paintComponent(g)
 
@@ -51,11 +55,21 @@ class PreviewImageView(lifetime: Lifetime, controller: AvaloniaPreviewerSessionC
     }
 
     fun render(frame: FrameMessage) {
+//        logger<PreviewImageView>().info("Frame ready")
         application.assertIsDispatchThread()
 
-        buffer = UIUtil.createImage(this, frame.width, frame.height, BufferedImage.TYPE_INT_RGB).apply {
-            renderFrame(frame) // TODO[F]: Find a clever way to update that (#40)
+        val image = if (buffer?.width == frame.width && buffer?.height == frame.height)
+            buffer!!
+        else {
+            @Suppress("UndesirableClassUsage")
+            BufferedImage(frame.width, frame.height, BufferedImage.TYPE_INT_ARGB).also {
+                revalidate()
+            }
         }
+//            UIUtil.createImage(this, frame.width, frame.height, BufferedImage.TYPE_INT_RGB)
+        image.renderFrame(frame)
+
+        buffer = image
         repaint()
     }
 }
