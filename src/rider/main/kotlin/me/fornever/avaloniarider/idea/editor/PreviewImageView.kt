@@ -65,6 +65,8 @@ class PreviewImageView(
     fun resetImage() {
         application.assertIsDispatchThread()
         buffer = null
+        lastFrame = null
+        lastFrameSentNanoTime = null
     }
 
     fun render(frame: FrameMessage) {
