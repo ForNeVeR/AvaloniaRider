@@ -10,6 +10,7 @@ import com.jetbrains.rd.util.lifetime.Lifetime
 import me.fornever.avaloniarider.controlmessages.FrameMessage
 import me.fornever.avaloniarider.controlmessages.UpdateXamlResultMessage
 import me.fornever.avaloniarider.idea.concurrency.adviseOnUiThread
+import me.fornever.avaloniarider.idea.settings.AvaloniaSettings
 import me.fornever.avaloniarider.plainTextToHtml
 import me.fornever.avaloniarider.previewer.AvaloniaPreviewerSessionController
 import me.fornever.avaloniarider.previewer.AvaloniaPreviewerSessionController.Status
@@ -19,14 +20,18 @@ import java.awt.GridBagLayout
 import javax.swing.JLabel
 import javax.swing.JPanel
 
-class BitmapPreviewEditorComponent(lifetime: Lifetime, controller: AvaloniaPreviewerSessionController) : JPanel() {
+class BitmapPreviewEditorComponent(
+    lifetime: Lifetime,
+    controller: AvaloniaPreviewerSessionController,
+    settings: AvaloniaSettings
+) : JPanel() {
     companion object {
         private val logger = Logger.getInstance(BitmapPreviewEditorComponent::class.java)
     }
 
     private val mainScrollView = JBScrollPane()
     private val frameBufferView = lazy {
-        PreviewImageView(lifetime, controller)
+        PreviewImageView(lifetime, controller, settings)
     }
     private val spinnerView = lazy { AsyncProcessIcon.Big("Loading") }
     private val errorLabel = lazy {
@@ -60,7 +65,7 @@ class BitmapPreviewEditorComponent(lifetime: Lifetime, controller: AvaloniaPrevi
         controller.frame.adviseOnUiThread(lifetime) { frame ->
             if (nonTransparent(frame)) // TODO[F]: Remove after fix of https://github.com/AvaloniaUI/Avalonia/issues/4264
                 handleFrame(frame)
-            controller.acknowledgeFrame(frame)
+            else controller.acknowledgeFrame(frame)
         }
     }
 

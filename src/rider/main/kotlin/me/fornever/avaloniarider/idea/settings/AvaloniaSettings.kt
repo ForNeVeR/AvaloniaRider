@@ -34,4 +34,7 @@ class AvaloniaSettings : SimplePersistentStateComponent<AvaloniaSettingsState>(A
 
     val synchronizeWithRunConfiguration: Boolean
         get() = state.synchronizeWithRunConfiguration
+
+    val fpsLimit: Int
+        get() = state.fpsLimit
 }
