@@ -55,7 +55,7 @@ class BitmapPreviewEditorComponent(
         add(mainScrollView, BorderLayout.CENTER)
 
         controller.requestViewportResize.advise(lifetime) {
-            // TODO[F]: Update the image size for the renderer (#40)
+            // TODO[#9]: Update the image size for the renderer
         }
 
         controller.status.adviseOnUiThread(lifetime, ::handleStatus)
