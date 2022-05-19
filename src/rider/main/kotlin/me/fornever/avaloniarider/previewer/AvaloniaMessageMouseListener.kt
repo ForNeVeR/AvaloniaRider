@@ -15,9 +15,14 @@ internal class AvaloniaMessageMouseListener(
     private val frameView: PreviewImageView
 ) : MouseInputAdapter() {
 
+    private var zoomFactor = 1.0;
     private val avaloniaInputEventSignal = Signal<AvaloniaInputEventMessage>()
 
     val avaloniaInputEvent: ISource<AvaloniaInputEventMessage> = avaloniaInputEventSignal
+
+    private val zoomEventSignal = Signal<Double>();
+
+    val zoomEvent: ISource<Double> = zoomEventSignal;
 
     override fun mousePressed(e: MouseEvent?) {
         e ?: return
@@ -44,6 +49,26 @@ internal class AvaloniaMessageMouseListener(
     override fun mouseWheelMoved(e: MouseWheelEvent?) {
         e ?: return
         if (e.scrollType != MouseWheelEvent.WHEEL_UNIT_SCROLL) return
+
+        if(e.isControlDown) {
+            var oldValue = zoomFactor;
+            zoomFactor += e.preciseUnitsToScroll();
+
+            if(zoomFactor > 10.0)
+            {
+                zoomFactor = 10.0;
+            }
+            else if(zoomFactor < 0.4)
+            {
+                zoomFactor = 0.4;
+            }
+
+            if(oldValue != zoomFactor) {
+                zoomEventSignal.fire(zoomFactor);
+            }
+            return;
+        }
+
         val coordinates = e.pointerPositionOrNull()?: return
         val message = ScrollEventMessage(
             e.avaloniaModifiers(),

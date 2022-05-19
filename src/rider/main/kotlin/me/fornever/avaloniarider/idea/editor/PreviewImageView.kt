@@ -33,6 +33,9 @@ class PreviewImageView(
         listener.avaloniaInputEvent.advise(lifetime) { message ->
             controller.sendInputEventMessage(message)
         }
+        listener.zoomEvent.advise(lifetime) { zoomFactor ->
+            controller.setZoomFactor(zoomFactor);
+        }
         addMouseListener(listener)
         addMouseMotionListener(listener)
         addMouseWheelListener(listener)

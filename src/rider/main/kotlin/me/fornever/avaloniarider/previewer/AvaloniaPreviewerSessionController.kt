@@ -335,4 +335,9 @@ class AvaloniaPreviewerSessionController(
     fun sendInputEventMessage(event: AvaloniaInputEventMessage) {
         session?.sendInputEventMessage(event)
     }
+
+    fun setZoomFactor(zoomFactor: Double)
+    {
+        session?.sendDpi((96.0 * JBUIScale.sysScale()) * zoomFactor);
+    }
 }
