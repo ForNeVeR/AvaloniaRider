@@ -110,6 +110,7 @@ class PreviewImageView(
     override fun paintComponent(g: Graphics) {
         super.paintComponent(g)
 
+        var sysscale = JBUIScale.sysScale();
 
         if(isDark())
         {
@@ -125,7 +126,7 @@ class PreviewImageView(
         paintGrid(g);
 
         buffer?.let { image ->
-            g.drawImage(image, shiftImageX, shiftImageY, image.width, image.height, null)
+            g.drawImage(image, shiftImageX, shiftImageY, (image.width / sysscale).toInt(), (image.height / sysscale).toInt(), null)
         }
 
         lastFrame?.let {

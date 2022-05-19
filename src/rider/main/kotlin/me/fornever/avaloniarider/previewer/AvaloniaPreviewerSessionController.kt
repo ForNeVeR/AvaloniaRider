@@ -11,6 +11,7 @@ import com.intellij.openapi.rd.util.withIOBackgroundContext
 import com.intellij.openapi.rd.util.withUiContext
 import com.intellij.openapi.util.Computable
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.ui.scale.JBUIScale
 import com.intellij.util.application
 import com.intellij.workspaceModel.ide.WorkspaceModel
 import com.jetbrains.rd.util.lifetime.*
@@ -198,7 +199,7 @@ class AvaloniaPreviewerSessionController(
     ).apply {
         sessionStarted.advise(lifetime) {
             sendClientSupportedPixelFormat()
-            sendDpi(96.0) // TODO[F]: Properly acquire from the UI side (#9)
+            sendDpi(96.0 * JBUIScale.sysScale())
 
             application.runReadAction {
                 val document = FileDocumentManager.getInstance().getDocument(xamlFile)!!
