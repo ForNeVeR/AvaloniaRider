@@ -1,6 +1,11 @@
 package me.fornever.avaloniarider.idea.editor
 
+import com.intellij.ide.ui.LafManager
+import com.intellij.ide.ui.laf.UIThemeBasedLookAndFeelInfo
 import com.intellij.openapi.rd.createNestedDisposable
+import com.intellij.openapi.rd.paint2DLine
+import com.intellij.ui.paint.LinePainter2D
+import com.intellij.ui.scale.JBUIScale
 import com.intellij.util.Alarm
 import com.intellij.util.application
 import com.intellij.util.ui.UIUtil
@@ -10,10 +15,13 @@ import me.fornever.avaloniarider.idea.settings.AvaloniaSettings
 import me.fornever.avaloniarider.previewer.AvaloniaMessageMouseListener
 import me.fornever.avaloniarider.previewer.AvaloniaPreviewerSessionController
 import me.fornever.avaloniarider.previewer.renderFrame
+import java.awt.Color
 import java.awt.Dimension
 import java.awt.Graphics
+import java.awt.Graphics2D
 import java.awt.image.BufferedImage
 import javax.swing.JComponent
+
 
 class PreviewImageView(
     lifetime: Lifetime,
@@ -45,11 +53,77 @@ class PreviewImageView(
         return buffer?.let { Dimension(it.width, it.height) } ?: super.getPreferredSize()
     }
 
+    private fun isDark (): Boolean {
+        if(UIUtil.isUnderDarcula())
+        {
+            return true;
+        }
+        else {
+            val lafManager = LafManager.getInstance()
+            val currentLafInfo = lafManager.currentLookAndFeel
+            val theme = if (currentLafInfo is UIThemeBasedLookAndFeelInfo) currentLafInfo.theme else null
+            return theme != null && theme.isDark
+        }
+    }
+
+    private fun paintGrid(g: Graphics)
+    {
+        var context = g as Graphics2D;
+
+        var thickLineColor = Color(14.0f / 255.0f, 94.0f / 255.0f, 253.0f / 255.0f, 0.3f);
+        var lineColor = Color(14.0f / 255.0f, 94.0f / 255.0f, 253.0f / 255.0f, 0.1f);
+
+        if(isDark())
+        {
+            thickLineColor = Color(11.0f / 255.0f, 94.0f / 255.0f, 253.0f / 255.0f, 0.3f);
+            lineColor = Color(11.0f / 255.0f, 94.0f / 255.0f, 253.0f / 255.0f, 0.1f);
+        }
+
+        var height = height.toDouble();
+        var width = width.toDouble();
+
+        for(i in 1 .. (this.width / 10))
+        {
+            var color = lineColor;
+
+            if(i % 10 == 0)
+            {
+                color = thickLineColor;
+            }
+
+            context.paint2DLine(i * 10.0, 0.0, i * 10.0, height, strokeType = LinePainter2D.StrokeType.CENTERED, strokeWidth = 1.0, color);
+        }
+
+        for(i in 1 .. (this.height / 10))
+        {
+            var color = lineColor;
+
+            if(i % 10 == 0)
+            {
+                color = thickLineColor;
+            }
+
+            context.paint2DLine(0.0, i * 10.0, width, i * 10.0, strokeType = LinePainter2D.StrokeType.CENTERED, strokeWidth = 1.0, color);
+        }
+    }
+
     override fun paintComponent(g: Graphics) {
         super.paintComponent(g)
 
-        g.color = UIUtil.getControlColor()
+
+        if(isDark())
+        {
+            g.color = Color(24,24,24);
+        }
+        else
+        {
+            g.color = Color(0xFF, 0xFF, 0xFF);
+        }
+
         g.fillRect(0, 0, width, height)
+
+        paintGrid(g);
+
         buffer?.let { image ->
             g.drawImage(image, shiftImageX, shiftImageY, image.width, image.height, null)
         }
