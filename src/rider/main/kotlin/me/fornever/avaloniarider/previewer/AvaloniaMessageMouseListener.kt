@@ -108,7 +108,7 @@ internal class AvaloniaMessageMouseListener(
         val isContainsY = 0 <= iconY && iconY <= (frameView.buffer?.height ?: 0)
         if (!isContainsY) return null
 
-        return iconX.toDouble() to iconY.toDouble()
+        return iconX.toDouble() / zoomFactor to iconY.toDouble() / zoomFactor
     }
 
     private fun MouseEvent.avaloniaModifiers(): Array<Int> {
