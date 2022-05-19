@@ -77,7 +77,7 @@ class BitmapPreviewEditorComponent(
         mainScrollView.viewport.view = when (newStatus) {
             Status.Idle, Status.Connecting -> spinnerView.value
             Status.Working -> frameBufferView.value
-            Status.XamlError -> errorView.value
+            Status.XamlError -> frameBufferView.value
             Status.Suspended -> spinnerView.value
             Status.Terminated -> terminatedView.value
         }
