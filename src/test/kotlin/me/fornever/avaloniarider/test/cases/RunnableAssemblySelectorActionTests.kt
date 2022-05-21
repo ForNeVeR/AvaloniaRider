@@ -19,7 +19,6 @@ import com.jetbrains.rider.test.annotations.TestEnvironment
 import com.jetbrains.rider.test.asserts.shouldBe
 import com.jetbrains.rider.test.asserts.shouldBeTrue
 import com.jetbrains.rider.test.asserts.shouldContains
-import com.jetbrains.rider.test.base.BaseTestWithSolution
 import com.jetbrains.rider.test.scriptingApi.getVirtualFileFromPath
 import me.fornever.avaloniarider.idea.editor.actions.RunnableAssemblySelectorAction
 import me.fornever.avaloniarider.idea.settings.AvaloniaProjectSettings
@@ -33,7 +32,7 @@ import java.nio.file.Paths
 import java.time.Duration
 import kotlin.test.assertTrue
 
-class RunnableAssemblySelectorActionTests : BaseTestWithSolution() {
+class RunnableAssemblySelectorActionTests : AvaloniaIntegrationTest() {
     override fun getSolutionDirectoryName() = "MultiProjectSolution"
 
     private lateinit var testLifetime: LifetimeDefinition

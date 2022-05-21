@@ -1,6 +1,5 @@
 package me.fornever.avaloniarider.test.cases
 
-import com.intellij.openapi.project.Project
 import com.intellij.workspaceModel.ide.WorkspaceModel
 import com.jetbrains.rider.model.RunnableProjectKind
 import com.jetbrains.rider.model.runnableProjectsModel
@@ -9,25 +8,14 @@ import com.jetbrains.rider.projectView.workspace.getProjectModelEntities
 import com.jetbrains.rider.test.asserts.shouldBe
 import com.jetbrains.rider.test.asserts.shouldContains
 import com.jetbrains.rider.test.asserts.shouldNotBeNull
-import com.jetbrains.rider.test.base.BaseTestWithSolution
 import me.fornever.avaloniarider.model.RdProjectOutput
 import me.fornever.avaloniarider.previewer.MsBuildParameterCollector
 import me.fornever.avaloniarider.test.framework.runPumping
 import org.testng.annotations.Test
 
-class MsBuildParameterCollectorTests : BaseTestWithSolution() {
+class MsBuildParameterCollectorTests : AvaloniaIntegrationTest() {
 
     override fun getSolutionDirectoryName() = "MSBuildParameters"
-
-    override fun openSolution(solutionDirectoryName: String, params: OpenSolutionParams): Project {
-        val ci = System.getenv("CI")
-        if (ci.equals("true", ignoreCase = true) || ci == "1") {
-            // This may take a long time on GitHub Actions agent.
-            params.projectModelReadyTimeout = params.projectModelReadyTimeout.multipliedBy(10L)
-        }
-
-        return super.openSolution(solutionDirectoryName, params)
-    }
 
     @Suppress("UnstableApiUsage")
     @Test
