@@ -176,8 +176,6 @@ tasks {
     }
 
     runIde {
-        dependsOn(compileDotNet)
-
         // For statistics:
         // jvmArgs("-Xmx1500m", "-Didea.is.internal=true", "-Dfus.internal.test.mode=true")
         jvmArgs("-Xmx1500m")
@@ -193,6 +191,8 @@ tasks {
     }
 
     withType<org.jetbrains.intellij.tasks.PrepareSandboxTask> {
+        dependsOn(compileDotNet)
+
         val reSharperPluginDesc = "fvnever.$intellijPluginId"
         from("src/extensions") { into("${rootProject.name}/dotnet/Extensions/$reSharperPluginDesc") }
 
