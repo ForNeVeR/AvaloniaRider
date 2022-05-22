@@ -21,6 +21,8 @@ Make sure your Avalonia project is built, open a XAML file, and you'll see a XAM
 
 ![Preview Screenshot][preview-screenshot]
 
+It's possible to interact with the previewer using the mouse, and zoom with `Ctrl+Scroll Wheel`.
+
 ### File templates
 
 Right-click a directory or an Avalonia-enabled project, and choose among the available file templates:
