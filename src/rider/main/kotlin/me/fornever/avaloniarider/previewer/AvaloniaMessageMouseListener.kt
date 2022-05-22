@@ -52,7 +52,7 @@ internal class AvaloniaMessageMouseListener(
 
         if(e.isControlDown) {
             var oldValue = zoomFactor;
-            zoomFactor += e.preciseUnitsToScroll();
+            zoomFactor -= e.preciseUnitsToScroll() // scroll down means zoom out
 
             if(zoomFactor > 10.0)
             {
