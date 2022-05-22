@@ -251,6 +251,7 @@ class AvaloniaPreviewerSessionController(
             updateXamlResultSignal.fire(message)
         }
         frame.adviseOnUiThread(lifetime) { frame ->
+            statusProperty.value = Status.Working // reset to the good status after a possible error
             frameSignal.fire(frame)
             inFlightUpdate.value = false
         }
