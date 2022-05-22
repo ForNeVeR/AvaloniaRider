@@ -111,6 +111,11 @@ class AvaloniaPreviewerSessionController(
     val updateXamlResult: ISource<UpdateXamlResultMessage> = updateXamlResultSignal
     val criticalError: ISource<Throwable> = criticalErrorSignal
 
+    val dpi = OptProperty<Double>()
+    val zoomFactor = Property(1.0)
+
+    private val inFlightUpdate = Property(false)
+
     private var _session: AvaloniaPreviewerSession? = null
     private var session: AvaloniaPreviewerSession?
         get() = application.runReadAction(Computable { _session })
@@ -156,6 +161,17 @@ class AvaloniaPreviewerSessionController(
                 }
             }
 
+        compose(status, inFlightUpdate, dpi, zoomFactor)
+            .advise(controllerLifetime) { (status, inFlightUpdate, dpi, zoomFactor) ->
+                if (status != Status.Working) return@advise
+                if (inFlightUpdate) return@advise
+
+                // Try to guess DPI if we got called without a signal from the control. After the control tells us the
+                // right DPI, we'll apply it later.
+                val effectiveDpi = dpi ?: JBUIScale.sysScale().toDouble()
+                session?.sendDpi(effectiveDpi * zoomFactor)
+            }
+
         enableStatistics()
     }
 
@@ -198,8 +214,9 @@ class AvaloniaPreviewerSessionController(
         parameters.xamlContainingAssemblyPath
     ).apply {
         sessionStarted.advise(lifetime) {
+            statusProperty.value = Status.Working
+
             sendClientSupportedPixelFormat()
-            sendDpi(96.0 * JBUIScale.sysScale())
 
             application.runReadAction {
                 val document = FileDocumentManager.getInstance().getDocument(xamlFile)!!
@@ -210,12 +227,17 @@ class AvaloniaPreviewerSessionController(
                     return item?.projectRelativeVirtualPath?.let { "/$it" } ?: ""
                 }
 
+                fun sendXamlUpdate() {
+                    inFlightUpdate.value = true
+                    sendXamlUpdate(document.text, getDocumentPathInProject())
+                }
+
                 document.documentChanged()
                     .throttleLast(xamlEditThrottling, SwingScheduler)
                     .advise(lifetime) {
-                        sendXamlUpdate(document.text, getDocumentPathInProject())
+                        sendXamlUpdate()
                     }
-                sendXamlUpdate(document.text, getDocumentPathInProject())
+                sendXamlUpdate()
             }
         }
 
@@ -224,12 +246,13 @@ class AvaloniaPreviewerSessionController(
         updateXamlResult.adviseOnUiThread(lifetime) { message ->
             if (message.error != null) {
                 statusProperty.value = Status.XamlError
+                inFlightUpdate.value = false
             }
             updateXamlResultSignal.fire(message)
         }
         frame.adviseOnUiThread(lifetime) { frame ->
-            statusProperty.value = Status.Working
             frameSignal.fire(frame)
+            inFlightUpdate.value = false
         }
     }
 
@@ -289,7 +312,6 @@ class AvaloniaPreviewerSessionController(
             logger.info("Starting previewer process")
             process.run(lifetime, project, transport, method, processTitle)
         }
-        statusProperty.set(Status.Working)
 
         val result = select<String> {
             sessionJob.onAwait { "Socket listener" }
@@ -334,10 +356,5 @@ class AvaloniaPreviewerSessionController(
 
     fun sendInputEventMessage(event: AvaloniaInputEventMessage) {
         session?.sendInputEventMessage(event)
-    }
-
-    fun setZoomFactor(zoomFactor: Double)
-    {
-        session?.sendDpi((96.0 * JBUIScale.sysScale()) * zoomFactor);
     }
 }
