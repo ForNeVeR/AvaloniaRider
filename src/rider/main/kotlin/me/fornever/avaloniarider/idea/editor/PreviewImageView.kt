@@ -22,7 +22,6 @@ import java.awt.Graphics2D
 import java.awt.image.BufferedImage
 import javax.swing.JComponent
 
-
 class PreviewImageView(
     lifetime: Lifetime,
     private val controller: AvaloniaPreviewerSessionController,
@@ -34,7 +33,7 @@ class PreviewImageView(
             controller.sendInputEventMessage(message)
         }
         listener.zoomEvent.advise(lifetime) { zoomFactor ->
-            controller.setZoomFactor(zoomFactor);
+            controller.zoomFactor.value = zoomFactor
         }
         addMouseListener(listener)
         addMouseMotionListener(listener)
@@ -46,9 +45,13 @@ class PreviewImageView(
     private var lastFrame: FrameMessage? = null
     private var lastFrameSentNanoTime: Long? = null
 
+    private val screenScale: Float
+        get() = JBUIScale.sysScale(this)
+
     private val scaledBufferSize: Dimension?
         get() = buffer?.let {
-            Dimension((it.width / JBUIScale.sysScale()).toInt(), (it.height / JBUIScale.sysScale()).toInt())
+            val scale = screenScale
+            Dimension((it.width / scale).toInt(), (it.height / scale).toInt())
         }
 
     val shiftImageX: Int
@@ -118,8 +121,6 @@ class PreviewImageView(
     override fun paintComponent(g: Graphics) {
         super.paintComponent(g)
 
-        var sysscale = JBUIScale.sysScale();
-
         if(isDark())
         {
             g.color = Color(24,24,24);
@@ -134,7 +135,8 @@ class PreviewImageView(
         paintGrid(g);
 
         buffer?.let { image ->
-            g.drawImage(image, shiftImageX, shiftImageY, (image.width / sysscale).toInt(), (image.height / sysscale).toInt(), null)
+            val scaledSize = scaledBufferSize!!
+            g.drawImage(image, shiftImageX, shiftImageY, scaledSize.width, scaledSize.height, null)
         }
 
         lastFrame?.let {
@@ -143,6 +145,8 @@ class PreviewImageView(
                 lastFrame = null
             }
         }
+
+        controller.dpi.set(96.0 * screenScale)
     }
 
     fun resetImage() {
