@@ -28,7 +28,10 @@ import com.jetbrains.rider.ui.components.utils.documentChanged
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.selects.select
-import me.fornever.avaloniarider.controlmessages.*
+import me.fornever.avaloniarider.controlmessages.AvaloniaInputEventMessage
+import me.fornever.avaloniarider.controlmessages.FrameMessage
+import me.fornever.avaloniarider.controlmessages.HtmlTransportStartedMessage
+import me.fornever.avaloniarider.controlmessages.UpdateXamlResultMessage
 import me.fornever.avaloniarider.exceptions.AvaloniaPreviewerInitializationException
 import me.fornever.avaloniarider.idea.concurrency.adviseOnUiThread
 import me.fornever.avaloniarider.idea.settings.AvaloniaPreviewerMethod
@@ -100,13 +103,11 @@ class AvaloniaPreviewerSessionController(
     private val controllerLifetime = outerLifetime.createNested()
 
     private val htmlTransportStartedSignal = Signal<HtmlTransportStartedMessage>()
-    private val requestViewportResizeSignal = Signal<RequestViewportResizeMessage>()
     private val frameSignal = Signal<FrameMessage>()
     private val updateXamlResultSignal = Signal<UpdateXamlResultMessage>()
     private val criticalErrorSignal = Signal<Throwable>()
 
     val htmlTransportStarted: ISource<HtmlTransportStartedMessage> = htmlTransportStartedSignal
-    val requestViewportResize: ISource<RequestViewportResizeMessage> = requestViewportResizeSignal
     val frame: ISource<FrameMessage> = frameSignal
     val updateXamlResult: ISource<UpdateXamlResultMessage> = updateXamlResultSignal
     val criticalError: ISource<Throwable> = criticalErrorSignal
@@ -242,7 +243,6 @@ class AvaloniaPreviewerSessionController(
         }
 
         htmlTransportStarted.flowInto(lifetime, htmlTransportStartedSignal)
-        requestViewportResize.flowInto(lifetime, requestViewportResizeSignal)
         updateXamlResult.adviseOnUiThread(lifetime) { message ->
             if (message.error != null) {
                 statusProperty.value = Status.XamlError
