@@ -30,13 +30,11 @@ class AvaloniaPreviewerSession(
 
     private val sessionStartedSignal = Signal<StartDesignerSessionMessage>()
     private val htmlTransportStartedSignal = Signal<HtmlTransportStartedMessage>()
-    private val requestViewportResizeSignal = Signal<RequestViewportResizeMessage>()
     private val frameSignal = Signal<FrameMessage>()
     private val updateXamlResultSignal = Signal<UpdateXamlResultMessage>()
 
     val sessionStarted: ISource<StartDesignerSessionMessage> = sessionStartedSignal
     val htmlTransportStarted: ISource<HtmlTransportStartedMessage> = htmlTransportStartedSignal
-    val requestViewportResize: ISource<RequestViewportResizeMessage> = requestViewportResizeSignal
     val frame: ISource<FrameMessage> = frameSignal
     val updateXamlResult: ISource<UpdateXamlResultMessage> = updateXamlResultSignal
 
@@ -109,7 +107,6 @@ class AvaloniaPreviewerSession(
                     logger.info("Error from UpdateXamlResultMessage: $it")
                 }
             }
-            is RequestViewportResizeMessage -> requestViewportResizeSignal.fire(message)
             is FrameMessage -> frameSignal.fire(message)
             else -> logger.warn("Message ignored: $message")
         }
