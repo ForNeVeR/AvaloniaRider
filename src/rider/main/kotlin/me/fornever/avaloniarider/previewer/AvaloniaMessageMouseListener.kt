@@ -52,15 +52,11 @@ internal class AvaloniaMessageMouseListener(
 
         if(e.isControlDown) {
             var oldValue = zoomFactor;
-            zoomFactor -= e.preciseUnitsToScroll() // scroll down means zoom out
-
-            if(zoomFactor > 10.0)
-            {
-                zoomFactor = 10.0;
-            }
-            else if(zoomFactor < 0.4)
-            {
-                zoomFactor = 0.4;
+            val change = e.preciseUnitsToScroll().coerceIn(-1.0, 1.0)
+            zoomFactor -= change // scroll down means zoom out
+            zoomFactor = zoomFactor.coerceIn(0.4, 10.0)
+            if (oldValue < 1.0 && zoomFactor > 1.0 || oldValue > 1.0 && zoomFactor < 1.0) {
+                zoomFactor = 1.0 // always make a stop at 1.0 scale
             }
 
             if(oldValue != zoomFactor) {
