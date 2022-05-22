@@ -46,14 +46,19 @@ class PreviewImageView(
     private var lastFrame: FrameMessage? = null
     private var lastFrameSentNanoTime: Long? = null
 
+    private val scaledBufferSize: Dimension?
+        get() = buffer?.let {
+            Dimension((it.width / JBUIScale.sysScale()).toInt(), (it.height / JBUIScale.sysScale()).toInt())
+        }
+
     val shiftImageX: Int
-        get() = (width - (buffer?.width ?: 0)) / 2
+        get() = (width - (scaledBufferSize?.width ?: 0)) / 2
 
     val shiftImageY: Int
-        get() = (height - (buffer?.height ?: 0)) / 2
+        get() = (height - (scaledBufferSize?.height ?: 0)) / 2
 
     override fun getPreferredSize(): Dimension {
-        return buffer?.let { Dimension(it.width, it.height) } ?: super.getPreferredSize()
+        return scaledBufferSize ?: super.getPreferredSize()
     }
 
     private fun isDark (): Boolean {
