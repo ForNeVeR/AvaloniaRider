@@ -27,6 +27,17 @@ class PreviewImageView(
     private val controller: AvaloniaPreviewerSessionController,
     private val settings: AvaloniaSettings
 ) : JComponent() {
+
+    companion object {
+        private val backgroundColorLight = Color(0xFF, 0xFF, 0xFF)
+        private val thickLineColorLight = Color(14.0f / 255.0f, 94.0f / 255.0f, 253.0f / 255.0f, 0.3f)
+        private val lineColorLight = Color(14.0f / 255.0f, 94.0f / 255.0f, 253.0f / 255.0f, 0.1f)
+
+        private val backgroundColorDark = Color(24, 24, 24)
+        private val thickLineColorDark = Color(11.0f / 255.0f, 94.0f / 255.0f, 253.0f / 255.0f, 0.3f)
+        private val lineColorDark = Color(11.0f / 255.0f, 94.0f / 255.0f, 253.0f / 255.0f, 0.1f)
+    }
+
     init {
         val listener = AvaloniaMessageMouseListener(this)
         listener.avaloniaInputEvent.advise(lifetime) { message ->
@@ -64,75 +75,67 @@ class PreviewImageView(
         return scaledBufferSize ?: super.getPreferredSize()
     }
 
-    private fun isDark (): Boolean {
-        if(UIUtil.isUnderDarcula())
-        {
-            return true;
-        }
-        else {
-            val lafManager = LafManager.getInstance()
-            val currentLafInfo = lafManager.currentLookAndFeel
-            val theme = if (currentLafInfo is UIThemeBasedLookAndFeelInfo) currentLafInfo.theme else null
-            return theme != null && theme.isDark
+    private fun isDarkTheme(): Boolean {
+        return if (UIUtil.isUnderDarcula()) {
+            true
+        } else {
+            val currentLafInfo = LafManager.getInstance().currentLookAndFeel
+            val theme = (currentLafInfo as? UIThemeBasedLookAndFeelInfo)?.theme
+            theme?.isDark ?: false
         }
     }
 
-    private fun paintGrid(g: Graphics)
-    {
-        var context = g as Graphics2D;
+    private fun paintGrid(g: Graphics2D) {
+        val (thickLineColor, lineColor) =
+            if (isDarkTheme())
+                thickLineColorDark to lineColorDark
+            else
+                thickLineColorLight to lineColorLight
 
-        var thickLineColor = Color(14.0f / 255.0f, 94.0f / 255.0f, 253.0f / 255.0f, 0.3f);
-        var lineColor = Color(14.0f / 255.0f, 94.0f / 255.0f, 253.0f / 255.0f, 0.1f);
+        for (i in 1..(width / 10)) {
+            var color = lineColor
 
-        if(isDark())
-        {
-            thickLineColor = Color(11.0f / 255.0f, 94.0f / 255.0f, 253.0f / 255.0f, 0.3f);
-            lineColor = Color(11.0f / 255.0f, 94.0f / 255.0f, 253.0f / 255.0f, 0.1f);
-        }
-
-        var height = height.toDouble();
-        var width = width.toDouble();
-
-        for(i in 1 .. (this.width / 10))
-        {
-            var color = lineColor;
-
-            if(i % 10 == 0)
-            {
-                color = thickLineColor;
+            if (i % 10 == 0) {
+                color = thickLineColor
             }
 
-            context.paint2DLine(i * 10.0, 0.0, i * 10.0, height, strokeType = LinePainter2D.StrokeType.CENTERED, strokeWidth = 1.0, color);
+            g.paint2DLine(
+                i * 10.0,
+                0.0,
+                i * 10.0,
+                height.toDouble(),
+                strokeType = LinePainter2D.StrokeType.CENTERED,
+                strokeWidth = 1.0,
+                color
+            )
         }
 
-        for(i in 1 .. (this.height / 10))
-        {
-            var color = lineColor;
+        for (i in 1..(height / 10)) {
+            var color = lineColor
 
-            if(i % 10 == 0)
-            {
-                color = thickLineColor;
+            if (i % 10 == 0) {
+                color = thickLineColor
             }
 
-            context.paint2DLine(0.0, i * 10.0, width, i * 10.0, strokeType = LinePainter2D.StrokeType.CENTERED, strokeWidth = 1.0, color);
+            g.paint2DLine(
+                0.0,
+                i * 10.0,
+                width.toDouble(),
+                i * 10.0,
+                strokeType = LinePainter2D.StrokeType.CENTERED,
+                strokeWidth = 1.0,
+                color
+            )
         }
     }
 
     override fun paintComponent(g: Graphics) {
         super.paintComponent(g)
 
-        if(isDark())
-        {
-            g.color = Color(24,24,24);
-        }
-        else
-        {
-            g.color = Color(0xFF, 0xFF, 0xFF);
-        }
-
+        g.color = if (isDarkTheme()) backgroundColorDark else backgroundColorLight
         g.fillRect(0, 0, width, height)
 
-        paintGrid(g);
+        paintGrid(g as Graphics2D)
 
         buffer?.let { image ->
             val scaledSize = scaledBufferSize!!
@@ -176,7 +179,7 @@ class PreviewImageView(
         repaint()
     }
 
-    private val alarm = Alarm(
+    private val fpsTimer = Alarm(
         lifetime.createNestedDisposable("me.fornever.avaloniarider.idea.editor.PreviewImageView.lifetime"))
     private fun doWithFpsLimit(action: () -> Unit) {
         val fpsLimit = settings.fpsLimit
@@ -199,6 +202,6 @@ class PreviewImageView(
         val nanosToWait = nanosBetweenFrames - nanosAlreadyWaited
         val millisToWait = (nanosToWait / 1e6).toLong()
 
-        alarm.addRequest(action, millisToWait)
+        fpsTimer.addRequest(action, millisToWait)
     }
 }
