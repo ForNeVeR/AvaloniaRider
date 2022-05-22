@@ -1,6 +1,8 @@
 package me.fornever.avaloniarider.previewer
 
+import com.jetbrains.rd.util.reactive.IPropertyView
 import com.jetbrains.rd.util.reactive.ISource
+import com.jetbrains.rd.util.reactive.Property
 import com.jetbrains.rd.util.reactive.Signal
 import me.fornever.avaloniarider.controlmessages.*
 import me.fornever.avaloniarider.idea.editor.PreviewImageView
@@ -15,14 +17,12 @@ internal class AvaloniaMessageMouseListener(
     private val frameView: PreviewImageView
 ) : MouseInputAdapter() {
 
-    private var zoomFactor = 1.0;
     private val avaloniaInputEventSignal = Signal<AvaloniaInputEventMessage>()
 
     val avaloniaInputEvent: ISource<AvaloniaInputEventMessage> = avaloniaInputEventSignal
 
-    private val zoomEventSignal = Signal<Double>();
-
-    val zoomEvent: ISource<Double> = zoomEventSignal;
+    private val zoomProperty = Property(1.0)
+    val zoom: IPropertyView<Double> = zoomProperty
 
     override fun mousePressed(e: MouseEvent?) {
         e ?: return
@@ -50,28 +50,26 @@ internal class AvaloniaMessageMouseListener(
         e ?: return
         if (e.scrollType != MouseWheelEvent.WHEEL_UNIT_SCROLL) return
 
-        if(e.isControlDown) {
-            var oldValue = zoomFactor;
+        if (e.isControlDown) {
+            val oldValue = zoom.value
             val change = e.preciseUnitsToScroll().coerceIn(-1.0, 1.0)
-            zoomFactor -= change // scroll down means zoom out
-            zoomFactor = zoomFactor.coerceIn(0.4, 10.0)
-            if (oldValue < 1.0 && zoomFactor > 1.0 || oldValue > 1.0 && zoomFactor < 1.0) {
-                zoomFactor = 1.0 // always make a stop at 1.0 scale
+            var newValue = (oldValue - change).coerceIn(0.4, 10.0) // scroll down means zoom out
+            if (oldValue < 1.0 && newValue > 1.0 || oldValue > 1.0 && newValue < 1.0) {
+                newValue = 1.0 // always make a stop at 1.0 scale
             }
 
-            if(oldValue != zoomFactor) {
-                zoomEventSignal.fire(zoomFactor);
-            }
-            return;
+            zoomProperty.value = newValue
+            return
         }
 
-        val coordinates = e.pointerPositionOrNull()?: return
+        val coordinates = e.pointerPositionOrNull() ?: return
         val message = ScrollEventMessage(
             e.avaloniaModifiers(),
             coordinates.first,
             coordinates.second,
             0.0,
-            -e.preciseUnitsToScroll())
+            -e.preciseUnitsToScroll()
+        )
         avaloniaInputEventSignal.fire(message)
     }
 
@@ -104,7 +102,7 @@ internal class AvaloniaMessageMouseListener(
         val isContainsY = 0 <= iconY && iconY <= (frameView.buffer?.height ?: 0)
         if (!isContainsY) return null
 
-        return iconX.toDouble() / zoomFactor to iconY.toDouble() / zoomFactor
+        return iconX.toDouble() / zoom.value to iconY.toDouble() / zoom.value
     }
 
     private fun MouseEvent.avaloniaModifiers(): Array<Int> {
