@@ -1,8 +1,6 @@
 package me.fornever.avaloniarider.idea.editor
 
-import com.intellij.icons.AllIcons
 import com.intellij.openapi.diagnostic.Logger
-import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.util.application
 import com.intellij.util.ui.AsyncProcessIcon
@@ -16,7 +14,6 @@ import me.fornever.avaloniarider.previewer.AvaloniaPreviewerSessionController
 import me.fornever.avaloniarider.previewer.AvaloniaPreviewerSessionController.Status
 import me.fornever.avaloniarider.previewer.nonTransparent
 import java.awt.BorderLayout
-import java.awt.GridBagLayout
 import javax.swing.JLabel
 import javax.swing.JPanel
 
@@ -34,18 +31,6 @@ class BitmapPreviewEditorComponent(
         PreviewImageView(lifetime, controller, settings)
     }
     private val spinnerView = lazy { AsyncProcessIcon.Big("Loading") }
-    private val errorLabel = lazy {
-        JBLabel().apply {
-            setCopyable(true)
-        }
-    }
-    private val errorView = lazy {
-        JPanel().apply {
-            layout = GridBagLayout()
-            add(JLabel(AllIcons.General.Error))
-            add(errorLabel.value)
-        }
-    }
     private val terminatedView = lazy { JLabel("Previewer has been terminated") }
 
     private var status = Status.Idle
@@ -136,7 +121,7 @@ class BitmapPreviewEditorComponent(
             }
 
         if (errorMessage.isNotEmpty())
-            errorLabel.value.text = errorMessage.plainTextToHtml()
+            logger.warn("XAML update error: $errorMessage")
     }
 
     private fun handleCriticalError(error: Throwable) {
