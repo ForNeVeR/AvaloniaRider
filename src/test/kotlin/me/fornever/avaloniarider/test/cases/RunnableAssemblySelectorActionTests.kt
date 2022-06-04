@@ -12,9 +12,9 @@ import com.jetbrains.rd.util.reactive.hasValue
 import com.jetbrains.rd.util.reactive.valueOrThrow
 import com.jetbrains.rdclient.util.idea.pumpMessages
 import com.jetbrains.rider.model.RunnableProject
-import com.jetbrains.rider.model.RunnableProjectKind
 import com.jetbrains.rider.model.runnableProjectsModel
 import com.jetbrains.rider.projectView.solution
+import com.jetbrains.rider.run.configurations.RunnableProjectKinds
 import com.jetbrains.rider.test.annotations.TestEnvironment
 import com.jetbrains.rider.test.asserts.shouldBe
 import com.jetbrains.rider.test.asserts.shouldBeTrue
@@ -98,7 +98,7 @@ class RunnableAssemblySelectorActionTests : BaseTestWithSolution() {
         group.getChildren(null).size.shouldBe(0)
 
         val project = project.solution.runnableProjectsModel.projects.valueOrThrow.single {
-            it.name == "AvaloniaApp1" && it.kind == RunnableProjectKind.DotNetCore
+            it.name == "AvaloniaApp1" && it.kind == RunnableProjectKinds.DotNetCore
         }
         runnableProjects.set(sequenceOf(project))
         pumpMessages(Duration.ofSeconds(5L)) { !action.isLoading.value }.shouldBeTrue()
@@ -114,7 +114,7 @@ class RunnableAssemblySelectorActionTests : BaseTestWithSolution() {
         pumpMessages(Duration.ofSeconds(5L)) { action.selectedProjectPath.hasValue }.shouldBeTrue()
 
         val expectedPath = project.solution.runnableProjectsModel.projects.valueOrThrow
-            .single { it.name == "AvaloniaApp1" && it.kind == RunnableProjectKind.DotNetCore }
+            .single { it.name == "AvaloniaApp1" && it.kind == RunnableProjectKinds.DotNetCore }
             .projectFilePath.let(Paths::get).systemIndependentPath
         action.selectedProjectPath.valueOrThrow.systemIndependentPath.shouldBe(expectedPath)
     }
@@ -124,7 +124,7 @@ class RunnableAssemblySelectorActionTests : BaseTestWithSolution() {
         val runnableProjectsModel = project.solution.runnableProjectsModel
         pumpMessages { runnableProjectsModel.projects.valueOrNull?.isNotEmpty() ?: false }
         runnableProjectsModel.projects.valueOrThrow
-            .filter { it.kind == RunnableProjectKind.DotNetCore || it.kind == RunnableProjectKind.Console }
+            .filter { it.kind == RunnableProjectKinds.DotNetCore || it.kind == RunnableProjectKinds.Console }
             .size.shouldBe(3)
 
         val action = createSelector()

@@ -2,10 +2,10 @@ package me.fornever.avaloniarider.test.cases
 
 import com.intellij.openapi.project.Project
 import com.intellij.workspaceModel.ide.WorkspaceModel
-import com.jetbrains.rider.model.RunnableProjectKind
 import com.jetbrains.rider.model.runnableProjectsModel
 import com.jetbrains.rider.projectView.solution
 import com.jetbrains.rider.projectView.workspace.getProjectModelEntities
+import com.jetbrains.rider.run.configurations.RunnableProjectKinds
 import com.jetbrains.rider.test.asserts.shouldBe
 import com.jetbrains.rider.test.asserts.shouldContains
 import com.jetbrains.rider.test.asserts.shouldNotBeNull
@@ -36,11 +36,11 @@ class MsBuildParameterCollectorTests : BaseTestWithSolution() {
         val workspaceModel = WorkspaceModel.getInstance(project)
         val runnableProjects = project.solution.runnableProjectsModel.projects.valueOrNull.shouldNotBeNull()
 
-        runnableProjects.shouldContains { it.kind == RunnableProjectKind.DotNetCore }
-        runnableProjects.shouldContains { it.kind == RunnableProjectKind.LaunchSettings }
+        runnableProjects.shouldContains { it.kind == RunnableProjectKinds.DotNetCore }
+        runnableProjects.shouldContains { it.kind == RunnableProjectKinds.LaunchSettings }
 
         val projectFilePath = activeSolutionDirectory.toPath().resolve("MSBuildParameters.csproj")
-        val projectOutput = runnableProjects.single { it.kind == RunnableProjectKind.DotNetCore }
+        val projectOutput = runnableProjects.single { it.kind == RunnableProjectKinds.DotNetCore }
             .projectOutputs.single()
         val projectModelEntity = workspaceModel.getProjectModelEntities(projectFilePath, project).single()
         val parameters = runPumping {
