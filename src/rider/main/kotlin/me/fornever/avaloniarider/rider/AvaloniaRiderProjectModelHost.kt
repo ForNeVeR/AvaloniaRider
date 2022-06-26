@@ -7,9 +7,9 @@ import com.jetbrains.rd.util.lifetime.Lifetime
 import com.jetbrains.rd.util.reactive.IOptPropertyView
 import com.jetbrains.rd.util.reactive.map
 import com.jetbrains.rider.model.RunnableProject
-import com.jetbrains.rider.model.RunnableProjectKind
 import com.jetbrains.rider.model.runnableProjectsModel
 import com.jetbrains.rider.projectView.solution
+import com.jetbrains.rider.run.configurations.RunnableProjectKinds
 import me.fornever.avaloniarider.model.RdGetProjectOutputArgs
 import me.fornever.avaloniarider.model.RdProjectOutput
 import me.fornever.avaloniarider.model.avaloniaRiderProjectModel
@@ -33,8 +33,8 @@ class AvaloniaRiderProjectModelHost(private val project: Project) {
             .map { projects ->
                 projects
                     .asSequence()
-                    .filter { it.kind == RunnableProjectKind.DotNetCore || it.kind == RunnableProjectKind.Console }
-                    .sortedBy { it.kind != RunnableProjectKind.DotNetCore }
+                    .filter { it.kind == RunnableProjectKinds.DotNetCore || it.kind == RunnableProjectKinds.Console }
+                    .sortedBy { it.kind != RunnableProjectKinds.DotNetCore }
                     .distinctBy { it.projectFilePath }
             }
     }
