@@ -19,12 +19,12 @@ import com.jetbrains.rider.test.annotations.TestEnvironment
 import com.jetbrains.rider.test.asserts.shouldBe
 import com.jetbrains.rider.test.asserts.shouldBeTrue
 import com.jetbrains.rider.test.asserts.shouldContains
-import com.jetbrains.rider.test.base.BaseTestWithSolution
 import com.jetbrains.rider.test.scriptingApi.getVirtualFileFromPath
 import me.fornever.avaloniarider.idea.editor.actions.RunnableAssemblySelectorAction
 import me.fornever.avaloniarider.idea.settings.AvaloniaProjectSettings
 import me.fornever.avaloniarider.idea.settings.AvaloniaSettings
 import me.fornever.avaloniarider.model.avaloniaRiderProjectModel
+import me.fornever.avaloniarider.test.framework.LongLoadingTest
 import org.testng.Assert.assertFalse
 import org.testng.annotations.AfterMethod
 import org.testng.annotations.BeforeMethod
@@ -33,7 +33,7 @@ import java.nio.file.Paths
 import java.time.Duration
 import kotlin.test.assertTrue
 
-class RunnableAssemblySelectorActionTests : BaseTestWithSolution() {
+class RunnableAssemblySelectorActionTests : LongLoadingTest() {
     override fun getSolutionDirectoryName() = "MultiProjectSolution"
 
     private lateinit var testLifetime: LifetimeDefinition
