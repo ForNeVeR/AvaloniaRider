@@ -5,15 +5,15 @@ buildscript {
 
     // https://search.maven.org/artifact/com.jetbrains.rd/rd-gen
     dependencies {
-        classpath("com.jetbrains.rd:rd-gen:2022.2.1")
+        classpath("com.jetbrains.rd:rd-gen:2022.3.2")
     }
 }
 
 plugins {
     id("java")
-    id("me.filippov.gradle.jvm.wrapper") version "0.10.0"
-    id("org.jetbrains.kotlin.jvm") version "1.6.21"
-    id("org.jetbrains.intellij") version "1.7.0"
+    id("me.filippov.gradle.jvm.wrapper") version "0.14.0"
+    id("org.jetbrains.kotlin.jvm") version "1.7.20"
+    id("org.jetbrains.intellij") version "1.9.0"
 }
 
 apply {
@@ -23,7 +23,7 @@ apply {
 dependencies {
     implementation("de.undercouch:bson4jackson:2.13.1")
 
-    testImplementation("org.testng:testng:7.6.0")
+    testImplementation("org.testng:testng:7.6.1")
 }
 
 val dotNetPluginId = "AvaloniaRider.Plugin"
@@ -56,13 +56,6 @@ fun File.writeTextIfChanged(content: String) {
 
 repositories {
     maven { setUrl("https://cache-redirector.jetbrains.com/maven-central") }
-}
-
-jvmWrapper {
-    // https://confluence.jetbrains.com/display/JBR/Release+notes+and+builds
-    linuxJvmUrl = "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_11-linux-x64-b1341.60.tar.gz"
-    macJvmUrl = "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_11-osx-x64-b1341.60.tar.gz"
-    windowsJvmUrl = "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_11-windows-x64-b1341.60.tar.gz"
 }
 
 sourceSets {
@@ -111,7 +104,7 @@ intellij {
 
 tasks {
     wrapper {
-        gradleVersion = "7.2"
+        gradleVersion = "7.5.1"
         distributionType = Wrapper.DistributionType.ALL
         distributionUrl = "https://cache-redirector.jetbrains.com/services.gradle.org/distributions/gradle-${gradleVersion}-all.zip"
     }
@@ -166,7 +159,7 @@ tasks {
     withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
         dependsOn(rdgen)
         kotlinOptions {
-            jvmTarget = "11"
+            jvmTarget = "17"
             freeCompilerArgs = freeCompilerArgs + "-Xopt-in=kotlin.RequiresOptIn"
         }
     }
