@@ -40,8 +40,8 @@ extra["rdLibDirectory"] = rdLibDirectory
 
 val dotNetSrcDir = File(projectDir, "src/dotnet")
 
-val dotNetSdkGeneratedPropsFile = File("build", "DotNetSdkPath.Generated.props")
-val nuGetConfigFile = File("nuget.config")
+val dotNetSdkGeneratedPropsFile = File(projectDir, "build/DotNetSdkPath.Generated.props")
+val nuGetConfigFile = File(projectDir, "nuget.config")
 
 version = "$pluginVersionBase.${2140933433 + buildNumber}" // TODO: 2140933433 here is to keep compatibility with previous versioning scheme
 
@@ -50,6 +50,7 @@ fun File.writeTextIfChanged(content: String) {
 
     if (!exists() || !readBytes().contentEquals(bytes)) {
         println("Writing $path")
+        parentFile.mkdirs()
         writeBytes(bytes)
     }
 }
