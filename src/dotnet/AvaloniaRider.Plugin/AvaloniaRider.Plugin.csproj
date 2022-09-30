@@ -6,4 +6,8 @@
   </PropertyGroup>
 
   <Import Project="$(JetBrainsRiderRdBackendCommonReference)" Condition="Exists('$(JetBrainsRiderRdBackendCommonReference)')" />
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NETCore.Platforms" Version="5.0.0" />
+    <PackageReference Include="Microsoft.NETCore.Targets" Version="1.1.0" />
+  </ItemGroup>
 </Project>
