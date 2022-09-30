@@ -2,7 +2,7 @@ name: Dev Publish
 on:
   push:
     branches:
-      - net222
+      - net223
 
 jobs:
   publish:
