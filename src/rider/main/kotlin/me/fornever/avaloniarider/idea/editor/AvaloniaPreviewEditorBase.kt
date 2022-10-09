@@ -9,20 +9,23 @@ import com.intellij.openapi.fileEditor.FileEditorLocation
 import com.intellij.openapi.fileEditor.FileEditorState
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.rd.util.launchOnUi
+import com.intellij.openapi.ui.Splitter
 import com.intellij.openapi.util.UserDataHolderBase
 import com.intellij.openapi.vfs.VirtualFile
+import com.jetbrains.rd.framework.util.nextValue
 import com.jetbrains.rd.util.lifetime.Lifetime
 import com.jetbrains.rd.util.lifetime.LifetimeDefinition
 import com.jetbrains.rd.util.reactive.IPropertyView
 import com.jetbrains.rd.util.reactive.Property
-import com.jetbrains.rd.util.reactive.adviseUntil
 import com.jetbrains.rider.xaml.core.XamlPreviewEditor
 import com.jetbrains.rider.xaml.previewEditor.PreviewEditorToolbar
 import com.jetbrains.rider.xaml.splitEditor.XamlSplitEditor
 import com.jetbrains.rider.xaml.splitEditor.XamlSplitEditorSplitLayout
 import me.fornever.avaloniarider.idea.editor.actions.RestartPreviewerAction
 import me.fornever.avaloniarider.idea.editor.actions.RunnableAssemblySelectorAction
+import me.fornever.avaloniarider.idea.editor.actions.TogglePreviewerLogAction
 import me.fornever.avaloniarider.previewer.AvaloniaPreviewerSessionController
+import me.fornever.avaloniarider.ui.bindVisible
 import java.awt.BorderLayout
 import java.beans.PropertyChangeListener
 import javax.swing.JComponent
@@ -49,22 +52,27 @@ abstract class AvaloniaPreviewEditorBase(
     private val lifetimeDefinition = LifetimeDefinition()
     protected val lifetime: Lifetime = lifetimeDefinition
 
+    private val isLogVisible = Property(false)
+    private val isEditorVisible = Property(true)
+
     private val assemblySelectorAction = RunnableAssemblySelectorAction(lifetime, project, currentFile)
     private val selectedProjectPath = assemblySelectorAction.selectedProjectPath
     protected val sessionController = AvaloniaPreviewerSessionController(project, lifetime, file, selectedProjectPath)
     init {
-        sessionController.status.adviseUntil(lifetime) { status ->
+        lifetime.launchOnUi {
+            sessionController.status.nextValue { it == AvaloniaPreviewerSessionController.Status.Working }
+            parentEditor?.triggerLayoutChange(XamlSplitEditorSplitLayout.SPLIT, requestFocus = false)
+        }
+
+        sessionController.status.advise(lifetime) { status ->
             when (status) {
-                AvaloniaPreviewerSessionController.Status.Working -> {
-                    lifetime.launchOnUi {
-                        parentEditor?.triggerLayoutChange(
-                            XamlSplitEditorSplitLayout.SPLIT,
-                            false
-                        )
-                    }
-                    true
+                AvaloniaPreviewerSessionController.Status.Terminated -> {
+                    isLogVisible.value = true
+                    isEditorVisible.value = false
                 }
-                else -> false
+                else -> {
+                    isEditorVisible.value = true
+                }
             }
         }
     }
@@ -82,7 +90,14 @@ abstract class AvaloniaPreviewEditorBase(
             }
 
             add(toolbarPanel, BorderLayout.PAGE_START)
-            add(editorComponent, BorderLayout.CENTER)
+            add(Splitter(/* vertical = */ true).apply {
+                firstComponent = editorComponent.apply {
+                    bindVisible(lifetime, isEditorVisible)
+                }
+                secondComponent = JPanel().apply { // TODO[#204]: Add log component here.
+                    bindVisible(lifetime, isLogVisible)
+                }
+            }, BorderLayout.CENTER)
         }
     }
 
@@ -94,6 +109,7 @@ abstract class AvaloniaPreviewEditorBase(
             add(assemblySelectorAction)
             add(RestartPreviewerAction(lifetime, sessionController, selectedProjectPath))
             addAll(*actions)
+            add(TogglePreviewerLogAction(isLogVisible))
         }
 
         val toolbar = ActionManager.getInstance().createActionToolbar(ActionPlaces.EDITOR_TOOLBAR, actionGroup, true)
