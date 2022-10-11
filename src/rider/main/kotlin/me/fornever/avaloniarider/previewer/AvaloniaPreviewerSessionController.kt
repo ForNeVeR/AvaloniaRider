@@ -147,8 +147,6 @@ class AvaloniaPreviewerSessionController(
     }
 
     init {
-        controllerLifetime.onTermination { statusProperty.set(Status.Terminated) }
-
         val isBuildingProperty = BuildHost.getInstance(project).building
         compose(isBuildingProperty, projectFilePathProperty)
             .advise(controllerLifetime) { (isBuilding, projectFilePath) ->
@@ -172,6 +170,10 @@ class AvaloniaPreviewerSessionController(
                 val effectiveDpi = dpi ?: JBUIScale.sysScale().toDouble()
                 session?.sendDpi(effectiveDpi * zoomFactor)
             }
+
+        status.advise(controllerLifetime) { status ->
+            logger.info("${xamlFile.name}: $status")
+        }
 
         enableStatistics()
     }
@@ -340,6 +342,12 @@ class AvaloniaPreviewerSessionController(
             } finally {
                 session = null
                 lt.terminate()
+
+                logger.info("Previewer session is terminated.")
+                when (statusProperty.value) {
+                    Status.Suspended -> {}
+                    else -> statusProperty.set(Status.Terminated)
+                }
             }
         }
     }
