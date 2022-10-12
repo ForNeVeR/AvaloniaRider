@@ -1,6 +1,7 @@
 package me.fornever.avaloniarider.idea.editor.actions
 
 import com.intellij.icons.AllIcons
+import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.project.DumbAware
@@ -20,6 +21,9 @@ class RestartPreviewerAction(
     "Restarts the previewer session for the current document",
     AllIcons.Actions.Restart
 ), DumbAware {
+
+    override fun getActionUpdateThread() = ActionUpdateThread.EDT
+
     override fun update(e: AnActionEvent) {
         e.presentation.isEnabled = lifetime.isAlive
             && sessionController.status.value != AvaloniaPreviewerSessionController.Status.Suspended
