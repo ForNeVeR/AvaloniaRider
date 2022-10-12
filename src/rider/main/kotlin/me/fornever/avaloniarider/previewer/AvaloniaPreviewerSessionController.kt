@@ -1,5 +1,6 @@
 package me.fornever.avaloniarider.previewer
 
+import com.intellij.execution.ui.ConsoleView
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.debug
@@ -50,10 +51,11 @@ import java.util.concurrent.atomic.AtomicBoolean
 /**
  * The sources on this class are thread-free. Make sure to schedule them onto the proper threads if necessary.
  */
-@Suppress("UnstableApiUsage")
+@Suppress("UnstableApiUsage") // for workspace model
 class AvaloniaPreviewerSessionController(
     private val project: Project,
     outerLifetime: Lifetime,
+    private val consoleView: ConsoleView?,
     private val xamlFile: VirtualFile,
     projectFilePathProperty: IOptPropertyView<Path>) {
     companion object {
@@ -313,7 +315,7 @@ class AvaloniaPreviewerSessionController(
         }
         val processJob = lifetime.startIOBackgroundAsync {
             logger.info("Starting previewer process")
-            process.run(lifetime, project, transport, method, processTitle)
+            process.run(lifetime, project, consoleView, transport, method, processTitle)
         }
 
         val result = select<String> {

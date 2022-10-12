@@ -45,7 +45,7 @@ class PreviewTests : BaseTestWithSolution() {
         buildSolutionWithReSharperBuild(timeout = Duration.ofMinutes(1L))
         var frameMsg: FrameMessage? = null
         Lifetime.using { lt ->
-            AvaloniaPreviewerSessionController(project, lt, mainWindowFile, projectFilePathProperty).apply {
+            AvaloniaPreviewerSessionController(project, lt, consoleView = null, mainWindowFile, projectFilePathProperty).apply {
                 frame.advise(lt) { frameMsg = it }
             }
             pumpMessages(Duration.ofMinutes(1L)) { frameMsg != null }.shouldBeTrue()

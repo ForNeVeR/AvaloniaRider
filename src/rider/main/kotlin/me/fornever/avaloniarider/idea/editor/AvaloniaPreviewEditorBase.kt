@@ -1,6 +1,7 @@
 package me.fornever.avaloniarider.idea.editor
 
 import com.intellij.codeHighlighting.BackgroundEditorHighlighter
+import com.intellij.execution.filters.TextConsoleBuilderFactory
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.ActionPlaces
 import com.intellij.openapi.actionSystem.AnAction
@@ -55,9 +56,11 @@ abstract class AvaloniaPreviewEditorBase(
     private val isLogVisible = Property(false)
     private val isEditorVisible = Property(true)
 
+    private val consoleView = TextConsoleBuilderFactory.getInstance().createBuilder(project).console
+
     private val assemblySelectorAction = RunnableAssemblySelectorAction(lifetime, project, currentFile)
     private val selectedProjectPath = assemblySelectorAction.selectedProjectPath
-    protected val sessionController = AvaloniaPreviewerSessionController(project, lifetime, file, selectedProjectPath)
+    protected val sessionController = AvaloniaPreviewerSessionController(project, lifetime, consoleView, file, selectedProjectPath)
     init {
         lifetime.launchOnUi {
             sessionController.status.nextValue { it == AvaloniaPreviewerSessionController.Status.Working }
@@ -94,7 +97,7 @@ abstract class AvaloniaPreviewEditorBase(
                 firstComponent = editorComponent.apply {
                     bindVisible(lifetime, isEditorVisible)
                 }
-                secondComponent = JPanel().apply { // TODO[#204]: Add log component here.
+                secondComponent = consoleView.component.apply {
                     bindVisible(lifetime, isLogVisible)
                 }
             }, BorderLayout.CENTER)

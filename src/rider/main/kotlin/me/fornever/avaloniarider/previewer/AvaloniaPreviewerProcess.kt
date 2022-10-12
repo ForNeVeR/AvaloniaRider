@@ -1,7 +1,6 @@
 package me.fornever.avaloniarider.previewer
 
 import com.intellij.execution.configurations.GeneralCommandLine
-import com.intellij.execution.filters.TextConsoleBuilderFactory
 import com.intellij.execution.process.OSProcessHandler
 import com.intellij.execution.process.ProcessAdapter
 import com.intellij.execution.process.ProcessEvent
@@ -11,16 +10,13 @@ import com.intellij.execution.ui.ConsoleViewContentType
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.rd.createNestedDisposable
-import com.intellij.openapi.rd.util.withUiContext
 import com.intellij.openapi.util.Key
-import com.intellij.util.application
 import com.intellij.util.io.BaseOutputReader
 import com.jetbrains.rd.framework.util.NetUtils
 import com.jetbrains.rd.util.lifetime.Lifetime
 import com.jetbrains.rider.runtime.DotNetRuntime
 import com.jetbrains.rider.runtime.dotNetCore.DotNetCoreRuntime
 import kotlinx.coroutines.CompletableDeferred
-import me.fornever.avaloniarider.idea.AvaloniaToolWindowManager
 import java.nio.file.Path
 
 data class AvaloniaPreviewerParameters(
@@ -67,23 +63,11 @@ class AvaloniaPreviewerProcess(
         return commandLine.withWorkDirectory(parameters.targetDir.toFile())
     }
 
-    private fun registerNewConsoleView(project: Project): ConsoleView {
-        application.assertIsDispatchThread()
-
-        val toolWindowManager = AvaloniaToolWindowManager.getInstance(project)
-        val toolWindow = toolWindowManager.toolWindow.value
-        val consoleView = TextConsoleBuilderFactory.getInstance().createBuilder(project).console
-        val content = toolWindow.contentManager.factory.createContent(consoleView.component, "Avalonia Designer", true)
-        toolWindow.contentManager.addContent(content)
-
-        return consoleView
-    }
-
     private fun startProcess(
         lifetime: Lifetime,
         project: Project,
         commandLine: GeneralCommandLine,
-        consoleView: ConsoleView,
+        consoleView: ConsoleView?,
         title: String
     ): OSProcessHandler {
         val processHandler = object : OSProcessHandler(commandLine) {
@@ -96,13 +80,13 @@ class AvaloniaPreviewerProcess(
             }
 
             override fun notifyProcessTerminated(exitCode: Int) {
-                consoleView.print("Process terminated with exit code $exitCode", ConsoleViewContentType.SYSTEM_OUTPUT)
+                consoleView?.print("Process terminated with exit code $exitCode", ConsoleViewContentType.SYSTEM_OUTPUT)
                 logger.info("Process $title exited with $exitCode")
                 super.notifyProcessTerminated(exitCode)
             }
         }
 
-        consoleView.attachToProcess(processHandler)
+        consoleView?.attachToProcess(processHandler)
 
         logger.info("Starting process ${commandLine.commandLineString}")
         processHandler.startNotify()
@@ -128,17 +112,16 @@ class AvaloniaPreviewerProcess(
     suspend fun run(
         lifetime: Lifetime,
         project: Project,
+        consoleView: ConsoleView?,
         transport: PreviewerTransport,
         method: PreviewerMethod,
         title: String
     ) {
         logger.info("1/4: generating process command line")
         val commandLine = getCommandLine(transport, method)
-        logger.info("2/4: creating a console view")
-        val consoleView = withUiContext { registerNewConsoleView(project) }
-        logger.info("3/4: starting a process")
+        logger.info("2/3: starting a process")
         val process = startProcess(lifetime, project, commandLine, consoleView, title)
-        logger.info("4/4: awaiting termination")
+        logger.info("3/3: awaiting termination")
         waitForTermination(process, title)
     }
 }
