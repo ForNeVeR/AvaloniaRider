@@ -26,7 +26,9 @@ class BitmapPreviewEditorComponent(
         private val logger = Logger.getInstance(BitmapPreviewEditorComponent::class.java)
     }
 
-    private val mainScrollView = JBScrollPane()
+    private val mainScrollView = JBScrollPane().apply {
+        border = null
+    }
     private val frameBufferView = lazy {
         PreviewImageView(lifetime, controller, settings)
     }
