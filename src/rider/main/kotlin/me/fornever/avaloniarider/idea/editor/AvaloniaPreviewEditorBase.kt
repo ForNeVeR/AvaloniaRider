@@ -13,6 +13,7 @@ import com.intellij.openapi.rd.util.launchOnUi
 import com.intellij.openapi.ui.Splitter
 import com.intellij.openapi.util.UserDataHolderBase
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.util.ui.UIUtil
 import com.jetbrains.rd.framework.util.nextValue
 import com.jetbrains.rd.util.lifetime.Lifetime
 import com.jetbrains.rd.util.lifetime.LifetimeDefinition
@@ -30,6 +31,7 @@ import me.fornever.avaloniarider.ui.bindVisible
 import java.awt.BorderLayout
 import java.beans.PropertyChangeListener
 import javax.swing.JComponent
+import javax.swing.JLabel
 import javax.swing.JPanel
 
 abstract class AvaloniaPreviewEditorBase(
@@ -53,8 +55,20 @@ abstract class AvaloniaPreviewEditorBase(
     private val lifetimeDefinition = LifetimeDefinition()
     protected val lifetime: Lifetime = lifetimeDefinition
 
+    private val mainComponentWrapper = JPanel()
+
     private val isLogVisible = Property(false)
-    private val isEditorVisible = Property(true)
+    private val isMainComponentVisible = Property(true)
+    private val mainComponent = Property<JComponent?>(null).apply {
+        advise(lifetime) { component ->
+            for (i in mainComponentWrapper.componentCount - 1 downTo 0)
+                mainComponentWrapper.remove(i)
+
+            component?.let(mainComponentWrapper::add)
+        }
+    }
+
+    private val buildPanel = lazy { JLabel("No file") }
 
     private val consoleView = TextConsoleBuilderFactory.getInstance().createBuilder(project).console
 
@@ -68,13 +82,22 @@ abstract class AvaloniaPreviewEditorBase(
         }
 
         sessionController.status.advise(lifetime) { status ->
-            when (status) {
-                AvaloniaPreviewerSessionController.Status.Terminated -> {
-                    isLogVisible.value = true
-                    isEditorVisible.value = false
-                }
-                else -> {
-                    isEditorVisible.value = true
+            UIUtil.invokeLaterIfNeeded {
+                when (status) {
+                    AvaloniaPreviewerSessionController.Status.Terminated -> {
+                        isLogVisible.value = true
+                        isMainComponentVisible.value = false
+                    }
+
+                    AvaloniaPreviewerSessionController.Status.NoOutputAssembly -> {
+                        isMainComponentVisible.value = true
+                        mainComponent.value = buildPanel.value
+                    }
+
+                    else -> {
+                        isMainComponentVisible.value = true
+                        mainComponent.value = editorComponent
+                    }
                 }
             }
         }
@@ -94,8 +117,8 @@ abstract class AvaloniaPreviewEditorBase(
 
             add(toolbarPanel, BorderLayout.PAGE_START)
             add(Splitter(/* vertical = */ true).apply {
-                firstComponent = editorComponent.apply {
-                    bindVisible(lifetime, isEditorVisible)
+                firstComponent = mainComponentWrapper.apply {
+                    bindVisible(lifetime, isMainComponentVisible)
                 }
                 secondComponent = consoleView.component.apply {
                     bindVisible(lifetime, isLogVisible)

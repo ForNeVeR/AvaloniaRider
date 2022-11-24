@@ -63,6 +63,7 @@ class BitmapPreviewEditorComponent(
             Status.XamlError -> frameBufferView.value
             Status.Suspended -> spinnerView.value
             Status.Terminated -> terminatedView.value
+            Status.NoOutputAssembly -> null // handled by AvaloniaPreviewEditorBase
         }
 
         status = newStatus

@@ -6,10 +6,7 @@ import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.debug
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.rd.util.launchLongBackground
-import com.intellij.openapi.rd.util.startIOBackgroundAsync
-import com.intellij.openapi.rd.util.withIOBackgroundContext
-import com.intellij.openapi.rd.util.withUiContext
+import com.intellij.openapi.rd.util.*
 import com.intellij.openapi.util.Computable
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ui.scale.JBUIScale
@@ -44,6 +41,7 @@ import me.fornever.avaloniarider.statistics.PreviewerUsageLogger
 import java.io.EOFException
 import java.net.ServerSocket
 import java.net.SocketException
+import java.nio.file.Files
 import java.nio.file.Path
 import java.time.Duration
 import java.util.concurrent.atomic.AtomicBoolean
@@ -69,6 +67,11 @@ class AvaloniaPreviewerSessionController(
          * No sessions have been started so far.
          */
         Idle,
+
+        /**
+         * There's no program output assembly on disk.
+         */
+        NoOutputAssembly,
 
         /**
          * Trying to connect to a started previewer process.
@@ -273,6 +276,13 @@ class AvaloniaPreviewerSessionController(
         val riderProjectOutputHost = AvaloniaRiderProjectModelHost.getInstance(project)
         val projectOutput = riderProjectOutputHost.getProjectOutput(lifetime, projectFilePath)
 
+        val isOutputExists = withSyncIOBackgroundContext { Files.exists(Path.of(projectOutput.outputPath)) }
+        if (!isOutputExists) {
+            logger.info("File \"${projectOutput.outputPath}\" not found.")
+            statusProperty.value = Status.NoOutputAssembly
+            return
+        }
+
         logger.info("Calculating previewer start parameters for the project $projectFilePath, output $projectOutput")
         val msBuild = MsBuildParameterCollector.getInstance(project)
         val parameters = msBuild.getAvaloniaPreviewerParameters(
@@ -281,7 +291,7 @@ class AvaloniaPreviewerSessionController(
             xamlContainingProject
         )
 
-        val socket = withIOBackgroundContext(lifetime) {
+        val socket = withSyncIOBackgroundContext(lifetime) {
             @Suppress("BlockingMethodInNonBlockingContext")
             ServerSocket(0).apply {
                 lifetime.onTermination { close() }
@@ -297,7 +307,7 @@ class AvaloniaPreviewerSessionController(
         val newSession = createSession(lifetime, socket, parameters, xamlFile)
         session = newSession
 
-        val sessionJob = lifetime.startIOBackgroundAsync {
+        val sessionJob = lifetime.startSyncIOBackgroundAsync {
             logger.info("Starting socket listener")
             try {
                 newSession.processSocketMessages()
@@ -313,7 +323,7 @@ class AvaloniaPreviewerSessionController(
                 }
             }
         }
-        val processJob = lifetime.startIOBackgroundAsync {
+        val processJob = lifetime.startBackgroundAsync {
             logger.info("Starting previewer process")
             process.run(lifetime, project, consoleView, transport, method, processTitle)
         }
@@ -331,7 +341,7 @@ class AvaloniaPreviewerSessionController(
 
         val lt = sessionLifetimeSource.next()
         currentSessionLifetime = lt
-        lt.launchLongBackground {
+        lt.launchBackground {
             try {
                 executePreviewerAsync(currentSessionLifetime!!, projectFilePath)
             } catch (ex: AvaloniaPreviewerInitializationException) {
@@ -347,7 +357,7 @@ class AvaloniaPreviewerSessionController(
 
                 logger.info("Previewer session is terminated.")
                 when (statusProperty.value) {
-                    Status.Suspended -> {}
+                    Status.Suspended, Status.NoOutputAssembly -> {}
                     else -> statusProperty.set(Status.Terminated)
                 }
             }
