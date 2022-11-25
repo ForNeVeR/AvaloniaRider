@@ -8,36 +8,52 @@ import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.fileEditor.FileEditorLocation
 import com.intellij.openapi.fileEditor.FileEditorState
+import com.intellij.openapi.observable.properties.AtomicProperty
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.rd.util.launchBackground
 import com.intellij.openapi.rd.util.launchOnUi
 import com.intellij.openapi.ui.Splitter
 import com.intellij.openapi.util.UserDataHolderBase
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.ui.dsl.builder.Align
+import com.intellij.ui.dsl.builder.bindText
+import com.intellij.ui.dsl.builder.panel
 import com.intellij.util.ui.UIUtil
 import com.jetbrains.rd.framework.util.nextValue
 import com.jetbrains.rd.util.lifetime.Lifetime
 import com.jetbrains.rd.util.lifetime.LifetimeDefinition
 import com.jetbrains.rd.util.reactive.IPropertyView
 import com.jetbrains.rd.util.reactive.Property
+import com.jetbrains.rider.build.BuildParameters
+import com.jetbrains.rider.build.tasks.BuildTaskThrottler
+import com.jetbrains.rider.model.BuildTarget
 import com.jetbrains.rider.xaml.core.XamlPreviewEditor
 import com.jetbrains.rider.xaml.previewEditor.PreviewEditorToolbar
 import com.jetbrains.rider.xaml.splitEditor.XamlSplitEditor
 import com.jetbrains.rider.xaml.splitEditor.XamlSplitEditorSplitLayout
+import me.fornever.avaloniarider.AvaloniaRiderBundle
 import me.fornever.avaloniarider.idea.editor.actions.RestartPreviewerAction
 import me.fornever.avaloniarider.idea.editor.actions.RunnableAssemblySelectorAction
 import me.fornever.avaloniarider.idea.editor.actions.TogglePreviewerLogAction
 import me.fornever.avaloniarider.previewer.AvaloniaPreviewerSessionController
 import me.fornever.avaloniarider.ui.bindVisible
 import java.awt.BorderLayout
+import java.awt.GridBagLayout
 import java.beans.PropertyChangeListener
 import javax.swing.JComponent
-import javax.swing.JLabel
 import javax.swing.JPanel
 
 abstract class AvaloniaPreviewEditorBase(
     final override val project: Project,
-    private val currentFile: VirtualFile
+    private val currentFile: VirtualFile,
+    private val buildTaskThrottler: Lazy<BuildTaskThrottler>
 ) : UserDataHolderBase(), XamlPreviewEditor {
+
+    constructor(project: Project, currentFile: VirtualFile) : this(
+        project,
+        currentFile,
+        lazy { BuildTaskThrottler.getInstance(project) }
+    )
 
     override val parentEditor: XamlSplitEditor? = null
     final override val toolbar: PreviewEditorToolbar? = null
@@ -55,7 +71,7 @@ abstract class AvaloniaPreviewEditorBase(
     private val lifetimeDefinition = LifetimeDefinition()
     protected val lifetime: Lifetime = lifetimeDefinition
 
-    private val mainComponentWrapper = JPanel()
+    private val mainComponentWrapper = JPanel(BorderLayout())
 
     private val isLogVisible = Property(false)
     private val isMainComponentVisible = Property(true)
@@ -64,11 +80,34 @@ abstract class AvaloniaPreviewEditorBase(
             for (i in mainComponentWrapper.componentCount - 1 downTo 0)
                 mainComponentWrapper.remove(i)
 
-            component?.let(mainComponentWrapper::add)
+            component?.let {
+                mainComponentWrapper.add(it, BorderLayout.CENTER)
+            }
         }
     }
 
-    private val buildPanel = lazy { JLabel("No file") }
+    private val buildLabelMessage = AtomicProperty("")
+    private val buildPanel = lazy {
+        JPanel().apply {
+            layout = GridBagLayout()
+            add(
+                panel {
+                    row {
+                        label("").apply { bindText(buildLabelMessage) }.align(Align.CENTER)
+                    }
+                    row {
+                        link(AvaloniaRiderBundle.message("previewer.build-project")) {
+                            val selectedProjectPath = selectedProjectPath.valueOrNull ?: return@link
+                            lifetime.launchBackground {
+                                val parameters = BuildParameters(BuildTarget(), listOf(selectedProjectPath.toString()))
+                                buildTaskThrottler.value.buildSequentially(parameters)
+                            }
+                        }.align(Align.CENTER)
+                    }
+                }
+            )
+        }
+    }
 
     private val consoleView = TextConsoleBuilderFactory.getInstance().createBuilder(project).console
 
@@ -89,8 +128,14 @@ abstract class AvaloniaPreviewEditorBase(
                         isMainComponentVisible.value = false
                     }
 
-                    AvaloniaPreviewerSessionController.Status.NoOutputAssembly -> {
+                    is AvaloniaPreviewerSessionController.Status.NoOutputAssembly -> {
                         isMainComponentVisible.value = true
+                        buildLabelMessage.set(
+                            AvaloniaRiderBundle.message(
+                                "previewer.no-output-assembly",
+                                status.path
+                            )
+                        )
                         mainComponent.value = buildPanel.value
                     }
 

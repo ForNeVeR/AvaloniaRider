@@ -35,7 +35,7 @@ class BitmapPreviewEditorComponent(
     private val spinnerView = lazy { AsyncProcessIcon.Big("Loading") }
     private val terminatedView = lazy { JLabel("Previewer has been terminated") }
 
-    private var status = Status.Idle
+    private var status: Status = Status.Idle
 
     init {
         layout = BorderLayout()
@@ -63,7 +63,11 @@ class BitmapPreviewEditorComponent(
             Status.XamlError -> frameBufferView.value
             Status.Suspended -> spinnerView.value
             Status.Terminated -> terminatedView.value
-            Status.NoOutputAssembly -> null // handled by AvaloniaPreviewEditorBase
+            is Status.NoOutputAssembly -> null // handled by AvaloniaPreviewEditorBase
+            else -> {
+                logger.error("Unhandled status message: $newStatus")
+                null
+            }
         }
 
         status = newStatus

@@ -62,47 +62,47 @@ class AvaloniaPreviewerSessionController(
         private val xamlEditThrottling = Duration.ofMillis(300L)
     }
 
-    enum class Status {
+    open class Status {
         /**
          * No sessions have been started so far.
          */
-        Idle,
+        object Idle : Status()
 
         /**
          * There's no program output assembly on disk.
          */
-        NoOutputAssembly,
+        data class NoOutputAssembly(val path: Path) : Status()
 
         /**
          * Trying to connect to a started previewer process.
          */
-        Connecting,
+        object Connecting : Status()
 
         /**
          * Previewer process is working.
          */
-        Working,
+        object Working : Status()
 
         /**
          * Previewer process has reported a XAML error.
          */
-        XamlError,
+        object XamlError : Status()
 
         /**
          * Preview has been suspended (e.g. by an ongoing build session).
          */
-        Suspended,
+        object Suspended : Status()
 
         /**
          * Preview process has been terminated, and no other process is present.
          */
-        Terminated
+        object Terminated : Status()
     }
 
     private val previewReported = AtomicBoolean()
     private val workspaceModel = WorkspaceModel.getInstance(project)
 
-    private val statusProperty = Property(Status.Idle)
+    private val statusProperty = Property<Status>(Status.Idle)
 
     val status: IPropertyView<Status> = statusProperty
     private val controllerLifetime = outerLifetime.createNested()
@@ -276,10 +276,11 @@ class AvaloniaPreviewerSessionController(
         val riderProjectOutputHost = AvaloniaRiderProjectModelHost.getInstance(project)
         val projectOutput = riderProjectOutputHost.getProjectOutput(lifetime, projectFilePath)
 
-        val isOutputExists = withSyncIOBackgroundContext { Files.exists(Path.of(projectOutput.outputPath)) }
+        val outputPath = Path.of(projectOutput.outputPath)
+        val isOutputExists = withSyncIOBackgroundContext { Files.exists(outputPath) }
         if (!isOutputExists) {
             logger.info("File \"${projectOutput.outputPath}\" not found.")
-            statusProperty.value = Status.NoOutputAssembly
+            statusProperty.value = Status.NoOutputAssembly(outputPath)
             return
         }
 
@@ -357,7 +358,7 @@ class AvaloniaPreviewerSessionController(
 
                 logger.info("Previewer session is terminated.")
                 when (statusProperty.value) {
-                    Status.Suspended, Status.NoOutputAssembly -> {}
+                    Status.Suspended, is Status.NoOutputAssembly -> {}
                     else -> statusProperty.set(Status.Terminated)
                 }
             }
