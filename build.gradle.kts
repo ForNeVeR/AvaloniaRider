@@ -1,3 +1,5 @@
+import org.jetbrains.changelog.exceptions.MissingVersionException
+
 buildscript {
     repositories {
         maven { setUrl("https://cache-redirector.jetbrains.com/maven-central") }
@@ -12,8 +14,9 @@ buildscript {
 plugins {
     id("java")
     id("me.filippov.gradle.jvm.wrapper") version "0.14.0"
-    id("org.jetbrains.kotlin.jvm") version "1.7.20"
+    id("org.jetbrains.changelog") version "2.0.0"
     id("org.jetbrains.intellij") version "1.10.0"
+    id("org.jetbrains.kotlin.jvm") version "1.7.20"
 }
 
 apply {
@@ -166,6 +169,22 @@ tasks {
             jvmTarget = "17"
             freeCompilerArgs = freeCompilerArgs + "-Xopt-in=kotlin.RequiresOptIn"
         }
+    }
+
+    patchPluginXml {
+        val latestChangelog = try {
+            changelog.getUnreleased()
+        } catch (_: MissingVersionException) {
+            changelog.getLatest()
+        }
+        changeNotes.set(provider {
+            changelog.renderItem(
+                latestChangelog
+                    .withHeader(false)
+                    .withEmptySections(false),
+                org.jetbrains.changelog.Changelog.OutputType.HTML
+            )
+        })
     }
 
     buildPlugin {
