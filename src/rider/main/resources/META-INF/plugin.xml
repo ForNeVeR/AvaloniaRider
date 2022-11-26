@@ -18,7 +18,6 @@
         </component>
     </application-components>
     <extensions defaultExtensionNs="com.intellij">
-        <projectService serviceImplementation="me.fornever.avaloniarider.idea.AvaloniaToolWindowManager"/>
         <projectService serviceImplementation="me.fornever.avaloniarider.idea.settings.AvaloniaProjectSettings"/>
 
         <projectConfigurable groupId="language"
