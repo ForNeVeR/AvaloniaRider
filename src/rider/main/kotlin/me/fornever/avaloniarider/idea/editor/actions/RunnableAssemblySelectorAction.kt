@@ -3,7 +3,9 @@ package me.fornever.avaloniarider.idea.editor.actions
 import com.intellij.execution.RunManager
 import com.intellij.execution.RunManagerListener
 import com.intellij.execution.RunnerAndConfigurationSettings
+import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.actionSystem.ex.ComboBoxAction
 import com.intellij.openapi.diagnostic.logger
@@ -82,7 +84,7 @@ class RunnableAssemblySelectorAction(
     private val availableProjects = Property<List<RunnableProject>>(emptyList())
 
     val popupActionGroup: DefaultActionGroup = DefaultActionGroup()
-    override fun createPopupActionGroup(button: JComponent?) = popupActionGroup
+    override fun createPopupActionGroup(button: JComponent, dataContext: DataContext) = popupActionGroup
 
     private val selectedRunnableProjectProperty = OptProperty<RunnableProject>()
     val selectedProjectPath: IOptPropertyView<Path> = selectedRunnableProjectProperty.map { p ->
@@ -185,6 +187,7 @@ class RunnableAssemblySelectorAction(
             }
         }?.calculateIcon(project)
 
+    override fun getActionUpdateThread() = ActionUpdateThread.BGT
     override fun update(e: AnActionEvent) {
         val selectedProject = selectedRunnableProjectProperty.valueOrNull
         val isLoading = isLoading.value
