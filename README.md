@@ -45,10 +45,12 @@ Documentation
 - [Changelog][docs.changelog]
 - [Contributor Guide][docs.contributing]
 - [License (MIT)][docs.license]
+- [Maintainership][docs.maintainership]
 
 [docs.changelog]: CHANGELOG.md
 [docs.contributing]: CONTRIBUTING.md
 [docs.license]: LICENSE.md
+[docs.maintainership]: MAINTAINERSHIP.md
 [ide.channels]: https://www.jetbrains.com/help/idea/managing-plugins.html#repos
 [live-templates]: https://www.jetbrains.com/help/rider/Using_Live_Templates.html
 [preview-screenshot]: ./docs/preview-screenshot.png

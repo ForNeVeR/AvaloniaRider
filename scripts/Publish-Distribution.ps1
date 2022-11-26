@@ -13,7 +13,7 @@
 param (
     [string] $DistributionsLocation = "$PSScriptRoot/../build/distributions",
     [string] $PluginXmlId = 'avalonia-rider',
-    [string] $Channel = 'dev',
+    [string] $Channel,
     [Parameter(Mandatory = $true)]
     [string] $AuthToken
 )
@@ -22,11 +22,16 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
 $file = & "$PSScriptRoot/Get-Distribution.ps1" -DistributionsLocation $DistributionsLocation
+$channelArgs = if ($Channel) {
+    @('-F', "channel=$Channel")
+} else {
+    @()
+}
 curl -i `
     --header "Authorization: Bearer $AuthToken" `
     -F xmlId=$PluginXmlId `
     -F file=@$file `
-    -F channel=$Channel `
+    @channelArgs `
     https://plugins.jetbrains.com/plugin/uploadPlugin
 
 if (!$?) {

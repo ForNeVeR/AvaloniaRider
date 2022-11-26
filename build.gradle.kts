@@ -31,6 +31,7 @@ val intellijPluginId = "avalonia-rider"
 
 val riderSdkVersion: String by project
 val pluginVersionBase: String by project
+val buildRelease: String by project
 
 val buildConfiguration = ext.properties["buildConfiguration"] ?: "Debug"
 val buildNumber = (ext.properties["buildNumber"] as String?)?.toInt() ?: 0
@@ -43,7 +44,9 @@ val dotNetSrcDir = File(projectDir, "src/dotnet")
 val dotNetSdkGeneratedPropsFile = File(projectDir, "build/DotNetSdkPath.Generated.props")
 val nuGetConfigFile = File(projectDir, "nuget.config")
 
-version = "$pluginVersionBase.${2140933433 + buildNumber}" // TODO: 2140933433 here is to keep compatibility with previous versioning scheme
+version =
+    if (buildRelease.equals("true", ignoreCase = true) || buildRelease == "1") pluginVersionBase
+    else "$pluginVersionBase.${2140933433 + buildNumber}" // TODO[#241]: 2140933433 here is to keep compatibility with previous versioning scheme
 
 fun File.writeTextIfChanged(content: String) {
     val bytes = content.toByteArray()

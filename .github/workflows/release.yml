@@ -1,0 +1,91 @@
+name: Release
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*'
+  pull_request:
+    branches:
+      - main
+  schedule:
+    - cron: '0 0 * * 0'
+
+jobs:
+  publish:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Read version from Git ref
+        id: version
+        shell: pwsh
+        run: echo "version=$(if ($env:GITHUB_REF.StartsWith('refs/tags/v')) { $env:GITHUB_REF -replace '^refs/tags/v', '' } else { 'next' })" >> $env:GITHUB_OUTPUT
+
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Read the changelog
+        uses: ForNeVeR/ChangelogAutomation.action@v1
+        with:
+          input: ./CHANGELOG.md
+          output: ./changelog-section.md
+
+      # Common preparation
+      - name: Prepare build
+        run: ./gradlew prepare
+
+      # Backend
+      - name: Set up .NET SDK
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '6.0.x'
+      - name: Build Backend
+        run: dotnet build -c Release
+
+      # Distribution
+      - name: Build Distribution
+        run: ./gradlew -PbuildConfiguration=Release -PbuildRelease=true buildPlugin
+
+      - name: Unpack distribution # for the purpose of uploading
+        shell: pwsh
+        run: scripts/Unpack-Distribution.ps1
+
+      - name: Upload the artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: avaloniarider-${{ steps.version.outputs.version }}.zip
+          path: build/distributions/unpacked
+
+      - name: Upload the changelog
+        uses: actions/upload-artifact@v2
+        with:
+          name: changelog-section.md
+          path: ./changelog-section.md
+
+      - name: Create a release
+        if: startsWith(github.ref, 'refs/tags/v')
+        id: release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: AvaloniaRider v${{ steps.version.outputs.version }}
+          body_path: ./changelog-section.md
+
+      - name: Upload the distribution
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.release.outputs.upload_url }}
+          asset_name: avaloniarider-${{ steps.version.outputs.version }}.zip
+          asset_path: build/distributions/avaloniarider-${{ steps.version.outputs.version }}.zip
+          asset_content_type: application/zip
+
+      - name: Publish
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: pwsh
+        run: scripts/Publish-Distribution.ps1 -AuthToken $env:JETBRAINS_MARKETPLACE_TOKEN
+        env:
+          JETBRAINS_MARKETPLACE_TOKEN: ${{ secrets.JETBRAINS_MARKETPLACE_TOKEN }}
