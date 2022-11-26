@@ -1,9 +1,13 @@
-# AvaloniaRider [![JetBrains Plugins Repository](https://img.shields.io/jetbrains/plugin/v/14839.svg?label=rider%20&colorB=0A7BBB&style=flat-square)](https://plugins.jetbrains.com/plugin/14839)
+# AvaloniaRider [![JetBrains Plugins Repository](https://img.shields.io/jetbrains/plugin/v/14839.svg?label=rider%20&colorB=0A7BBB&style=flat-square)][marketplace]
 
 Install
 -------
 
-### Development releases (may be unstable)
+### Stable Release
+
+Either search for Avalonia on the **Plugins** settings page, or [visit the Plugin Marketplace][marketplace].
+
+### Development Release
 
 To install a development release (automatically published for every push into a development branch), first add the custom plugin repository into your IDE (see [the documentation][ide.channels] on how to do that).
 
@@ -54,3 +58,4 @@ Documentation
 [ide.channels]: https://www.jetbrains.com/help/idea/managing-plugins.html#repos
 [live-templates]: https://www.jetbrains.com/help/rider/Using_Live_Templates.html
 [preview-screenshot]: ./docs/preview-screenshot.png
+[marketplace]: https://plugins.jetbrains.com/plugin/14839-avaloniarider/
