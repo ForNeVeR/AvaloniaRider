@@ -158,7 +158,7 @@ class RunnableAssemblySelectorAction(
     }
 
     init {
-        runnableProjects.advise(lifetime, ::fillWithActions)
+        runnableProjects.view(lifetime, ::fillWithActions)
         availableProjects.advise(lifetime) {
             updateActionGroup()
             autoSelectProject()
@@ -199,53 +199,60 @@ class RunnableAssemblySelectorAction(
         }
     }
 
-    private fun fillWithActions(filteredProjects: Sequence<RunnableProject>) {
+    private fun fillWithActions(valueLifetime: Lifetime, filteredProjects: Sequence<RunnableProject>) {
         isProcessingProjectList.set(true)
-        lifetime.launchOnUi {
-            try {
-                val filteredProjectList = filteredProjects.toList()
-                val targetFileProjectEntity = xamlFile.getProjectContainingFile(lifetime, project)
-                val targetFileProjectPath = targetFileProjectEntity.url!!.toPath()
-                val runnableProjectPaths = filteredProjectList
-                    .filter { !FileUtil.pathsEqual(it.projectFilePath, targetFileProjectPath.toString()) }
-                    .map { it.projectFilePath }
-                val availableProjectPaths = mutableListOf<String>()
-                if (runnableProjectPaths.isNotEmpty()) {
-                    val refRequest =
-                        RdGetReferencingProjectsRequest(targetFileProjectPath.toString(), runnableProjectPaths)
-
-                    logger.info("Calculating referencing projects for project ${targetFileProjectPath.nameWithoutExtension} among ${runnableProjectPaths.size} runnable projects")
-                    val actuallyReferencedProjects = avaloniaRiderModel.getReferencingProjects.startSuspending(
-                        lifetime,
-                        refRequest
-                    )
-                    logger.info("There are ${actuallyReferencedProjects.size} projects referencing ${targetFileProjectPath.nameWithoutExtension} among the passed ones")
-
-                    availableProjectPaths.addAll(actuallyReferencedProjects)
-                }
-
-                if (filteredProjectList.any {
-                        FileUtil.pathsEqual(it.projectFilePath, targetFileProjectPath.toString())
-                    }) {
-                    logger.info("Target project path \"${targetFileProjectPath}\" is also available for selection")
-                    availableProjectPaths.add(targetFileProjectPath.toString())
-                }
-
-                val runnableProjectPerPath =
-                    filteredProjectList.associateBy { r -> Paths.get(r.projectFilePath).toRealPath().systemIndependentPath }
-
-                val selectableRunnableProjects = availableProjectPaths.mapNotNull { path ->
-                    val normalizedPath = Paths.get(path).toRealPath().systemIndependentPath
-                    val runnableProject = runnableProjectPerPath[normalizedPath]
-                    if (runnableProject == null) {
-                        logger.error("Couldn't find runnable project for path $normalizedPath")
-                    }
-                    runnableProject
-                }.sortedBy { it.name }
+        valueLifetime.launchOnUi {
+            val selectableRunnableProjects = getSelectableRunnableProjects(filteredProjects)
+            valueLifetime.executeIfAlive {
                 availableProjects.set(selectableRunnableProjects)
-            } finally {
                 isProcessingProjectList.set(false)
             }
         }
+    }
+
+    private suspend fun getSelectableRunnableProjects(
+        filteredProjects: Sequence<RunnableProject>
+    ): List<RunnableProject> {
+        val filteredProjectList = filteredProjects.toList()
+        val targetFileProjectEntity = xamlFile.getProjectContainingFile(lifetime, project)
+        val targetFileProjectPath = targetFileProjectEntity.url!!.toPath()
+        val runnableProjectPaths = filteredProjectList
+            .filter { !FileUtil.pathsEqual(it.projectFilePath, targetFileProjectPath.toString()) }
+            .map { it.projectFilePath }
+        val availableProjectPaths = mutableListOf<String>()
+        if (runnableProjectPaths.isNotEmpty()) {
+            val refRequest = RdGetReferencingProjectsRequest(targetFileProjectPath.toString(), runnableProjectPaths)
+
+            logger.info("Calculating referencing projects for project ${targetFileProjectPath.nameWithoutExtension} among ${runnableProjectPaths.size} runnable projects")
+            val actuallyReferencedProjects = avaloniaRiderModel.getReferencingProjects.startSuspending(
+                lifetime,
+                refRequest
+            )
+            logger.info("There are ${actuallyReferencedProjects.size} projects referencing ${targetFileProjectPath.nameWithoutExtension} among the passed ones")
+
+            availableProjectPaths.addAll(actuallyReferencedProjects)
+        }
+
+        if (filteredProjectList.any {
+                FileUtil.pathsEqual(it.projectFilePath, targetFileProjectPath.toString())
+            }) {
+            logger.info("Target project path \"${targetFileProjectPath}\" is also available for selection")
+            availableProjectPaths.add(targetFileProjectPath.toString())
+        }
+
+        val runnableProjectPerPath =
+            filteredProjectList.associateBy { r ->
+                Paths.get(r.projectFilePath).toRealPath().systemIndependentPath
+            }
+
+        val selectableRunnableProjects = availableProjectPaths.mapNotNull { path ->
+            val normalizedPath = Paths.get(path).toRealPath().systemIndependentPath
+            val runnableProject = runnableProjectPerPath[normalizedPath]
+            if (runnableProject == null) {
+                logger.error("Couldn't find runnable project for path $normalizedPath")
+            }
+            runnableProject
+        }.sortedBy { it.name }
+        return selectableRunnableProjects
     }
 }
