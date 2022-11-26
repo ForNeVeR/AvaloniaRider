@@ -18,7 +18,7 @@ import me.fornever.avaloniarider.previewer.AvaloniaPreviewerSessionController
 import org.testng.annotations.Test
 import java.time.Duration
 
-@TestEnvironment(coreVersion = CoreVersion.DEFAULT)
+@TestEnvironment(coreVersion = CoreVersion.LATEST_STABLE)
 class PreviewTests : BaseTestWithSolution() {
     override fun getSolutionDirectoryName() = "AvaloniaMvvm"
     override val restoreNuGetPackages = true
