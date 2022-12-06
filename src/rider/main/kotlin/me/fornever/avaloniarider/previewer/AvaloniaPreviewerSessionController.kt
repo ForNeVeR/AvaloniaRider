@@ -303,7 +303,7 @@ class AvaloniaPreviewerSessionController(
             process.run(lifetime, project, consoleView, transport, method, processTitle)
         }
 
-        val result = select<String> {
+        val result = select {
             sessionJob.onAwait { "Socket listener" }
             processJob.onAwait { "Process" }
         }
