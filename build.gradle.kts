@@ -49,7 +49,7 @@ val nuGetConfigFile = File(projectDir, "nuget.config")
 
 version =
     if (buildRelease.equals("true", ignoreCase = true) || buildRelease == "1") pluginVersionBase
-    else "$pluginVersionBase.${2140933433 + buildNumber}" // TODO[#241]: 2140933433 here is to keep compatibility with previous versioning scheme
+    else "$pluginVersionBase.$buildNumber"
 
 fun File.writeTextIfChanged(content: String) {
     val bytes = content.toByteArray()
