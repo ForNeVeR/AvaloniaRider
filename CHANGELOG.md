@@ -7,6 +7,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 ## [Unreleased] (1.0.1)
 ### Fixed
 - [#245: Restart previewer button causes the log to appear](https://github.com/ForNeVeR/AvaloniaRider/issues/245).
+- [#247](https://github.com/ForNeVeR/AvaloniaRider/issues/247): remove a warning in the IDE logs about an editor toolbar creation.
 
 ## [1.0.0] - 2022-11-26
 The initial plugin release. The plugin provides the following features for JetBrains Rider 2022.3 EAP7 and later:

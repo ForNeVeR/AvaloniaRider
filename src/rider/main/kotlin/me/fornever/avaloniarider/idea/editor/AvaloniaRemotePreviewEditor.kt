@@ -3,6 +3,7 @@ package me.fornever.avaloniarider.idea.editor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import me.fornever.avaloniarider.idea.settings.AvaloniaSettings
+import javax.swing.JComponent
 
 class AvaloniaRemotePreviewEditor(
     project: Project,
@@ -14,5 +15,5 @@ class AvaloniaRemotePreviewEditor(
     }
 
     override val editorComponent = panel.value
-    override val toolbarComponent = createToolbarComponent()
+    override fun createToolbar(targetComponent: JComponent) = createToolbarComponent(targetComponent)
 }

@@ -3,6 +3,7 @@ package me.fornever.avaloniarider.idea.editor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import me.fornever.avaloniarider.idea.editor.actions.OpenBrowserAction
+import javax.swing.JComponent
 
 class AvaloniaHtmlPreviewEditor(
     project: Project,
@@ -14,7 +15,8 @@ class AvaloniaHtmlPreviewEditor(
     }
 
     override val editorComponent = panel.value
-    override val toolbarComponent = createToolbarComponent(
+    override fun createToolbar(targetComponent: JComponent) = createToolbarComponent(
+        targetComponent,
         OpenBrowserAction(lifetime, sessionController)
     )
 }

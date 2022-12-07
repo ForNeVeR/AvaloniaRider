@@ -148,16 +148,17 @@ abstract class AvaloniaPreviewEditorBase(
         }
     }
 
-    protected abstract val toolbarComponent: JComponent
+    protected abstract fun createToolbar(targetComponent: JComponent): JComponent
     protected abstract val editorComponent: JComponent
 
     private val component = lazy {
         JPanel().apply {
+            val rootPanel = this
             layout = BorderLayout()
 
             val toolbarPanel = JPanel().apply {
                 layout = BorderLayout()
-                add(toolbarComponent, BorderLayout.LINE_END)
+                add(createToolbar(rootPanel), BorderLayout.LINE_END)
             }
 
             add(toolbarPanel, BorderLayout.PAGE_START)
@@ -175,7 +176,7 @@ abstract class AvaloniaPreviewEditorBase(
     final override fun getComponent() = component.value
     override fun getPreferredFocusedComponent() = editorComponent
 
-    protected fun createToolbarComponent(vararg actions: AnAction): JComponent {
+    protected fun createToolbarComponent(targetComponent: JComponent, vararg actions: AnAction): JComponent {
         val actionGroup = DefaultActionGroup().apply {
             add(assemblySelectorAction)
             add(RestartPreviewerAction(lifetime, sessionController, selectedProjectPath))
@@ -183,7 +184,9 @@ abstract class AvaloniaPreviewEditorBase(
             add(TogglePreviewerLogAction(isLogManuallyVisible))
         }
 
-        val toolbar = ActionManager.getInstance().createActionToolbar(ActionPlaces.EDITOR_TOOLBAR, actionGroup, true)
+        val toolbar = ActionManager.getInstance().createActionToolbar(ActionPlaces.EDITOR_TOOLBAR, actionGroup, true).apply {
+            this.targetComponent = targetComponent
+        }
         return toolbar.component
     }
 
