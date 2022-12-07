@@ -9,6 +9,7 @@ import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.actionSystem.ex.ComboBoxAction
 import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.rd.createNestedDisposable
@@ -57,7 +58,7 @@ class RunnableAssemblySelectorAction(
     isSolutionLoading: IOptPropertyView<Boolean>,
     runnableProjects: IOptPropertyView<Sequence<RunnableProject>>,
     private val xamlFile: VirtualFile
-) : ComboBoxAction() {
+) : ComboBoxAction(), DumbAware {
 
     companion object {
         private val logger = logger<RunnableAssemblySelectorAction>()
