@@ -24,6 +24,7 @@ import com.jetbrains.rd.util.lifetime.Lifetime
 import com.jetbrains.rd.util.lifetime.LifetimeDefinition
 import com.jetbrains.rd.util.reactive.IPropertyView
 import com.jetbrains.rd.util.reactive.Property
+import com.jetbrains.rd.util.reactive.compose
 import com.jetbrains.rider.build.BuildParameters
 import com.jetbrains.rider.build.tasks.BuildTaskThrottler
 import com.jetbrains.rider.model.BuildTarget
@@ -73,7 +74,9 @@ abstract class AvaloniaPreviewEditorBase(
 
     private val mainComponentWrapper = JPanel(BorderLayout())
 
-    private val isLogVisible = Property(false)
+    private val isLogManuallyVisible = Property(false)
+    private val isLogAutoVisible = Property(false)
+    private val isLogVisible = isLogManuallyVisible.compose(isLogAutoVisible) { manual, auto -> manual || auto }
     private val isMainComponentVisible = Property(true)
     private val mainComponent = Property<JComponent?>(null).apply {
         advise(lifetime) { component ->
@@ -122,14 +125,12 @@ abstract class AvaloniaPreviewEditorBase(
 
         sessionController.status.advise(lifetime) { status ->
             UIUtil.invokeLaterIfNeeded {
-                when (status) {
-                    AvaloniaPreviewerSessionController.Status.Terminated -> {
-                        isLogVisible.value = true
-                        isMainComponentVisible.value = false
-                    }
+                val isTerminated = status == AvaloniaPreviewerSessionController.Status.Terminated
+                isLogAutoVisible.value = isTerminated
+                isMainComponentVisible.value = !isTerminated
 
+                when (status) {
                     is AvaloniaPreviewerSessionController.Status.NoOutputAssembly -> {
-                        isMainComponentVisible.value = true
                         buildLabelMessage.set(
                             AvaloniaRiderBundle.message(
                                 "previewer.no-output-assembly",
@@ -140,7 +141,6 @@ abstract class AvaloniaPreviewEditorBase(
                     }
 
                     else -> {
-                        isMainComponentVisible.value = true
                         mainComponent.value = editorComponent
                     }
                 }
@@ -180,7 +180,7 @@ abstract class AvaloniaPreviewEditorBase(
             add(assemblySelectorAction)
             add(RestartPreviewerAction(lifetime, sessionController, selectedProjectPath))
             addAll(*actions)
-            add(TogglePreviewerLogAction(isLogVisible))
+            add(TogglePreviewerLogAction(isLogManuallyVisible))
         }
 
         val toolbar = ActionManager.getInstance().createActionToolbar(ActionPlaces.EDITOR_TOOLBAR, actionGroup, true)
