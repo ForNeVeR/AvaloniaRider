@@ -5,6 +5,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [1.0.1] - 2022-12-07
+### Changed
+- The plugin is now only compatible with Rider 2022.3.1.
+
 ### Fixed
 - [#245: Restart previewer button causes the log to appear](https://github.com/ForNeVeR/AvaloniaRider/issues/245).
 - [#247](https://github.com/ForNeVeR/AvaloniaRider/issues/247): remove a warning in the IDE logs about a previewer toolbar creation.
