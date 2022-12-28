@@ -24,7 +24,5 @@
                              instance="me.fornever.avaloniarider.idea.settings.AvaloniaSettingsConfigurable" />
 
         <rider.xaml.preview.editor implementation="me.fornever.avaloniarider.idea.editor.AvaloniaPreviewerXamlEditorExtension"/>
-
-        <statistics.counterUsagesCollector implementationClass="me.fornever.avaloniarider.statistics.PreviewerUsageLogger" />
     </extensions>
 </idea-plugin>
