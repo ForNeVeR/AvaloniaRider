@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [Unreleased] (1.0.3)
+### Changed
+- Marked as compatible with Rider 2023.1 EAP builds.
+
 ## [1.0.2] - 2022-12-28
 ### Fixed
 - [#254](https://github.com/ForNeVeR/AvaloniaRider/issues/254): Error on startup involving `PreviewerUsageLogger`
