@@ -15,7 +15,7 @@ class AvaloniaProjectState : BaseState() {
 }
 
 @State(name = "AvaloniaProject", storages = [Storage("avalonia.xml")])
-@Service
+@Service(Service.Level.PROJECT)
 class AvaloniaProjectSettings(private val project: Project) : SimplePersistentStateComponent<AvaloniaProjectState>(
     AvaloniaProjectState()
 ) {
