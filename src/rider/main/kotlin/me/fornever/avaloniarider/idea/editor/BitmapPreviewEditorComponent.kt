@@ -8,7 +8,7 @@ import com.jetbrains.rd.util.lifetime.Lifetime
 import me.fornever.avaloniarider.controlmessages.FrameMessage
 import me.fornever.avaloniarider.controlmessages.UpdateXamlResultMessage
 import me.fornever.avaloniarider.idea.concurrency.adviseOnUiThread
-import me.fornever.avaloniarider.idea.settings.AvaloniaSettings
+import me.fornever.avaloniarider.idea.settings.AvaloniaProjectSettings
 import me.fornever.avaloniarider.plainTextToHtml
 import me.fornever.avaloniarider.previewer.AvaloniaPreviewerSessionController
 import me.fornever.avaloniarider.previewer.AvaloniaPreviewerSessionController.Status
@@ -20,7 +20,7 @@ import javax.swing.JPanel
 class BitmapPreviewEditorComponent(
     lifetime: Lifetime,
     private val controller: AvaloniaPreviewerSessionController,
-    settings: AvaloniaSettings
+    settings: AvaloniaProjectSettings
 ) : JPanel() {
     companion object {
         private val logger = Logger.getInstance(BitmapPreviewEditorComponent::class.java)

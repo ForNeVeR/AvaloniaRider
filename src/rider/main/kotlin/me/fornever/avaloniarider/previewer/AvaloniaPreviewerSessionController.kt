@@ -36,7 +36,7 @@ import me.fornever.avaloniarider.controlmessages.UpdateXamlResultMessage
 import me.fornever.avaloniarider.exceptions.AvaloniaPreviewerInitializationException
 import me.fornever.avaloniarider.idea.concurrency.adviseOnUiThread
 import me.fornever.avaloniarider.idea.settings.AvaloniaPreviewerMethod
-import me.fornever.avaloniarider.idea.settings.AvaloniaSettings
+import me.fornever.avaloniarider.idea.settings.AvaloniaProjectSettings
 import me.fornever.avaloniarider.rd.compose
 import me.fornever.avaloniarider.rider.AvaloniaRiderProjectModelHost
 import me.fornever.avaloniarider.rider.projectRelativeVirtualPath
@@ -241,7 +241,7 @@ class AvaloniaPreviewerSessionController(
     }
 
     private suspend fun executePreviewerAsync(lifetime: Lifetime, projectFilePath: Path) {
-        val settings = AvaloniaSettings.getInstance(project).state
+        val settings = AvaloniaProjectSettings.getInstance(project).state
 
         statusProperty.set(Status.Connecting)
 

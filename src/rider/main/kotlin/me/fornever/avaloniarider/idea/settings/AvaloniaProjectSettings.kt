@@ -1,49 +1,40 @@
 package me.fornever.avaloniarider.idea.settings
 
-import com.intellij.openapi.components.*
+import com.intellij.openapi.components.BaseState
+import com.intellij.openapi.components.Service
+import com.intellij.openapi.components.SimplePersistentStateComponent
+import com.intellij.openapi.components.State
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.util.io.FileUtil
-import com.intellij.util.application
-import com.intellij.util.io.systemIndependentPath
-import com.jetbrains.rider.util.idea.getService
-import java.io.File
-import java.nio.file.Path
-import java.nio.file.Paths
 
-class AvaloniaProjectState : BaseState() {
-    var projectPerEditor by map<String, String>()
+enum class AvaloniaPreviewerMethod {
+    AvaloniaRemote,
+    Html
 }
 
-@State(name = "AvaloniaProject", storages = [Storage("avalonia.xml")])
-@Service(Service.Level.PROJECT)
-class AvaloniaProjectSettings(private val project: Project) : SimplePersistentStateComponent<AvaloniaProjectState>(
-    AvaloniaProjectState()
-) {
+class AvaloniaProjectSettingsState : BaseState() {
+    var previewerMethod by enum(AvaloniaPreviewerMethod.AvaloniaRemote)
+
+    /**
+     * Synchronize current run configuration and selected project, when possible.
+     */
+    var synchronizeWithRunConfiguration by property(false)
+
+    var fpsLimit by property(0)
+}
+
+@State(name = "Avalonia") // TODO[#265]: Move to avalonia.xml
+@Service
+class AvaloniaProjectSettings : SimplePersistentStateComponent<AvaloniaProjectSettingsState>(AvaloniaProjectSettingsState()) {
     companion object {
-        fun getInstance(project: Project): AvaloniaProjectSettings = project.getService()
+        fun getInstance(project: Project): AvaloniaProjectSettings = project.getService(AvaloniaProjectSettings::class.java)
     }
 
-    private fun getProjectRelativeSystemIndependentPath(relativePath: Path): String {
-        val basePath = project.basePath ?: return relativePath.systemIndependentPath
-        val resultPath = FileUtil.getRelativePath(File(basePath), relativePath.toFile())
-            ?: return relativePath.systemIndependentPath
-        return Paths.get(resultPath).systemIndependentPath
-    }
+    val previewerTransportType: AvaloniaPreviewerMethod
+        get() = state.previewerMethod
 
-    fun storeSelection(xamlFilePath: Path, projectFilePath: Path) {
-        application.assertIsDispatchThread()
+    val synchronizeWithRunConfiguration: Boolean
+        get() = state.synchronizeWithRunConfiguration
 
-        val relativeXamlPath = getProjectRelativeSystemIndependentPath(xamlFilePath)
-        val relativeProjectPath = getProjectRelativeSystemIndependentPath(projectFilePath)
-        state.projectPerEditor[relativeXamlPath] = relativeProjectPath
-    }
-
-    fun getSelection(xamlFilePath: Path): Path? {
-        application.assertIsDispatchThread()
-
-        val relativeXamlPath = getProjectRelativeSystemIndependentPath(xamlFilePath)
-        val relativeProjectPath = state.projectPerEditor[relativeXamlPath] ?: return null
-        val basePath = project.basePath ?: return Paths.get(relativeProjectPath)
-        return Paths.get(basePath, relativeProjectPath)
-    }
+    val fpsLimit: Int
+        get() = state.fpsLimit
 }

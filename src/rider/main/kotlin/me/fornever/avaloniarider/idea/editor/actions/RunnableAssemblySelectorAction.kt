@@ -33,7 +33,7 @@ import com.jetbrains.rider.projectView.workspace.isUnloadedProject
 import com.jetbrains.rider.run.configurations.IProjectBasedRunConfiguration
 import me.fornever.avaloniarider.AvaloniaRiderBundle.message
 import me.fornever.avaloniarider.idea.settings.AvaloniaProjectSettings
-import me.fornever.avaloniarider.idea.settings.AvaloniaSettings
+import me.fornever.avaloniarider.idea.settings.AvaloniaWorkspaceSettings
 import me.fornever.avaloniarider.model.AvaloniaRiderProjectModel
 import me.fornever.avaloniarider.model.RdGetReferencingProjectsRequest
 import me.fornever.avaloniarider.model.avaloniaRiderProjectModel
@@ -51,8 +51,8 @@ class RunnableAssemblySelectorAction(
     private val workspaceModel: WorkspaceModel,
     messageBus: MessageBus,
     private val runManager: RunManager,
-    private val avaloniaSettings: AvaloniaSettings,
     private val avaloniaProjectSettings: AvaloniaProjectSettings,
+    private val avaloniaWorkspaceSettings: AvaloniaWorkspaceSettings,
     private val avaloniaRiderModel: AvaloniaRiderProjectModel,
     isSolutionLoading: IOptPropertyView<Boolean>,
     runnableProjects: IOptPropertyView<Sequence<RunnableProject>>,
@@ -69,8 +69,8 @@ class RunnableAssemblySelectorAction(
         WorkspaceModel.getInstance(project),
         project.messageBus,
         RunManager.getInstance(project),
-        AvaloniaSettings.getInstance(project),
         AvaloniaProjectSettings.getInstance(project),
+        AvaloniaWorkspaceSettings.getInstance(project),
         project.solution.avaloniaRiderProjectModel,
         project.solution.isLoading,
         AvaloniaRiderProjectModelHost.getInstance(project).filteredRunnableProjects,
@@ -112,7 +112,7 @@ class RunnableAssemblySelectorAction(
 
         val availableProjects = availableProjects.value
         val nothingSelected = !selectedRunnableProjectProperty.hasValue
-        val shouldSynchronize = avaloniaSettings.synchronizeWithRunConfiguration
+        val shouldSynchronize = avaloniaProjectSettings.synchronizeWithRunConfiguration
 
         fun getRunnableProject(projectFilePath: Path?): RunnableProject? =
             availableProjects.firstOrNull {
@@ -137,7 +137,7 @@ class RunnableAssemblySelectorAction(
             }
 
             logger.info("Trying to load saved project")
-            val savedProjectFilePath =  avaloniaProjectSettings.getSelection(xamlFile.toNioPath())
+            val savedProjectFilePath =  avaloniaWorkspaceSettings.getSelection(xamlFile.toNioPath())
             if (savedProjectFilePath != null) {
                 logger.info("Saved project file path: $savedProjectFilePath")
                 val savedProject = getRunnableProject(savedProjectFilePath)
@@ -166,7 +166,7 @@ class RunnableAssemblySelectorAction(
             autoSelectProject()
         }
         selectedRunnableProjectProperty.advise(lifetime) { project ->
-            avaloniaProjectSettings.storeSelection(xamlFile.toNioPath(), Paths.get(project.projectFilePath))
+            avaloniaWorkspaceSettings.storeSelection(xamlFile.toNioPath(), Paths.get(project.projectFilePath))
         }
         messageBus.connect(lifetime.createNestedDisposable("RunnableAssemblySelectorAction"))
             .subscribe(RunManagerListener.TOPIC, object : RunManagerListener {

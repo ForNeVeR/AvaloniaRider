@@ -2,7 +2,7 @@ package me.fornever.avaloniarider.idea.editor
 
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
-import me.fornever.avaloniarider.idea.settings.AvaloniaSettings
+import me.fornever.avaloniarider.idea.settings.AvaloniaProjectSettings
 import javax.swing.JComponent
 
 class AvaloniaRemotePreviewEditor(
@@ -11,7 +11,7 @@ class AvaloniaRemotePreviewEditor(
 ) : AvaloniaPreviewEditorBase(project, currentFile) {
 
     private val panel = lazy {
-        BitmapPreviewEditorComponent(lifetime, sessionController, AvaloniaSettings.getInstance(project))
+        BitmapPreviewEditorComponent(lifetime, sessionController, AvaloniaProjectSettings.getInstance(project))
     }
 
     override val editorComponent = panel.value

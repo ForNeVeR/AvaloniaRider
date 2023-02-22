@@ -7,7 +7,7 @@ import com.jetbrains.rider.xaml.core.XamlPreviewEditor
 import com.jetbrains.rider.xaml.core.XamlPreviewEditorExtension
 import com.jetbrains.rider.xaml.splitEditor.XamlSplitEditor
 import me.fornever.avaloniarider.idea.settings.AvaloniaPreviewerMethod
-import me.fornever.avaloniarider.idea.settings.AvaloniaSettings
+import me.fornever.avaloniarider.idea.settings.AvaloniaProjectSettings
 
 class AvaloniaPreviewerXamlEditorExtension : XamlPreviewEditorExtension {
     override fun accepts(file: VirtualFile, platform: PreviewPlatformKind): Boolean =
@@ -18,7 +18,7 @@ class AvaloniaPreviewerXamlEditorExtension : XamlPreviewEditorExtension {
         file: VirtualFile,
         parent: XamlSplitEditor,
         platform: PreviewPlatformKind
-    ): XamlPreviewEditor = when (AvaloniaSettings.getInstance(project).previewerTransportType) {
+    ): XamlPreviewEditor = when (AvaloniaProjectSettings.getInstance(project).previewerTransportType) {
         AvaloniaPreviewerMethod.AvaloniaRemote -> AvaloniaRemotePreviewEditor(project, file)
         AvaloniaPreviewerMethod.Html -> AvaloniaHtmlPreviewEditor(project, file)
     }

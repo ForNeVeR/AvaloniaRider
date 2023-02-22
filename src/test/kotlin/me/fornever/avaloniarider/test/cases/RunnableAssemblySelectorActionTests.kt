@@ -24,7 +24,7 @@ import com.jetbrains.rider.test.env.enums.SdkVersion
 import com.jetbrains.rider.test.scriptingApi.getVirtualFileFromPath
 import me.fornever.avaloniarider.idea.editor.actions.RunnableAssemblySelectorAction
 import me.fornever.avaloniarider.idea.settings.AvaloniaProjectSettings
-import me.fornever.avaloniarider.idea.settings.AvaloniaSettings
+import me.fornever.avaloniarider.idea.settings.AvaloniaWorkspaceSettings
 import me.fornever.avaloniarider.model.avaloniaRiderProjectModel
 import me.fornever.avaloniarider.test.framework.AvaloniaIntegrationTest
 import me.fornever.avaloniarider.test.framework.canonicalSolutionDirectory
@@ -65,8 +65,8 @@ class RunnableAssemblySelectorActionTests : AvaloniaIntegrationTest() {
             WorkspaceModel.getInstance(project),
             project.messageBus,
             RunManager.getInstance(project),
-            AvaloniaSettings.getInstance(project),
             AvaloniaProjectSettings.getInstance(project),
+            AvaloniaWorkspaceSettings.getInstance(project),
             project.solution.avaloniaRiderProjectModel,
             isSolutionLoading,
             runnableProjects,

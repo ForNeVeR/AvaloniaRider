@@ -11,7 +11,7 @@ import com.intellij.util.application
 import com.intellij.util.ui.UIUtil
 import com.jetbrains.rd.util.lifetime.Lifetime
 import me.fornever.avaloniarider.controlmessages.FrameMessage
-import me.fornever.avaloniarider.idea.settings.AvaloniaSettings
+import me.fornever.avaloniarider.idea.settings.AvaloniaProjectSettings
 import me.fornever.avaloniarider.previewer.AvaloniaMessageMouseListener
 import me.fornever.avaloniarider.previewer.AvaloniaPreviewerSessionController
 import me.fornever.avaloniarider.previewer.renderFrame
@@ -25,7 +25,7 @@ import javax.swing.JComponent
 class PreviewImageView(
     lifetime: Lifetime,
     private val controller: AvaloniaPreviewerSessionController,
-    private val settings: AvaloniaSettings
+    private val settings: AvaloniaProjectSettings
 ) : JComponent() {
 
     companion object {

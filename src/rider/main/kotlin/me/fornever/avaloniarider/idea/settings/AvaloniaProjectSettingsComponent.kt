@@ -11,8 +11,8 @@ import javax.swing.JPanel
 import javax.swing.JSpinner
 import javax.swing.SpinnerNumberModel
 
-class AvaloniaSettingsComponent(state: AvaloniaSettingsState) : JPanel() {
-    private val initialState = AvaloniaSettingsState().apply {
+class AvaloniaProjectSettingsComponent(state: AvaloniaProjectSettingsState) : JPanel() {
+    private val initialState = AvaloniaProjectSettingsState().apply {
         copyFrom(state)
     }
 
@@ -57,11 +57,11 @@ class AvaloniaSettingsComponent(state: AvaloniaSettingsState) : JPanel() {
         addComponent(fpsLimitEditor) { gridy = 2; gridx = 1 }
     }
 
-    var currentState: AvaloniaSettingsState
-        get() = AvaloniaSettingsState().apply {
-            previewerMethod = this@AvaloniaSettingsComponent.previewerMethod
-            synchronizeWithRunConfiguration = this@AvaloniaSettingsComponent.synchronizeWithRunConfiguration
-            fpsLimit = this@AvaloniaSettingsComponent.fpsLimit
+    var currentState: AvaloniaProjectSettingsState
+        get() = AvaloniaProjectSettingsState().apply {
+            previewerMethod = this@AvaloniaProjectSettingsComponent.previewerMethod
+            synchronizeWithRunConfiguration = this@AvaloniaProjectSettingsComponent.synchronizeWithRunConfiguration
+            fpsLimit = this@AvaloniaProjectSettingsComponent.fpsLimit
         }
         set(value) {
             previewerMethod = value.previewerMethod
