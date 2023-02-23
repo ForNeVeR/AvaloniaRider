@@ -15,9 +15,12 @@ import java.nio.file.Paths
  */
 class AvaloniaWorkspaceState : BaseState() {
     var projectPerEditor by map<String, String>()
+
+    // TODO[#265]: Move to AvaloniaProjectSettingsState
+    var workingDirectory by property<WorkingDirectorySpecification>(DefinedByMsBuild) { it == DefinedByMsBuild }
 }
 
-@State(name = "AvaloniaProject", storages = [Storage("avalonia.xml")]) // TODO[#265]: move to a workspace-related file
+@State(name = "AvaloniaProject", storages = [Storage("avalonia.xml")]) // TODO[#265]: Move to a workspace-related file
 @Service(Service.Level.PROJECT)
 class AvaloniaWorkspaceSettings(private val project: Project) : SimplePersistentStateComponent<AvaloniaWorkspaceState>(
     AvaloniaWorkspaceState()

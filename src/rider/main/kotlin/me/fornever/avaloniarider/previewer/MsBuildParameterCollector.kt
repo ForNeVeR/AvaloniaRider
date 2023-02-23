@@ -5,22 +5,21 @@ import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.io.FileUtil
 import com.intellij.workspaceModel.ide.toPath
-import com.jetbrains.rider.model.RdTargetFrameworkId
 import com.jetbrains.rider.projectView.workspace.ProjectModelEntity
 import com.jetbrains.rider.run.environment.MSBuildEvaluator
 import com.jetbrains.rider.runtime.DotNetRuntime
 import com.jetbrains.rider.runtime.RiderDotNetActiveRuntimeHost
 import com.jetbrains.rider.runtime.dotNetCore.DotNetCoreRuntime
 import me.fornever.avaloniarider.exceptions.AvaloniaPreviewerInitializationException
+import me.fornever.avaloniarider.idea.settings.AvaloniaWorkspaceSettings
 import me.fornever.avaloniarider.model.RdProjectOutput
 import me.fornever.avaloniarider.rider.AvaloniaRiderProjectModelHost
 import org.jetbrains.concurrency.await
 import java.nio.file.Path
 import java.nio.file.Paths
-import kotlin.io.path.ExperimentalPathApi
 import kotlin.io.path.nameWithoutExtension
 
-@Service
+@Service(Service.Level.PROJECT)
 class MsBuildParameterCollector(private val project: Project) {
     companion object {
         fun getInstance(project: Project): MsBuildParameterCollector =
@@ -29,18 +28,22 @@ class MsBuildParameterCollector(private val project: Project) {
         private val logger = logger<MsBuildParameterCollector>()
     }
 
+    private val workspaceSettings
+        get() = AvaloniaWorkspaceSettings.getInstance(project)
+
     private fun getPathKey(runtime: DotNetRuntime): String = when (runtime) {
         is DotNetCoreRuntime -> "AvaloniaPreviewerNetCoreToolPath"
         else -> "AvaloniaPreviewerNetFullToolPath"
     }
 
-    @OptIn(ExperimentalPathApi::class)
     private fun createParameters(
         runtime: DotNetRuntime,
         runnableProjectFilePath: Path,
         avaloniaPreviewerPathKey: String,
         runnableProjectProperties: Map<String, String>,
-        xamlContainingProjectProperties: Map<String, String>): AvaloniaPreviewerParameters {
+        xamlContainingProjectProperties: Map<String, String>,
+        runnableProjectWorkingDirectory: Path
+    ): AvaloniaPreviewerParameters {
         fun getProperty(properties: Map<String, String>, key: String, errorMessage: String? = null): String {
             val property = properties[key]
             if (property.isNullOrEmpty()) {
@@ -64,7 +67,15 @@ class MsBuildParameterCollector(private val project: Project) {
 
         val xamlAssemblyPath = Paths.get(getProperty(xamlContainingProjectProperties, "TargetPath"))
 
-        return AvaloniaPreviewerParameters(runtime, previewerPath, targetDir, targetName, targetPath, xamlAssemblyPath)
+        return AvaloniaPreviewerParameters(
+            runtime,
+            previewerPath,
+            targetDir,
+            targetName,
+            targetPath,
+            xamlAssemblyPath,
+            workspaceSettings.state.workingDirectory.getPath()
+        )
     }
 
     @Suppress("UnstableApiUsage")
@@ -95,14 +106,9 @@ class MsBuildParameterCollector(private val project: Project) {
         val runtime = DotNetRuntime.detectRuntimeForProjectOrThrow(
             runnableProject.kind,
             runtimeHost,
-            null,
+            runtimeType = null,
             runnableProjectOutput.outputPath,
-            RdTargetFrameworkId(
-                tfm.shortName,
-                tfm.presentableName,
-                isNetCoreApp = tfm.isNetCoreApp,
-                isNetFramework = tfm.isNetFramework
-            )
+            tfm
         )
         val avaloniaPreviewerPathKey = getPathKey(runtime)
 
@@ -126,6 +132,8 @@ class MsBuildParameterCollector(private val project: Project) {
             runnableProjectFilePath,
             avaloniaPreviewerPathKey,
             runnableProjectProperties.await(),
-            xamlProjectProperties.await())
+            xamlProjectProperties.await(),
+            TODO("Determine program working directory from the runnableProject")
+        )
     }
 }

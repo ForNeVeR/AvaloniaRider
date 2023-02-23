@@ -31,7 +31,8 @@ data class AvaloniaPreviewerParameters(
     /**
      * Path to the assembly containing a XAML file in question.
      */
-    val xamlContainingAssemblyPath: Path
+    val xamlContainingAssemblyPath: Path,
+    val workingDirectory: Path
 )
 
 class AvaloniaPreviewerProcess(
@@ -60,7 +61,7 @@ class AvaloniaPreviewerProcess(
             else -> GeneralCommandLine().withExePath(parameters.previewerBinary.toAbsolutePath().toString())
                 .withParameters(previewerArguments)
         }
-        return commandLine.withWorkDirectory(parameters.targetDir.toFile())
+        return commandLine.withWorkDirectory(parameters.workingDirectory.toFile())
     }
 
     private fun startProcess(
