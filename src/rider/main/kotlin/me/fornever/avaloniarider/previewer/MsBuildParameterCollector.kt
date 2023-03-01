@@ -12,6 +12,7 @@ import com.jetbrains.rider.runtime.RiderDotNetActiveRuntimeHost
 import com.jetbrains.rider.runtime.dotNetCore.DotNetCoreRuntime
 import me.fornever.avaloniarider.exceptions.AvaloniaPreviewerInitializationException
 import me.fornever.avaloniarider.idea.settings.AvaloniaWorkspaceSettings
+import me.fornever.avaloniarider.idea.settings.WorkingDirectorySpecification
 import me.fornever.avaloniarider.model.RdProjectOutput
 import me.fornever.avaloniarider.rider.AvaloniaRiderProjectModelHost
 import org.jetbrains.concurrency.await
@@ -74,7 +75,7 @@ class MsBuildParameterCollector(private val project: Project) {
             targetName,
             targetPath,
             xamlAssemblyPath,
-            workspaceSettings.state.workingDirectory.getPath()
+            workspaceSettings.state.workingDirectory.getPath(project, runnableProjectWorkingDirectory)
         )
     }
 
@@ -103,6 +104,11 @@ class MsBuildParameterCollector(private val project: Project) {
         val xamlContainingProjectPath = xamlContainingProject.url!!.toPath().toString()
 
         val tfm = runnableProjectOutput.tfm
+        val projectOutput = runnableProject.projectOutputs.singleOrNull { it.tfm == tfm }
+            ?: throw AvaloniaPreviewerInitializationException(
+                """Could not determine project output for project "${runnableProject.name}",
+                    | TFM "${tfm.presentableName}".""".trimMargin()
+            )
         val runtime = DotNetRuntime.detectRuntimeForProjectOrThrow(
             runnableProject.kind,
             runtimeHost,
@@ -133,7 +139,7 @@ class MsBuildParameterCollector(private val project: Project) {
             avaloniaPreviewerPathKey,
             runnableProjectProperties.await(),
             xamlProjectProperties.await(),
-            TODO("Determine program working directory from the runnableProject")
+            WorkingDirectorySpecification.getWorkingDirectory(projectOutput)
         )
     }
 }
