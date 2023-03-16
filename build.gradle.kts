@@ -12,7 +12,6 @@ buildscript {
 }
 
 plugins {
-    id("java")
     id("me.filippov.gradle.jvm.wrapper") version "0.14.0"
     id("org.jetbrains.changelog") version "2.0.0"
     id("org.jetbrains.intellij") version "1.10.1"
@@ -67,7 +66,7 @@ repositories {
 
 sourceSets {
     main {
-        java.srcDir("src/rider/main/kotlin")
+        kotlin.srcDir("src/rider/main/kotlin")
         resources.srcDir("src/rider/main/resources")
     }
 }
