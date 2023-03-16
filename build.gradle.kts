@@ -25,7 +25,7 @@ apply {
 dependencies {
     implementation("de.undercouch:bson4jackson:2.13.1")
 
-    testImplementation("org.testng:testng:7.6.1")
+    testImplementation("org.testng:testng:7.7.0")
 }
 
 val dotNetPluginId = "AvaloniaRider.Plugin"
