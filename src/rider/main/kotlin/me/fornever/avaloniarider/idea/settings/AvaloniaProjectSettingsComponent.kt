@@ -1,8 +1,11 @@
 package me.fornever.avaloniarider.idea.settings
 
+import com.intellij.openapi.observable.properties.AtomicProperty
+import com.intellij.openapi.observable.properties.ObservableMutableProperty
 import com.intellij.openapi.ui.ComboBox
 import com.intellij.ui.components.CheckBox
 import com.intellij.ui.components.JBLabel
+import com.intellij.ui.dsl.builder.panel
 import me.fornever.avaloniarider.AvaloniaRiderBundle
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
@@ -11,12 +14,23 @@ import javax.swing.JPanel
 import javax.swing.JSpinner
 import javax.swing.SpinnerNumberModel
 
-class AvaloniaProjectSettingsComponent(state: AvaloniaProjectSettingsState) : JPanel() {
-    private val initialState = AvaloniaProjectSettingsState().apply {
-        copyFrom(state)
+class AvaloniaProjectSettingsComponent {
+
+    var currentState: ObservableMutableProperty<AvaloniaProjectSettingsControlState?> = AtomicProperty(null)
+
+    val panel = panel {
+        row(AvaloniaRiderBundle.message("settings.previewerMethod")) {
+            comboBox(AvaloniaPreviewerMethod.values().toList()).bi
+        }
     }
 
-    private val previewerTransportTypeSelector = ComboBox(AvaloniaPreviewerMethod.values())
+    private val initialProjectState = AvaloniaProjectSettingsState().apply {
+        copyFrom(initialProjectState)
+    }
+
+    private val initialWorkspaceState = initialWorkspaceState.workingDirectory
+
+    private val previewerTransportTypeSelector = ComboBox()
     private var previewerMethod: AvaloniaPreviewerMethod
         get() = previewerTransportTypeSelector.selectedItem as AvaloniaPreviewerMethod
         set(value) {
@@ -37,16 +51,23 @@ class AvaloniaProjectSettingsComponent(state: AvaloniaProjectSettingsState) : JP
             fpsLimitEditor.model.value = value
         }
 
+    private val workingDirectoryEditor = WorkingDirectoryEditor()
+    private var workingDirectorySpecification: WorkingDirectorySpecification
+        get() = workingDirectoryEditor.value
+        set (value) {
+            workingDirectoryEditor.value = value
+        }
+
     init {
-        previewerMethod = initialState.previewerMethod
-        synchronizeWithRunConfiguration = initialState.synchronizeWithRunConfiguration
+        previewerMethod = this.initialProjectState.previewerMethod
+        synchronizeWithRunConfiguration = this.initialProjectState.synchronizeWithRunConfiguration
 
         layout = GridBagLayout()
         fun addComponent(component: JComponent, constraints: GridBagConstraints.() -> Unit) {
             add(component, GridBagConstraints().apply(constraints))
         }
 
-        addComponent(JBLabel(AvaloniaRiderBundle.message("settings.previewerMethod"))) {
+        addComponent(JBLabel()) {
             anchor = GridBagConstraints.LINE_START
         }
         addComponent(previewerTransportTypeSelector) { gridx = 1 }
@@ -55,9 +76,12 @@ class AvaloniaProjectSettingsComponent(state: AvaloniaProjectSettingsState) : JP
 
         addComponent(JBLabel(AvaloniaRiderBundle.message("settings.fpsLimit"))) { gridy = 2 }
         addComponent(fpsLimitEditor) { gridy = 2; gridx = 1 }
+
+        addComponent(JBLabel(AvaloniaRiderBundle.message("settings.workingDirectory"))) { gridy = 3 }
+        addComponent(workingDirectoryEditor) { gridy = 3; gridx = 1 }
     }
 
-    var currentState: AvaloniaProjectSettingsState
+    var currentProjectState: AvaloniaProjectSettingsState
         get() = AvaloniaProjectSettingsState().apply {
             previewerMethod = this@AvaloniaProjectSettingsComponent.previewerMethod
             synchronizeWithRunConfiguration = this@AvaloniaProjectSettingsComponent.synchronizeWithRunConfiguration
@@ -69,6 +93,13 @@ class AvaloniaProjectSettingsComponent(state: AvaloniaProjectSettingsState) : JP
             fpsLimit = value.fpsLimit
         }
 
+    var currentWorkspaceState: WorkingDirectorySpecification
+        get() = workingDirectorySpecification
+        set(value) {
+            workingDirectorySpecification = value
+        }
+
     val isModified: Boolean
-        get() = currentState != initialState
+        get() = currentProjectState != initialProjectState && currentWorkspaceState != initialWorkspaceState
 }
+
