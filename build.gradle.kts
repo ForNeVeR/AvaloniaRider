@@ -7,15 +7,15 @@ buildscript {
 
     // https://search.maven.org/artifact/com.jetbrains.rd/rd-gen
     dependencies {
-        classpath("com.jetbrains.rd:rd-gen:2022.3.2")
+        classpath("com.jetbrains.rd:rd-gen:2023.2.1")
     }
 }
 
 plugins {
     id("me.filippov.gradle.jvm.wrapper") version "0.14.0"
     id("org.jetbrains.changelog") version "2.0.0"
-    id("org.jetbrains.intellij") version "1.10.1"
-    id("org.jetbrains.kotlin.jvm") version "1.7.20"
+    id("org.jetbrains.intellij") version "1.13.3"
+    id("org.jetbrains.kotlin.jvm") version "1.8.10"
 }
 
 apply {
@@ -32,6 +32,7 @@ val dotNetPluginId = "AvaloniaRider.Plugin"
 val intellijPluginId = "avalonia-rider"
 
 val riderSdkVersion: String by project
+val untilBuildVersion: String by project
 val pluginVersionBase: String by project
 val buildRelease: String by project
 
@@ -110,9 +111,8 @@ intellij {
 
 tasks {
     wrapper {
-        gradleVersion = "7.5.1"
+        gradleVersion = "8.1.1"
         distributionType = Wrapper.DistributionType.ALL
-        distributionUrl = "https://cache-redirector.jetbrains.com/services.gradle.org/distributions/gradle-${gradleVersion}-all.zip"
     }
 
     val riderSdkPath by lazy {
@@ -171,7 +171,7 @@ tasks {
     }
 
     patchPluginXml {
-        untilBuild.set("232.*")
+        untilBuild.set(untilBuildVersion)
         val latestChangelog = try {
             changelog.getUnreleased()
         } catch (_: MissingVersionException) {
@@ -192,8 +192,6 @@ tasks {
     }
 
     runIde {
-        // For statistics:
-        // jvmArgs("-Xmx1500m", "-Didea.is.internal=true", "-Dfus.internal.test.mode=true")
         jvmArgs("-Xmx1500m")
     }
 

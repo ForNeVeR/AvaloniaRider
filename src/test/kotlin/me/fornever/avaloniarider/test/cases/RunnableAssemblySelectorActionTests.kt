@@ -19,6 +19,7 @@ import com.jetbrains.rider.test.annotations.TestEnvironment
 import com.jetbrains.rider.test.asserts.shouldBe
 import com.jetbrains.rider.test.asserts.shouldBeTrue
 import com.jetbrains.rider.test.asserts.shouldContains
+import com.jetbrains.rider.test.env.enums.SdkVersion
 import com.jetbrains.rider.test.scriptingApi.getVirtualFileFromPath
 import me.fornever.avaloniarider.idea.editor.actions.RunnableAssemblySelectorAction
 import me.fornever.avaloniarider.idea.settings.AvaloniaProjectSettings
@@ -33,6 +34,7 @@ import java.nio.file.Paths
 import java.time.Duration
 import kotlin.test.assertTrue
 
+@TestEnvironment(sdkVersion = SdkVersion.AUTODETECT)
 class RunnableAssemblySelectorActionTests : AvaloniaIntegrationTest() {
     override fun getSolutionDirectoryName() = "MultiProjectSolution"
 

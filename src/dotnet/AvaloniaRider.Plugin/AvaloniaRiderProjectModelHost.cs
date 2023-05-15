@@ -9,7 +9,7 @@ using JetBrains.ProjectModel.Model2.Assemblies.Interfaces;
 using JetBrains.ProjectModel.ProjectsHost;
 using JetBrains.ProjectModel.ProjectsHost.SolutionHost;
 using JetBrains.Rd.Tasks;
-using JetBrains.RdBackend.Common.Features;
+using JetBrains.ReSharper.Feature.Services.Protocol;
 using JetBrains.ReSharper.Features.Running;
 using JetBrains.Util;
 
@@ -32,7 +32,7 @@ namespace AvaloniaRider
             _moduleReferencesResolveStore = moduleReferencesResolveStore;
 
             var riderProjectOutputModel = solution.GetProtocolSolution().GetAvaloniaRiderProjectModel();
-            riderProjectOutputModel.GetProjectOutput.Set(GetProjectOutputModel);
+            riderProjectOutputModel.GetProjectOutput.SetSync(GetProjectOutputModel);
             riderProjectOutputModel.GetReferencingProjects.Set(GetReferencingProjects);
         }
 
@@ -47,7 +47,7 @@ namespace AvaloniaRider
             return _solution.GetProjectByMark(projectMark).NotNull();
         }
 
-        private RdTask<RdProjectOutput> GetProjectOutputModel(Lifetime lifetime, RdGetProjectOutputArgs args)
+        private RdProjectOutput GetProjectOutputModel(Lifetime lifetime, RdGetProjectOutputArgs args)
         {
             var project = GetProject(
                 VirtualFileSystemPath.Parse(args.ProjectFilePath, InteractionContext.SolutionContext));
@@ -59,10 +59,9 @@ namespace AvaloniaRider
             _logger.Trace("TFM selected for project {0}: {1}", args, targetFramework);
             var assemblyInfo = project.GetOutputAssemblyInfo(targetFramework).NotNull();
             _logger.Trace("Assembly file path detected for project {0}: {1}", args, assemblyInfo.Location);
-            return RdTask<RdProjectOutput>.Successful(
-                new RdProjectOutput(
-                    targetFramework.ToRdTargetFrameworkInfo(),
-                    assemblyInfo.Location.ToString()));
+            return new RdProjectOutput(
+                targetFramework.ToRdTargetFrameworkInfo(),
+                assemblyInfo.Location.ToString());
         }
 
         private List<string> GetReferencingProjects(RdGetReferencingProjectsRequest request)
