@@ -8,6 +8,7 @@ import com.jetbrains.rider.model.PreviewPlatformKind
 import com.jetbrains.rider.test.annotations.TestEnvironment
 import com.jetbrains.rider.test.asserts.shouldBeTrue
 import com.jetbrains.rider.test.base.BaseTestWithSolution
+import com.jetbrains.rider.test.env.enums.BuildTool
 import com.jetbrains.rider.test.env.enums.SdkVersion
 import com.jetbrains.rider.test.scriptingApi.buildSolutionWithReSharperBuild
 import com.jetbrains.rider.test.scriptingApi.getVirtualFileFromPath
@@ -18,7 +19,7 @@ import me.fornever.avaloniarider.previewer.AvaloniaPreviewerSessionController
 import org.testng.annotations.Test
 import java.time.Duration
 
-@TestEnvironment(sdkVersion = SdkVersion.AUTODETECT)
+@TestEnvironment(sdkVersion = SdkVersion.AUTODETECT, buildTool = BuildTool.AUTODETECT)
 class PreviewTests : BaseTestWithSolution() {
     override fun getSolutionDirectoryName() = "AvaloniaMvvm"
     override val restoreNuGetPackages = true
