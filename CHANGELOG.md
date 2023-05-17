@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [Unreleased] (1.0.4)
+### Changed
+- The plugin is now only compatible with Rider 2023.2 EAP 1 and later.
+
 ## [1.0.3] - 2023-01-11
 ### Changed
 - Marked as compatible with Rider 2023.1 EAP builds.
