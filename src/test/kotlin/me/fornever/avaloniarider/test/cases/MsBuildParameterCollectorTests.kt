@@ -14,6 +14,7 @@ import com.jetbrains.rider.test.env.enums.SdkVersion
 import me.fornever.avaloniarider.model.RdProjectOutput
 import me.fornever.avaloniarider.previewer.MsBuildParameterCollector
 import me.fornever.avaloniarider.test.framework.AvaloniaIntegrationTest
+import me.fornever.avaloniarider.test.framework.canonicalSolutionDirectory
 import me.fornever.avaloniarider.test.framework.runPumping
 import org.testng.annotations.Test
 
@@ -32,7 +33,7 @@ class MsBuildParameterCollectorTests : AvaloniaIntegrationTest() {
         runnableProjects.shouldContains { it.kind == RunnableProjectKinds.DotNetCore }
         runnableProjects.shouldContains { it.kind == RunnableProjectKinds.LaunchSettings }
 
-        val projectFilePath = activeSolutionDirectory.toPath().resolve("MSBuildParameters.csproj")
+        val projectFilePath = canonicalSolutionDirectory.resolve("MSBuildParameters.csproj")
         val projectOutput = runnableProjects.single { it.kind == RunnableProjectKinds.DotNetCore }
             .projectOutputs.single()
         val projectModelEntity = workspaceModel.getProjectModelEntities(projectFilePath, project).single()
@@ -44,7 +45,7 @@ class MsBuildParameterCollectorTests : AvaloniaIntegrationTest() {
             )
         }
 
-        val previewerPathForTest = activeSolutionDirectory.toPath().resolve("PreviewerForTest.exe")
+        val previewerPathForTest = canonicalSolutionDirectory.resolve("PreviewerForTest.exe")
         parameters.previewerBinary.shouldBe(previewerPathForTest)
     }
 }

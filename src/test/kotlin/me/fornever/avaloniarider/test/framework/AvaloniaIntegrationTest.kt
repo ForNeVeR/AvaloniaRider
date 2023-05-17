@@ -4,6 +4,7 @@ import com.intellij.openapi.project.Project
 import com.jetbrains.rider.test.OpenSolutionParams
 import com.jetbrains.rider.test.base.BaseTestWithSolution
 import java.io.File
+import java.nio.file.Path
 
 abstract class AvaloniaIntegrationTest : BaseTestWithSolution() {
 
@@ -14,3 +15,6 @@ abstract class AvaloniaIntegrationTest : BaseTestWithSolution() {
         return super.openSolution(solutionFile, params)
     }
 }
+
+val BaseTestWithSolution.canonicalSolutionDirectory: Path
+    get() = activeSolutionDirectory.canonicalFile.toPath()
