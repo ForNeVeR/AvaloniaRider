@@ -148,7 +148,7 @@ class AvaloniaPreviewerSessionController(
 
                 // Try to guess DPI if we got called without a signal from the control. After the control tells us the
                 // right DPI, we'll apply it later.
-                val effectiveDpi = dpi ?: JBUIScale.sysScale().toDouble()
+                val effectiveDpi = dpi ?: (JBUIScale.sysScale().toDouble() * 96.0)
                 session?.sendDpi(effectiveDpi * zoomFactor)
             }
 
