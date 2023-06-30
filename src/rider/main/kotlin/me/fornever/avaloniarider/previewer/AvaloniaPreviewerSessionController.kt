@@ -9,10 +9,13 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.rd.util.*
 import com.intellij.openapi.util.Computable
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.ui.scale.JBUIScale
 import com.intellij.util.application
-import com.intellij.workspaceModel.ide.WorkspaceModel
-import com.jetbrains.rd.util.lifetime.*
+import com.jetbrains.rd.util.lifetime.Lifetime
+import com.jetbrains.rd.util.lifetime.LifetimeDefinition
+import com.jetbrains.rd.util.lifetime.SequentialLifetimes
+import com.jetbrains.rd.util.lifetime.isAlive
 import com.jetbrains.rd.util.reactive.*
 import com.jetbrains.rd.util.throttleLast
 import com.jetbrains.rider.build.BuildHost
@@ -47,7 +50,6 @@ import java.time.Duration
 /**
  * The sources on this class are thread-free. Make sure to schedule them onto the proper threads if necessary.
  */
-@Suppress("UnstableApiUsage") // for workspace model
 class AvaloniaPreviewerSessionController(
     private val project: Project,
     outerLifetime: Lifetime,
@@ -267,7 +269,6 @@ class AvaloniaPreviewerSessionController(
         )
 
         val socket = withSyncIOBackgroundContext(lifetime) {
-            @Suppress("BlockingMethodInNonBlockingContext")
             ServerSocket(0).apply {
                 lifetime.onTermination { close() }
             }

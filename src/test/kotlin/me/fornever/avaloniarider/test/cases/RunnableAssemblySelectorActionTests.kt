@@ -3,8 +3,8 @@ package me.fornever.avaloniarider.test.cases
 import com.intellij.execution.RunManager
 import com.intellij.openapi.actionSystem.ActionPlaces
 import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.util.io.systemIndependentPath
-import com.intellij.workspaceModel.ide.WorkspaceModel
 import com.jetbrains.rd.util.lifetime.LifetimeDefinition
 import com.jetbrains.rd.util.reactive.IOptPropertyView
 import com.jetbrains.rd.util.reactive.OptProperty
@@ -62,7 +62,7 @@ class RunnableAssemblySelectorActionTests : AvaloniaIntegrationTest() {
         return RunnableAssemblySelectorAction(
             testLifetime,
             project,
-            @Suppress("UnstableApiUsage") WorkspaceModel.getInstance(project),
+            WorkspaceModel.getInstance(project),
             project.messageBus,
             RunManager.getInstance(project),
             AvaloniaSettings.getInstance(project),

@@ -5,8 +5,8 @@ import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.debug
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.util.application
-import com.intellij.workspaceModel.ide.WorkspaceModel
 import com.jetbrains.rd.util.lifetime.Lifetime
 import com.jetbrains.rd.util.reactive.adviseUntil
 import com.jetbrains.rider.model.RdProjectDescriptor
@@ -28,7 +28,6 @@ val ProjectModelEntity.projectRelativeVirtualPath: String
         return names.joinToString("/")
     }
 
-@Suppress("UnstableApiUsage")
 suspend fun VirtualFile.getProjectContainingFile(lifetime: Lifetime, project: Project): ProjectModelEntity {
     val logger = Logger.getInstance("me.fornever.avaloniarider.rider.ProjectModelNodeExKt")
     val workspaceModel = WorkspaceModel.getInstance(project)

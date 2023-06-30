@@ -17,10 +17,10 @@ import com.intellij.openapi.rd.util.launchOnUi
 import com.intellij.openapi.util.io.FileUtil
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.util.application
 import com.intellij.util.io.systemIndependentPath
 import com.intellij.util.messages.MessageBus
-import com.intellij.workspaceModel.ide.WorkspaceModel
 import com.intellij.workspaceModel.ide.toPath
 import com.jetbrains.rd.util.lifetime.Lifetime
 import com.jetbrains.rd.util.reactive.*
@@ -45,7 +45,6 @@ import java.nio.file.Paths
 import javax.swing.JComponent
 import kotlin.io.path.nameWithoutExtension
 
-@Suppress("UnstableApiUsage")
 class RunnableAssemblySelectorAction(
     private val lifetime: Lifetime,
     private val project: Project,

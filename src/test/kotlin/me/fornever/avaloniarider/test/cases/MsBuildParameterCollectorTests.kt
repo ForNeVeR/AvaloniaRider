@@ -1,6 +1,6 @@
 package me.fornever.avaloniarider.test.cases
 
-import com.intellij.workspaceModel.ide.WorkspaceModel
+import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.jetbrains.rider.model.runnableProjectsModel
 import com.jetbrains.rider.projectView.solution
 import com.jetbrains.rider.projectView.workspace.getProjectModelEntities
@@ -23,7 +23,6 @@ class MsBuildParameterCollectorTests : AvaloniaIntegrationTest() {
 
     override fun getSolutionDirectoryName() = "MSBuildParameters"
 
-    @Suppress("UnstableApiUsage")
     @Test
     fun testLaunchSettingsParametersCollection() {
         val collector = MsBuildParameterCollector.getInstance(project)
