@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [1.0.5] - 2023-06-30
+### Fixed
+- Correct DPI is now passed to the previewer process from the start.
+
+### Changed
+- The plugin is now only compatible with Rider 2023.2 EAP 6 and later.
+
 ## [1.0.4] - 2023-05-17
 ### Changed
 - The plugin is now only compatible with Rider 2023.2 EAP 1 and later.
@@ -36,4 +43,5 @@ The initial plugin release. The plugin provides the following features for JetBr
 [1.0.2]: https://github.com/ForNeVeR/AvaloniaRider/compare/v1.0.1...v1.0.2
 [1.0.3]: https://github.com/ForNeVeR/AvaloniaRider/compare/v1.0.2...v1.0.3
 [1.0.4]: https://github.com/ForNeVeR/AvaloniaRider/compare/v1.0.3...v1.0.4
-[Unreleased]: https://github.com/ForNeVeR/AvaloniaRider/compare/v1.0.4...HEAD
+[1.0.5]: https://github.com/ForNeVeR/AvaloniaRider/compare/v1.0.4...v1.0.5
+[Unreleased]: https://github.com/ForNeVeR/AvaloniaRider/compare/v1.0.5...HEAD
