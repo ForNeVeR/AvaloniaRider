@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2023-07-15
+### Changed
+- Default templates are no longer generating the `InitializeComponent` method and `AttachDevTools` call. Those are handled by Avalonia source generators in the latest versions.
+
 ## [1.0.5] - 2023-06-30
 ### Fixed
 - Correct DPI is now passed to the previewer process from the start.
@@ -44,4 +48,5 @@ The initial plugin release. The plugin provides the following features for JetBr
 [1.0.3]: https://github.com/ForNeVeR/AvaloniaRider/compare/v1.0.2...v1.0.3
 [1.0.4]: https://github.com/ForNeVeR/AvaloniaRider/compare/v1.0.3...v1.0.4
 [1.0.5]: https://github.com/ForNeVeR/AvaloniaRider/compare/v1.0.4...v1.0.5
-[Unreleased]: https://github.com/ForNeVeR/AvaloniaRider/compare/v1.0.5...HEAD
+[1.1.0]: https://github.com/ForNeVeR/AvaloniaRider/compare/v1.0.5...v1.1.0
+[Unreleased]: https://github.com/ForNeVeR/AvaloniaRider/compare/v1.1.0...HEAD
