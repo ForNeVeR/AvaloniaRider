@@ -6,33 +6,29 @@ import javax.swing.JComponent
 
 class AvaloniaProjectSettingsConfigurable(private val project: Project) : Configurable {
 
-    private val projectSettings = lazy { AvaloniaProjectSettings.getInstance(project) }
-    private val workspaceSettings = lazy { AvaloniaWorkspaceSettings.getInstance(project) }
+    private val projectSettings by lazy { AvaloniaProjectSettings.getInstance(project) }
+    private val workspaceSettings by lazy { AvaloniaWorkspaceSettings.getInstance(project) }
     private val globalControlState: AvaloniaProjectSettingsControlState
-        get() = AvaloniaProjectSettingsControlState(projectSettings.value.state, workspaceSettings.value.state)
+        get() = AvaloniaProjectSettingsControlState(projectSettings.state, workspaceSettings.state)
 
     override fun getDisplayName() = "Avalonia"
 
-    private var component = lazy { AvaloniaProjectSettingsComponent() }
+    private val component by lazy { AvaloniaProjectSettingsComponent(globalControlState) }
 
     override fun createComponent(): JComponent {
-        return component.value.panel
+        return component.panel
     }
 
     override fun isModified() =
-        component.let {
-            it.currentState == globalControlState
-        }
+        component.currentState.get() == globalControlState
 
     override fun apply() {
-        component.let {
-            it.currentState.applyTo(projectSettings.value, workspaceSettings.value)
-        }
+        val state = component.currentState.get()
+        projectSettings.state.apply(state)
+        workspaceSettings.state.apply(state)
     }
 
     override fun reset() {
-        component.let {
-            it.currentState = globalControlState
-        }
+        component.currentState.set(globalControlState)
     }
 }

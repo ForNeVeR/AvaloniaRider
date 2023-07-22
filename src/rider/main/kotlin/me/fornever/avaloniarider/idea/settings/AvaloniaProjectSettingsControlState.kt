@@ -17,8 +17,18 @@ data class AvaloniaProjectSettingsControlState(
                 projectState.previewerMethod,
                 projectState.synchronizeWithRunConfiguration,
                 projectState.fpsLimit,
-                workspaceState.workingDirectory
+                workspaceState.workingDirectorySpecification
             )
         }
     }
+}
+
+fun AvaloniaProjectSettingsState.apply(state: AvaloniaProjectSettingsControlState) {
+    previewerMethod = state.previewerMethod
+    synchronizeWithRunConfiguration = state.synchronizeWithRunConfiguration
+    fpsLimit = state.fpsLimit
+}
+
+fun AvaloniaWorkspaceState.apply(state: AvaloniaProjectSettingsControlState) {
+    workingDirectorySpecification = state.workingDirectorySpecification
 }

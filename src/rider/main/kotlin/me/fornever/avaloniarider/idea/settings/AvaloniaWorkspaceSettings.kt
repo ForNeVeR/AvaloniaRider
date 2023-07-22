@@ -17,7 +17,7 @@ class AvaloniaWorkspaceState : BaseState() {
     var projectPerEditor by map<String, String>()
 
     // TODO[#265]: Move to AvaloniaProjectSettingsState
-    var workingDirectory by property<WorkingDirectorySpecification>(DefinedByMsBuild) { it == DefinedByMsBuild }
+    var workingDirectorySpecification by enum(WorkingDirectorySpecification.DefinedByMsBuild)
 }
 
 @State(name = "AvaloniaProject", storages = [Storage("avalonia.xml")]) // TODO[#265]: Move to a workspace-related file
