@@ -2,11 +2,13 @@ package me.fornever.avaloniarider.idea.settings
 
 import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.project.Project
+import com.intellij.ui.SimpleListCellRenderer
 import com.intellij.ui.dsl.builder.bindIntText
 import com.intellij.ui.dsl.builder.bindItem
 import com.intellij.ui.dsl.builder.bindSelected
 import com.intellij.ui.dsl.builder.panel
 import me.fornever.avaloniarider.AvaloniaRiderBundle
+import javax.swing.JList
 
 class AvaloniaProjectSettingsConfigurable(private val project: Project) : Configurable {
 
@@ -36,7 +38,21 @@ class AvaloniaProjectSettingsConfigurable(private val project: Project) : Config
                 )
             }
             row(AvaloniaRiderBundle.message("settings.workingDirectory")) {
-                comboBox(WorkingDirectorySpecification.values().toList()).bindItem(
+                comboBox(WorkingDirectorySpecification.values().toList(), object :
+                    SimpleListCellRenderer<WorkingDirectorySpecification>() {
+                    override fun customize(
+                        list: JList<out WorkingDirectorySpecification>,
+                        value: WorkingDirectorySpecification,
+                        index: Int,
+                        selected: Boolean,
+                        hasFocus: Boolean
+                    ) {
+                        text = when (value) {
+                            WorkingDirectorySpecification.DefinedByMsBuild -> AvaloniaRiderBundle.message("settings.workingDirectory.definedByMsBuild")
+                            WorkingDirectorySpecification.SolutionDirectory -> AvaloniaRiderBundle.message("settings.workingDirectory.solutionDirectory")
+                        }
+                    }
+                }).bindItem(
                     { workspaceSettings.state.workingDirectorySpecification },
                     {
                         workspaceSettings.state.workingDirectorySpecification =
