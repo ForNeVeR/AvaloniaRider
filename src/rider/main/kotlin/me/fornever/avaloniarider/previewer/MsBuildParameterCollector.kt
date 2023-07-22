@@ -12,8 +12,8 @@ import com.jetbrains.rider.runtime.RiderDotNetActiveRuntimeHost
 import com.jetbrains.rider.runtime.dotNetCore.DotNetCoreRuntime
 import me.fornever.avaloniarider.exceptions.AvaloniaPreviewerInitializationException
 import me.fornever.avaloniarider.idea.settings.AvaloniaWorkspaceSettings
-import me.fornever.avaloniarider.idea.settings.getPath
 import me.fornever.avaloniarider.idea.settings.getCorrectWorkingDirectory
+import me.fornever.avaloniarider.idea.settings.getPath
 import me.fornever.avaloniarider.model.RdProjectOutput
 import me.fornever.avaloniarider.rider.AvaloniaRiderProjectModelHost
 import org.jetbrains.concurrency.await
