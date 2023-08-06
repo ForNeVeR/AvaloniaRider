@@ -70,3 +70,9 @@ jobs:
         with:
           name: avaloniarider-${{ env.AVALONIA_RIDER_VERSION }}
           path: build/distributions/unpacked
+  validation:
+    runs-on: ubuntu-22.04
+    name: "Validate Gradle wrapper"
+    steps:
+      - uses: actions/checkout@v2
+      - uses: gradle/wrapper-validation-action@v1
