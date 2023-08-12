@@ -20,7 +20,7 @@ jobs:
       DOTNET_NOLOGO: 1
       DOTNET_CLI_TELEMETRY_OPTOUT: 1
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       # Common preparation
       - name: Prepare build
