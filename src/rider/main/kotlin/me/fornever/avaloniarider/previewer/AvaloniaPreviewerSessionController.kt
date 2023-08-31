@@ -28,7 +28,6 @@ import com.jetbrains.rider.ui.SwingScheduler
 import com.jetbrains.rider.ui.components.utils.documentChanged
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.selects.select
 import me.fornever.avaloniarider.controlmessages.AvaloniaInputEventMessage
 import me.fornever.avaloniarider.controlmessages.FrameMessage
 import me.fornever.avaloniarider.controlmessages.HtmlTransportStartedMessage
@@ -278,9 +277,10 @@ class AvaloniaPreviewerSessionController(
             AvaloniaPreviewerMethod.AvaloniaRemote -> AvaloniaRemoteMethod
             AvaloniaPreviewerMethod.Html -> HtmlMethod
         }
+        val sessionNestedLifetime = lifetime.createNested() // to terminate later than process
+        val newSession = createSession(sessionNestedLifetime, socket, parameters, xamlFile)
         val processTitle = "${xamlFile.name} (port ${socket.localPort})"
         val process = AvaloniaPreviewerProcess(lifetime, parameters)
-        val newSession = createSession(lifetime, socket, parameters, xamlFile)
         session = newSession
 
         val sessionJob = lifetime.startSyncIOBackgroundAsync {
@@ -301,15 +301,11 @@ class AvaloniaPreviewerSessionController(
         }
         val processJob = lifetime.startBackgroundAsync {
             logger.info("Starting previewer process")
-            process.run(lifetime, project, consoleView, transport, method, processTitle)
+            process.run(consoleView, transport, method, processTitle)
         }
 
-        val result = select {
-            sessionJob.onAwait { "Socket listener" }
-            processJob.onAwait { "Process" }
-        }
-
-        logger.info("$result has been terminated first")
+        processJob.await()
+        sessionJob.await()
     }
 
     fun start(projectFilePath: Path, force: Boolean = false) {

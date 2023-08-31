@@ -8,7 +8,6 @@ import com.intellij.execution.process.ProcessHandler
 import com.intellij.execution.ui.ConsoleView
 import com.intellij.execution.ui.ConsoleViewContentType
 import com.intellij.openapi.diagnostic.Logger
-import com.intellij.openapi.project.Project
 import com.intellij.openapi.rd.createNestedDisposable
 import com.intellij.openapi.util.Key
 import com.intellij.util.io.BaseOutputReader
@@ -65,33 +64,38 @@ class AvaloniaPreviewerProcess(
     }
 
     private fun startProcess(
-        lifetime: Lifetime,
-        project: Project,
         commandLine: GeneralCommandLine,
         consoleView: ConsoleView?,
         title: String
     ): OSProcessHandler {
-        val processHandler = object : OSProcessHandler(commandLine) {
-            override fun readerOptions() =
-                BaseOutputReader.Options.forMostlySilentProcess()
+        val processHandler = lifetime.bracketOrThrowEx({
+            object : OSProcessHandler(commandLine) {
+                override fun readerOptions() =
+                    BaseOutputReader.Options.forMostlySilentProcess()
 
-            override fun notifyTextAvailable(text: String, outputType: Key<*>) {
-                logger.info("$title [$outputType]: $text")
-                super.notifyTextAvailable(text, outputType)
-            }
+                override fun notifyTextAvailable(text: String, outputType: Key<*>) {
+                    logger.info("$title [$outputType]: $text")
+                    super.notifyTextAvailable(text, outputType)
+                }
 
-            override fun notifyProcessTerminated(exitCode: Int) {
-                consoleView?.print("Process terminated with exit code $exitCode", ConsoleViewContentType.SYSTEM_OUTPUT)
-                logger.info("Process $title exited with $exitCode")
-                super.notifyProcessTerminated(exitCode)
+                override fun notifyProcessTerminated(exitCode: Int) {
+                    consoleView?.print(
+                        "Process terminated with exit code $exitCode\n",
+                        ConsoleViewContentType.SYSTEM_OUTPUT
+                    )
+                    logger.info("Process $title exited with $exitCode")
+                    super.notifyProcessTerminated(exitCode)
+                }
             }
+        }) { handler ->
+            handler.destroyProcess()
+            handler.waitFor()
         }
 
         consoleView?.attachToProcess(processHandler)
 
         logger.info("Starting process ${commandLine.commandLineString}")
         processHandler.startNotify()
-        ProcessReaper.getInstance(project).registerProcess(lifetime, processHandler)
 
         return processHandler
     }
@@ -111,8 +115,6 @@ class AvaloniaPreviewerProcess(
     }
 
     suspend fun run(
-        lifetime: Lifetime,
-        project: Project,
         consoleView: ConsoleView?,
         transport: PreviewerTransport,
         method: PreviewerMethod,
@@ -121,7 +123,7 @@ class AvaloniaPreviewerProcess(
         logger.info("1/4: generating process command line")
         val commandLine = getCommandLine(transport, method)
         logger.info("2/3: starting a process")
-        val process = startProcess(lifetime, project, commandLine, consoleView, title)
+        val process = startProcess(commandLine, consoleView, title)
         logger.info("3/3: awaiting termination")
         waitForTermination(process, title)
     }
