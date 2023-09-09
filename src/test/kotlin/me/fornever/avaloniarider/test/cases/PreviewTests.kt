@@ -16,7 +16,6 @@ import com.jetbrains.rider.xaml.core.XamlPreviewEditorExtension
 import me.fornever.avaloniarider.controlmessages.FrameMessage
 import me.fornever.avaloniarider.idea.editor.AvaloniaPreviewerXamlEditorExtension
 import me.fornever.avaloniarider.previewer.AvaloniaPreviewerSessionController
-import me.fornever.avaloniarider.test.framework.canonicalSolutionDirectory
 import org.testng.annotations.Test
 import java.time.Duration
 
@@ -28,10 +27,10 @@ class PreviewTests : BaseTestWithSolution() {
     override val traceScenarios = setOf(RdLogTraceScenarios.Commands)
 
     private val mainWindowFile
-        get() = getVirtualFileFromPath("Views/MainWindow.xaml", canonicalSolutionDirectory.toFile())
+        get() = getVirtualFileFromPath("Views/MainWindow.xaml", activeSolutionDirectory)
 
     private val projectFilePathProperty
-        get() = OptProperty(canonicalSolutionDirectory.resolve("AvaloniaMvvm.csproj"))
+        get() = OptProperty(activeSolutionDirectory.resolve("AvaloniaMvvm.csproj").toPath())
 
     @Test
     fun previewEditorProviderShouldHandleTheXamlFile() {

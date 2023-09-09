@@ -27,7 +27,6 @@ import me.fornever.avaloniarider.idea.settings.AvaloniaProjectSettings
 import me.fornever.avaloniarider.idea.settings.AvaloniaWorkspaceSettings
 import me.fornever.avaloniarider.model.avaloniaRiderProjectModel
 import me.fornever.avaloniarider.test.framework.AvaloniaIntegrationTest
-import me.fornever.avaloniarider.test.framework.canonicalSolutionDirectory
 import org.testng.Assert.assertFalse
 import org.testng.annotations.AfterMethod
 import org.testng.annotations.BeforeMethod
@@ -53,7 +52,7 @@ class RunnableAssemblySelectorActionTests : AvaloniaIntegrationTest() {
     }
 
     private val testXamlFile
-        get() = getVirtualFileFromPath("ClassLibrary1/MyControl.axaml", canonicalSolutionDirectory.toFile())
+        get() = getVirtualFileFromPath("ClassLibrary1/MyControl.axaml", activeSolutionDirectory)
 
     private fun createMockSelector(
         isSolutionLoading: IOptPropertyView<Boolean> = OptProperty(),
@@ -149,7 +148,7 @@ class RunnableAssemblySelectorActionTests : AvaloniaIntegrationTest() {
         val action = RunnableAssemblySelectorAction(
             testLifetime,
             project,
-            getVirtualFileFromPath("Views/MainWindow.xaml", canonicalSolutionDirectory.toFile())
+            getVirtualFileFromPath("Views/MainWindow.xaml", activeSolutionDirectory)
         )
         pumpMessages(Duration.ofSeconds(5L)) { !action.isLoading.value }.shouldBeTrue()
 
