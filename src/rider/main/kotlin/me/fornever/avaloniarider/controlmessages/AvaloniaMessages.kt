@@ -1,13 +1,14 @@
 package me.fornever.avaloniarider.controlmessages
 
-import com.intellij.util.application
-import com.jetbrains.rd.platform.util.getComponent
+import com.intellij.openapi.components.Service
+import com.intellij.openapi.components.service
 import me.fornever.avaloniarider.toUUID
 import java.util.*
 
+@Service
 class AvaloniaMessages {
     companion object {
-        fun getInstance(): AvaloniaMessages = application.getComponent()
+        fun getInstance(): AvaloniaMessages = service()
     }
 
     val incomingTypeRegistry = mutableMapOf<UUID, Class<*>>()

@@ -3,9 +3,8 @@ package me.fornever.avaloniarider.bson
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.diagnostic.trace
-import com.jetbrains.rd.framework.util.launch
 import com.jetbrains.rd.util.lifetime.Lifetime
-import com.jetbrains.rd.util.lifetime.onTermination
+import com.jetbrains.rd.util.threading.coroutines.launch
 import de.undercouch.bson4jackson.BsonFactory
 import kotlinx.coroutines.asCoroutineDispatcher
 import me.fornever.avaloniarider.controlmessages.AvaloniaMessage

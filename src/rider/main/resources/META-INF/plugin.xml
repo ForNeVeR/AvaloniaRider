@@ -12,11 +12,6 @@
         This is the Avalonia integration for JetBrains Rider. It adds a live
         preview for Avalonia XAML files.
     </description>
-    <application-components>
-        <component>
-            <implementation-class>me.fornever.avaloniarider.controlmessages.AvaloniaMessages</implementation-class>
-        </component>
-    </application-components>
     <extensions defaultExtensionNs="com.intellij">
         <projectConfigurable groupId="language"
                              instance="me.fornever.avaloniarider.idea.settings.AvaloniaProjectSettingsConfigurable" />
