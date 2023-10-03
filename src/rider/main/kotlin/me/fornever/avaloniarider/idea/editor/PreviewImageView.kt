@@ -1,14 +1,12 @@
 package me.fornever.avaloniarider.idea.editor
 
-import com.intellij.ide.ui.LafManager
-import com.intellij.ide.ui.laf.UIThemeBasedLookAndFeelInfo
 import com.intellij.openapi.rd.createNestedDisposable
 import com.intellij.openapi.rd.paint2DLine
+import com.intellij.ui.JBColor
 import com.intellij.ui.paint.LinePainter2D
 import com.intellij.ui.scale.JBUIScale
 import com.intellij.util.Alarm
 import com.intellij.util.application
-import com.intellij.util.ui.UIUtil
 import com.jetbrains.rd.util.lifetime.Lifetime
 import me.fornever.avaloniarider.controlmessages.FrameMessage
 import me.fornever.avaloniarider.idea.settings.AvaloniaProjectSettings
@@ -76,13 +74,7 @@ class PreviewImageView(
     }
 
     private fun isDarkTheme(): Boolean {
-        return if (UIUtil.isUnderDarcula()) {
-            true
-        } else {
-            val currentLafInfo = LafManager.getInstance().currentLookAndFeel
-            val theme = (currentLafInfo as? UIThemeBasedLookAndFeelInfo)?.theme
-            theme?.isDark ?: false
-        }
+        return !JBColor.isBright()
     }
 
     private fun paintGrid(g: Graphics2D) {
