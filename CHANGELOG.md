@@ -57,5 +57,5 @@ The initial plugin release. The plugin provides the following features for JetBr
 [1.0.4]: https://github.com/ForNeVeR/AvaloniaRider/compare/v1.0.3...v1.0.4
 [1.0.5]: https://github.com/ForNeVeR/AvaloniaRider/compare/v1.0.4...v1.0.5
 [1.1.0]: https://github.com/ForNeVeR/AvaloniaRider/compare/v1.0.5...v1.1.0
-[1.1.0]: https://github.com/ForNeVeR/AvaloniaRider/compare/v1.1.0...v1.2.0
+[1.2.0]: https://github.com/ForNeVeR/AvaloniaRider/compare/v1.1.0...v1.2.0
 [Unreleased]: https://github.com/ForNeVeR/AvaloniaRider/compare/v1.2.0...HEAD
