@@ -1,0 +1,21 @@
+name: 'Close stale issues'
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * *'
+
+permissions:
+  issues: write
+
+jobs:
+  stale:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/stale@v8
+        with:
+          days-before-stale: -1
+          stale-issue-label: 'status:waiting-for-info'
+          remove-stale-when-updated: 'false'
+          days-before-close: 14
+          close-issue-message: 'This issue was closed because it has been open for 14 days, but no requested information was received. Please leave a comment if you think this is a mistake.'
