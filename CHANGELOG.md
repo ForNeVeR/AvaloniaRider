@@ -7,10 +7,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 ## [Unreleased] (1.3.0)
 ### Added
 - [#263](https://github.com/ForNeVeR/AvaloniaRider/issues/263): better zoom level controls.
+### Changed
+- Upgrade the minimally supported version of Rider to 2023.3 EAP 4.
 
 ## [1.2.0] - 2023-10-02
 ### Changed
-- Upgrade to Rider 2023.3 EAP1 and later.
+- Upgrade the minimally supported version of Rider to 2023.3 EAP 1.
 - [#270](https://github.com/ForNeVeR/AvaloniaRider/issues/270): do not print error messages during normal previewer termination.
 
 ### Added
