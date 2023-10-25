@@ -53,10 +53,12 @@ internal class AvaloniaMessageMouseListener(
         if (e.isControlDown) {
             val oldValue = zoom.value
             val change = e.preciseUnitsToScroll().coerceIn(-1.0, 1.0)
-            var newValue = (oldValue - change).coerceIn(0.4, 10.0) // scroll down means zoom out
-            if (oldValue < 1.0 && newValue > 1.0 || oldValue > 1.0 && newValue < 1.0) {
-                newValue = 1.0 // always make a stop at 1.0 scale
-            }
+            val zoomIn = change > 0
+            val newValue =
+                if (zoomIn)
+                    zoomLevels.find { it > oldValue } ?: zoomLevels.last()
+                else
+                    zoomLevels.findLast { it < oldValue } ?: zoomLevels.first()
 
             zoomProperty.value = newValue
             return
@@ -134,3 +136,23 @@ internal class AvaloniaMessageMouseListener(
         else -> MouseButton.None.ordinal
     }
 }
+
+private val zoomLevels = doubleArrayOf(
+    0.25,
+    0.33,
+    0.5,
+    0.67,
+    0.75,
+    0.8,
+    0.9,
+    1.0,
+    1.1,
+    1.25,
+    1.5,
+    1.75,
+    2.0,
+    2.5,
+    3.0,
+    4.0,
+    5.0
+)
