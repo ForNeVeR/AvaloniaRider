@@ -2,6 +2,7 @@ package me.fornever.avaloniarider.idea.editor
 
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
+import me.fornever.avaloniarider.idea.editor.actions.ZoomLevelSelectorAction
 import me.fornever.avaloniarider.idea.settings.AvaloniaProjectSettings
 import javax.swing.JComponent
 
@@ -15,5 +16,6 @@ class AvaloniaRemotePreviewEditor(
     }
 
     override val editorComponent = panel.value
-    override fun createToolbar(targetComponent: JComponent) = createToolbarComponent(targetComponent)
+    override fun createToolbar(targetComponent: JComponent) =
+        createToolbarComponent(targetComponent, ZoomLevelSelectorAction(sessionController.zoomFactor))
 }

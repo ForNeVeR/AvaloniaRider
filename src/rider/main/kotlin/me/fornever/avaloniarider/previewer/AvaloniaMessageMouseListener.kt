@@ -1,11 +1,11 @@
 package me.fornever.avaloniarider.previewer
 
-import com.jetbrains.rd.util.reactive.IPropertyView
 import com.jetbrains.rd.util.reactive.ISource
 import com.jetbrains.rd.util.reactive.Property
 import com.jetbrains.rd.util.reactive.Signal
 import me.fornever.avaloniarider.controlmessages.*
 import me.fornever.avaloniarider.idea.editor.PreviewImageView
+import me.fornever.avaloniarider.idea.editor.actions.ZoomLevelSelectorAction
 import java.awt.event.MouseEvent
 import java.awt.event.MouseWheelEvent
 import javax.swing.event.MouseInputAdapter
@@ -14,15 +14,13 @@ import javax.swing.event.MouseInputAdapter
  * Pass the PreviewImageView instance in order to find out the position of the pointer to the image.
  */
 internal class AvaloniaMessageMouseListener(
-    private val frameView: PreviewImageView
+    private val frameView: PreviewImageView,
+    private val zoom: Property<Double>
 ) : MouseInputAdapter() {
 
     private val avaloniaInputEventSignal = Signal<AvaloniaInputEventMessage>()
 
     val avaloniaInputEvent: ISource<AvaloniaInputEventMessage> = avaloniaInputEventSignal
-
-    private val zoomProperty = Property(1.0)
-    val zoom: IPropertyView<Double> = zoomProperty
 
     override fun mousePressed(e: MouseEvent?) {
         e ?: return
@@ -53,14 +51,15 @@ internal class AvaloniaMessageMouseListener(
         if (e.isControlDown) {
             val oldValue = zoom.value
             val change = e.preciseUnitsToScroll().coerceIn(-1.0, 1.0)
-            val zoomIn = change > 0
+            val zoomIn = change < 0
+            val allValues = ZoomLevelSelectorAction.allZoomLevels
             val newValue =
                 if (zoomIn)
-                    zoomLevels.find { it > oldValue } ?: zoomLevels.last()
+                    allValues.find { it > oldValue } ?: allValues.last()
                 else
-                    zoomLevels.findLast { it < oldValue } ?: zoomLevels.first()
+                    allValues.findLast { it < oldValue } ?: allValues.first()
 
-            zoomProperty.value = newValue
+            zoom.value = newValue
             return
         }
 
@@ -136,23 +135,3 @@ internal class AvaloniaMessageMouseListener(
         else -> MouseButton.None.ordinal
     }
 }
-
-private val zoomLevels = doubleArrayOf(
-    0.25,
-    0.33,
-    0.5,
-    0.67,
-    0.75,
-    0.8,
-    0.9,
-    1.0,
-    1.1,
-    1.25,
-    1.5,
-    1.75,
-    2.0,
-    2.5,
-    3.0,
-    4.0,
-    5.0
-)

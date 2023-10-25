@@ -37,12 +37,9 @@ class PreviewImageView(
     }
 
     init {
-        val listener = AvaloniaMessageMouseListener(this)
+        val listener = AvaloniaMessageMouseListener(this, controller.zoomFactor)
         listener.avaloniaInputEvent.advise(lifetime) { message ->
             controller.sendInputEventMessage(message)
-        }
-        listener.zoom.advise(lifetime) { zoomFactor ->
-            controller.zoomFactor.value = zoomFactor
         }
         addMouseListener(listener)
         addMouseMotionListener(listener)
