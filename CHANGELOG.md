@@ -4,11 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## [Unreleased] (1.3.0)
+## [1.3.0] - 2023-10-26
 ### Added
 - [#263](https://github.com/ForNeVeR/AvaloniaRider/issues/263): better zoom level controls.
 ### Changed
 - Upgrade the minimally supported version of Rider to 2023.3 EAP 4.
+- Small compatibility changes for the new version of Rider.
 
 ## [1.2.0] - 2023-10-02
 ### Changed
@@ -64,4 +65,5 @@ The initial plugin release. The plugin provides the following features for JetBr
 [1.0.5]: https://github.com/ForNeVeR/AvaloniaRider/compare/v1.0.4...v1.0.5
 [1.1.0]: https://github.com/ForNeVeR/AvaloniaRider/compare/v1.0.5...v1.1.0
 [1.2.0]: https://github.com/ForNeVeR/AvaloniaRider/compare/v1.1.0...v1.2.0
-[Unreleased]: https://github.com/ForNeVeR/AvaloniaRider/compare/v1.2.0...HEAD
+[1.3.0]: https://github.com/ForNeVeR/AvaloniaRider/compare/v1.2.0...v1.3.0
+[Unreleased]: https://github.com/ForNeVeR/AvaloniaRider/compare/v1.3.0...HEAD
