@@ -80,7 +80,6 @@ class MsBuildParameterCollector(private val project: Project) {
         )
     }
 
-    @Suppress("UnstableApiUsage")
     suspend fun getAvaloniaPreviewerParameters(
         runnableProjectFilePath: Path,
         runnableProjectOutput: RdProjectOutput,
