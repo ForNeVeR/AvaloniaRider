@@ -49,18 +49,23 @@ class AvaloniaPreviewerProcess(
             transport.getOptions() +
             method.getOptions { NetUtils.findFreePort(5000) } +
             parameters.targetPath.toAbsolutePath().toString()
-        val commandLine = when (parameters.runtime) {
-            is DotNetCoreRuntime -> GeneralCommandLine().withExePath(parameters.runtime.cliExePath)
-                .withParameters(
+        val runtime = parameters.runtime
+        val runtimeArguments =
+            if (runtime is DotNetCoreRuntime) {
+                listOf(
                     "exec",
                     "--runtimeconfig", runtimeConfig.toAbsolutePath().toString(),
-                    "--depsfile", depsFile.toAbsolutePath().toString(),
-                    parameters.previewerBinary.toAbsolutePath().toString()
-                ).withParameters(previewerArguments)
-            else -> GeneralCommandLine().withExePath(parameters.previewerBinary.toAbsolutePath().toString())
-                .withParameters(previewerArguments)
-        }
-        return commandLine.withWorkDirectory(parameters.workingDirectory.toFile())
+                    "--depsfile", depsFile.toAbsolutePath().toString()
+                )
+            } else emptyList()
+
+        return GeneralCommandLine()
+            .withExePath(parameters.previewerBinary.toAbsolutePath().toString())
+            .withParameters(previewerArguments)
+            .withWorkDirectory(parameters.workingDirectory.toFile())
+            .apply {
+                runtime.patchRunCommandLine(this, runtimeArguments)
+            }
     }
 
     private fun startProcess(
