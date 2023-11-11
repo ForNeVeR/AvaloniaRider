@@ -1,4 +1,4 @@
-<idea-plugin>
+<idea-plugin require-restart="true">
     <id>avalonia-rider</id>
     <name>AvaloniaRider</name>
     <version>_PLACEHOLDER_</version>
