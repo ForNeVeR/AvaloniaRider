@@ -3,11 +3,13 @@ package me.fornever.avaloniarider.idea.editor.actions
 import com.intellij.execution.RunManager
 import com.intellij.execution.RunManagerListener
 import com.intellij.execution.RunnerAndConfigurationSettings
+import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.actionSystem.ex.ComboBoxAction
+import com.intellij.openapi.actionSystem.ex.TooltipDescriptionProvider
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.DumbAwareAction
@@ -57,7 +59,7 @@ class RunnableAssemblySelectorAction(
     isSolutionLoading: IOptPropertyView<Boolean>,
     runnableProjects: IOptPropertyView<Sequence<RunnableProject>>,
     private val xamlFile: VirtualFile
-) : ComboBoxAction(), DumbAware {
+) : ComboBoxAction(), DumbAware, TooltipDescriptionProvider {
 
     companion object {
         private val logger = logger<RunnableAssemblySelectorAction>()
@@ -180,8 +182,8 @@ class RunnableAssemblySelectorAction(
             })
     }
 
-    private fun calculateIcon(runnableProject: RunnableProject?) =
-        runnableProject?.let { VfsUtil.findFile(Paths.get(it.projectFilePath), false) }?.let { virtualFile ->
+    private fun calculateIcon(runnableProject: RunnableProject) =
+        VfsUtil.findFile(Paths.get(runnableProject.projectFilePath), false)?.let { virtualFile ->
             workspaceModel.getProjectModelEntities(virtualFile, project).singleOrNull {
                 it.isProject() || it.isUnloadedProject()
             }
@@ -192,13 +194,27 @@ class RunnableAssemblySelectorAction(
         val selectedProject = selectedRunnableProjectProperty.valueOrNull
         val isLoading = isLoading.value
         e.presentation.apply {
-            isEnabled = !isLoading
-            icon = calculateIcon(selectedProject)
-
-            @Suppress("DialogTitleCapitalization")
-            text =
-                if (isLoading) message("assemblySelector.loading")
-                else selectedProject?.name ?: message("assemblySelector.unableToDetermineProject")
+            when {
+                isLoading -> {
+                    isEnabled = false
+                    icon = null
+                    text = message("assemblySelector.loading")
+                    description = null
+                }
+                selectedProject == null -> {
+                    isEnabled = true
+                    icon = AllIcons.General.Warning
+                    @Suppress("DialogTitleCapitalization")
+                    text = message("assemblySelector.noProject")
+                    description = message("assemblySelector.noProjectDescription")
+                }
+                else -> {
+                    isEnabled = true
+                    icon = calculateIcon(selectedProject)
+                    text = selectedProject.name
+                    description = null
+                }
+            }
         }
     }
 
