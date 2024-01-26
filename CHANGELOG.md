@@ -4,9 +4,9 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## [Unreleased] (1.3.1)
+## [1.3.1] - 2024-01-26
 ### Changed
-- Upgrade the minimally supported version of Rider to 2023.3.
+- **(Requirement update!)** Update the supported Rider version to 2024.1 EAP 2.
 
 ### Added
 - Improve the diagnostics of cases when there's no locally-runnable projects in the open solution.
@@ -73,4 +73,5 @@ The initial plugin release. The plugin provides the following features for JetBr
 [1.1.0]: https://github.com/ForNeVeR/AvaloniaRider/compare/v1.0.5...v1.1.0
 [1.2.0]: https://github.com/ForNeVeR/AvaloniaRider/compare/v1.1.0...v1.2.0
 [1.3.0]: https://github.com/ForNeVeR/AvaloniaRider/compare/v1.2.0...v1.3.0
-[Unreleased]: https://github.com/ForNeVeR/AvaloniaRider/compare/v1.3.0...HEAD
+[1.3.0]: https://github.com/ForNeVeR/AvaloniaRider/compare/v1.3.0...v1.3.1
+[Unreleased]: https://github.com/ForNeVeR/AvaloniaRider/compare/v1.3.1...HEAD

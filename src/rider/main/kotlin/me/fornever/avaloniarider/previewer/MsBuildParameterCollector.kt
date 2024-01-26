@@ -110,6 +110,7 @@ class MsBuildParameterCollector(private val project: Project) {
                     | TFM "${tfm.presentableName}".""".trimMargin()
             )
         val runtime = DotNetRuntime.detectRuntimeForProjectOrThrow(
+            project,
             runnableProject.kind,
             runtimeHost,
             runtimeType = null,
