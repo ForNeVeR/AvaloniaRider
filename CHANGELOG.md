@@ -8,6 +8,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 ### Changed
 - **(Requirement update!)** Update the supported Rider version to 2024.1 EAP 2.
 
+### Fixed
+- Part of [#237](https://github.com/ForNeVeR/AvaloniaRider/issues/237): previewer now should correctly work for Mono if it's detected.
+
 ### Added
 - Improve the diagnostics of cases when there's no locally-runnable projects in the open solution.
 
