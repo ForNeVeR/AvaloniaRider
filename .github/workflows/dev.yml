@@ -11,7 +11,7 @@ jobs:
       DOTNET_NOLOGO: 1
       DOTNET_CLI_TELEMETRY_OPTOUT: 1
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       # Common preparation
       - name: Prepare build
@@ -19,7 +19,7 @@ jobs:
 
       # Backend
       - name: Set up .NET SDK
-        uses: actions/setup-dotnet@v1
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '6.0.x'
       - name: Build Backend

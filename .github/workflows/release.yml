@@ -21,7 +21,7 @@ jobs:
         run: echo "version=$(if ($env:GITHUB_REF.StartsWith('refs/tags/v')) { $env:GITHUB_REF -replace '^refs/tags/v', '' } else { 'next' })" >> $env:GITHUB_OUTPUT
 
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Read the changelog
         uses: ForNeVeR/ChangelogAutomation.action@v1
@@ -35,7 +35,7 @@ jobs:
 
       # Backend
       - name: Set up .NET SDK
-        uses: actions/setup-dotnet@v1
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '6.0.x'
       - name: Build Backend
