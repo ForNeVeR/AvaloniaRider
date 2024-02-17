@@ -28,6 +28,7 @@ $channelArgs = if ($Channel) {
     @()
 }
 curl -i `
+    --fail-with-body `
     --header "Authorization: Bearer $AuthToken" `
     -F xmlId=$PluginXmlId `
     -F file=@$file `
