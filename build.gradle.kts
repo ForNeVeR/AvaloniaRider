@@ -14,18 +14,19 @@ buildscript {
 plugins {
     id("me.filippov.gradle.jvm.wrapper") version "0.14.0"
     id("org.jetbrains.changelog") version "2.0.0"
-    id("org.jetbrains.intellij") version "1.17.3"
+    id("org.jetbrains.intellij.platform") version "2.0.0-SNAPSHOT"
     id("org.jetbrains.kotlin.jvm") version "1.8.10"
 }
 
-apply {
-    plugin("com.jetbrains.rdgen")
+repositories {
+    intellijPlatform {
+        defaultRepositories()
+    }
 }
 
-dependencies {
-    implementation("de.undercouch:bson4jackson:2.13.1")
 
-    testImplementation("org.testng:testng:7.7.0")
+apply {
+    plugin("com.jetbrains.rdgen")
 }
 
 val dotNetPluginId = "AvaloniaRider.Plugin"
@@ -35,6 +36,16 @@ val riderSdkVersion: String by project
 val untilBuildVersion: String by project
 val pluginVersionBase: String by project
 val buildRelease: String by project
+
+dependencies {
+    intellijPlatform {
+        rider(riderSdkVersion)
+    }
+
+    implementation("de.undercouch:bson4jackson:2.13.1")
+
+    testImplementation("org.testng:testng:7.7.0")
+}
 
 val buildConfiguration = ext.properties["buildConfiguration"] ?: "Debug"
 val buildNumber = (ext.properties["buildNumber"] as String?)?.toInt() ?: 0
@@ -103,9 +114,6 @@ configure<com.jetbrains.rd.generator.gradle.RdGenExtension> {
 }
 
 intellij {
-    type.set("RD")
-    version.set(riderSdkVersion)
-    downloadSources.set(false)
     plugins.set(listOf("com.intellij.javafx:1.0.3", "com.jetbrains.xaml.previewer"))
 }
 
