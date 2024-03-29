@@ -8,7 +8,7 @@ When considering version compatibility (and thus incrementing the major version)
 
 ## [Unreleased]
 ### Changed
-- **(Requirement update!)** Update the minimally supported Rider version to 2024.1 EAP 9.
+- **(Requirement update!)** Update the minimally supported Rider version to 2024.1 RC 1.
 
 ## [1.3.2] - 2024-02-17
 ### Changed
