@@ -2,5 +2,14 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
     "config:recommended"
+  ],
+  "packageRules": [
+    {
+      "matchPackagePatterns": [
+        "org.jetbrains.kotlin.jvm",
+        "org.jetbrains.kotlin:kotlin-stdlib"
+      ],
+      "enabled": false
+    }
   ]
 }
