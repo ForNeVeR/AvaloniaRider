@@ -1,32 +1,28 @@
+import com.jetbrains.plugin.structure.base.utils.isFile
 import org.jetbrains.changelog.exceptions.MissingVersionException
-
-buildscript {
-    repositories {
-        maven { setUrl("https://cache-redirector.jetbrains.com/maven-central") }
-    }
-
-    // https://search.maven.org/artifact/com.jetbrains.rd/rd-gen
-    dependencies {
-        classpath("com.jetbrains.rd:rd-gen:2024.1.1")
-    }
-}
+import org.jetbrains.intellij.platform.gradle.Constants
+import org.jetbrains.intellij.platform.gradle.tasks.PrepareSandboxTask
+import kotlin.io.path.absolute
+import kotlin.io.path.isDirectory
 
 plugins {
+    alias(libs.plugins.intelliJPlatform)
+    alias(libs.plugins.kotlinJvm)
     id("me.filippov.gradle.jvm.wrapper") version "0.14.0"
     id("org.jetbrains.changelog") version "2.0.0"
-    id("org.jetbrains.intellij.platform") version "2.0.0-SNAPSHOT"
-    id("org.jetbrains.kotlin.jvm") version "1.8.10"
+}
+
+allprojects {
+    repositories {
+        mavenCentral()
+    }
 }
 
 repositories {
     intellijPlatform {
         defaultRepositories()
+        jetbrainsRuntime()
     }
-}
-
-
-apply {
-    plugin("com.jetbrains.rdgen")
 }
 
 val dotNetPluginId = "AvaloniaRider.Plugin"
@@ -40,6 +36,11 @@ val buildRelease: String by project
 dependencies {
     intellijPlatform {
         rider(riderSdkVersion)
+        jetbrainsRuntime()
+        instrumentationTools()
+
+        plugin("com.intellij.javafx:1.0.3")
+        bundledPlugin("com.jetbrains.xaml.previewer")
     }
 
     implementation("de.undercouch:bson4jackson:2.13.1")
@@ -49,9 +50,6 @@ dependencies {
 
 val buildConfiguration = ext.properties["buildConfiguration"] ?: "Debug"
 val buildNumber = (ext.properties["buildNumber"] as String?)?.toInt() ?: 0
-
-val rdLibDirectory: () -> File = { file("${tasks.setupDependencies.get().idea.get().classes}/lib/rd") }
-extra["rdLibDirectory"] = rdLibDirectory
 
 val dotNetSrcDir = File(projectDir, "src/dotnet")
 
@@ -72,49 +70,11 @@ fun File.writeTextIfChanged(content: String) {
     }
 }
 
-repositories {
-    maven { setUrl("https://cache-redirector.jetbrains.com/maven-central") }
-}
-
 sourceSets {
     main {
         kotlin.srcDir("src/rider/main/kotlin")
         resources.srcDir("src/rider/main/resources")
     }
-}
-
-apply(plugin = "com.jetbrains.rdgen")
-
-configure<com.jetbrains.rd.generator.gradle.RdGenExtension> {
-    val modelDir = file("$projectDir/protocol/src/main/kotlin/model")
-    val csOutput = file("$projectDir/src/dotnet/AvaloniaRider.Plugin/Model")
-    val ktOutput = file("$projectDir/src/rider/main/kotlin/me/fornever/avaloniarider/model")
-
-    verbose = true
-    classpath({
-        "${rdLibDirectory()}/rider-model.jar"
-    })
-    sources("$modelDir/rider")
-    hashFolder = "$rootDir/build/rdgen/rider"
-    packages = "model.rider"
-
-    generator {
-        language = "kotlin"
-        transform = "asis"
-        root = "com.jetbrains.rider.model.nova.ide.IdeRoot"
-        directory = "$ktOutput"
-    }
-
-    generator {
-        language = "csharp"
-        transform = "reversed"
-        root = "com.jetbrains.rider.model.nova.ide.IdeRoot"
-        directory = "$csOutput"
-    }
-}
-
-intellij {
-    plugins.set(listOf("com.intellij.javafx:1.0.3", "com.jetbrains.xaml.previewer"))
 }
 
 tasks {
@@ -124,8 +84,8 @@ tasks {
     }
 
     val riderSdkPath by lazy {
-        val path = setupDependencies.get().idea.get().classes.resolve("lib/DotNetSdkForRdPlugins")
-        if (!path.isDirectory) error("$path does not exist or not a directory")
+        val path = intellijPlatform.platformPath.resolve("lib/DotNetSdkForRdPlugins").absolute()
+        if (!path.isDirectory()) error("$path does not exist or not a directory")
 
         println("Rider SDK path: $path")
         return@lazy path
@@ -154,14 +114,14 @@ tasks {
         }
     }
 
-    val rdgen by existing
+    val rdGen = ":protocol:rdgen"
 
     register("prepare") {
-        dependsOn(rdgen, generateDotNetSdkProperties, generateNuGetConfig)
+        dependsOn(rdGen, generateDotNetSdkProperties, generateNuGetConfig)
     }
 
     val compileDotNet by registering {
-        dependsOn(rdgen, generateDotNetSdkProperties, generateNuGetConfig)
+        dependsOn(rdGen, generateDotNetSdkProperties, generateNuGetConfig)
         doLast {
             exec {
                 executable("dotnet")
@@ -171,7 +131,7 @@ tasks {
     }
 
     withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-        dependsOn(rdgen)
+        dependsOn(rdGen)
         kotlinOptions {
             jvmTarget = "17"
             freeCompilerArgs = freeCompilerArgs + "-opt-in=kotlin.RequiresOptIn"
@@ -212,7 +172,7 @@ tasks {
         environment["LOCAL_ENV_RUN"] = "true"
     }
 
-    withType<org.jetbrains.intellij.tasks.PrepareSandboxTask> {
+    withType<PrepareSandboxTask> {
         dependsOn(compileDotNet)
 
         val reSharperPluginDesc = "fvnever.$intellijPluginId"
@@ -234,5 +194,22 @@ tasks {
                 if (!file.exists()) throw RuntimeException("File \"$file\" does not exist")
             }
         }
+    }
+}
+
+val riderModel: Configuration by configurations.creating {
+    isCanBeConsumed = true
+    isCanBeResolved = false
+}
+
+artifacts {
+    add(riderModel.name, provider {
+        intellijPlatform.platformPath.resolve("lib/rd/rider-model.jar").also {
+            check(it.isFile) {
+                "rider-model.jar is not found at $riderModel"
+            }
+        }
+    }) {
+        builtBy(Constants.Tasks.INITIALIZE_INTELLIJ_PLATFORM_PLUGIN)
     }
 }

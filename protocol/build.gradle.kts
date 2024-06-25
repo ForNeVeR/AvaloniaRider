@@ -1,19 +1,47 @@
+import com.jetbrains.rd.generator.gradle.RdGenTask
+
 plugins {
-    id("java")
-    id("org.jetbrains.kotlin.jvm")
-}
-
-val rdLibDirectory: () -> File by rootProject.extra
-
-repositories {
-    maven { setUrl("https://cache-redirector.jetbrains.com/maven-central") }
-    flatDir {
-        dir(rdLibDirectory())
-    }
+    alias(libs.plugins.kotlinJvm)
+    id("com.jetbrains.rdgen") version libs.versions.rdGen
 }
 
 dependencies {
-    implementation("org.jetbrains.kotlin:kotlin-stdlib")
-    implementation(group = "", name = "rd-gen")
-    implementation(group = "", name = "rider-model")
+    implementation(libs.rdGen)
+    implementation(libs.kotlinStdLib)
+    implementation(
+        project(
+            mapOf(
+                "path" to ":",
+                "configuration" to "riderModel"
+            )
+        )
+    )
+}
+
+rdgen {
+    val csOutput = file("$projectDir/src/dotnet/AvaloniaRider.Plugin/Model")
+    val ktOutput = file("$projectDir/src/rider/main/kotlin/me/fornever/avaloniarider/model")
+
+    verbose = true
+    packages = "model.rider"
+
+    generator {
+        language = "kotlin"
+        transform = "asis"
+        root = "com.jetbrains.rider.model.nova.ide.IdeRoot"
+        directory = "$ktOutput"
+    }
+
+    generator {
+        language = "csharp"
+        transform = "reversed"
+        root = "com.jetbrains.rider.model.nova.ide.IdeRoot"
+        directory = "$csOutput"
+    }
+}
+
+tasks.withType<RdGenTask> {
+    val classPath = sourceSets["main"].runtimeClasspath
+    dependsOn(classPath)
+    classpath(classPath)
 }

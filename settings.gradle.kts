@@ -1,11 +1,16 @@
-// Affects the repositories used to resolve the plugins { } block
+rootProject.name = "avaloniarider"
+include(":protocol")
+
 pluginManagement {
     repositories {
-        maven("https://cache-redirector.jetbrains.com/plugins.gradle.org")
-        maven("https://oss.sonatype.org/content/repositories/snapshots/")
+        gradlePluginPortal()
+        mavenCentral()
+    }
+    resolutionStrategy {
+        eachPlugin {
+            if (requested.id.id == "com.jetbrains.rdgen") {
+                useModule("com.jetbrains.rd:rd-gen:${requested.version}")
+            }
+        }
     }
 }
-
-rootProject.name = "avaloniarider"
-
-include(":protocol")
