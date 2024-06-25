@@ -1,6 +1,7 @@
 import com.jetbrains.plugin.structure.base.utils.isFile
 import org.jetbrains.changelog.exceptions.MissingVersionException
 import org.jetbrains.intellij.platform.gradle.Constants
+import org.jetbrains.intellij.platform.gradle.TestFrameworkType
 import org.jetbrains.intellij.platform.gradle.tasks.PrepareSandboxTask
 import kotlin.io.path.absolute
 import kotlin.io.path.isDirectory
@@ -41,11 +42,14 @@ dependencies {
 
         plugin("com.intellij.javafx:1.0.3")
         bundledPlugin("com.jetbrains.xaml.previewer")
+
+        testFramework(TestFrameworkType.Platform.Bundled)
     }
 
     implementation("de.undercouch:bson4jackson:2.13.1")
 
     testImplementation("org.testng:testng:7.7.0")
+    testImplementation(libs.openTest4J)
 }
 
 val buildConfiguration = ext.properties["buildConfiguration"] ?: "Debug"
