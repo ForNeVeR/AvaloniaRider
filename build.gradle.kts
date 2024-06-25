@@ -7,10 +7,10 @@ import kotlin.io.path.absolute
 import kotlin.io.path.isDirectory
 
 plugins {
+    alias(libs.plugins.changelog)
+    alias(libs.plugins.gradleJvmWrapper)
     alias(libs.plugins.intelliJPlatform)
     alias(libs.plugins.kotlinJvm)
-    id("me.filippov.gradle.jvm.wrapper") version "0.14.0"
-    id("org.jetbrains.changelog") version "2.0.0"
 }
 
 allprojects {
@@ -46,9 +46,9 @@ dependencies {
         testFramework(TestFrameworkType.Platform.Bundled)
     }
 
-    implementation("de.undercouch:bson4jackson:2.13.1")
+    implementation(libs.bson4Jackson)
 
-    testImplementation("org.testng:testng:7.7.0")
+    testImplementation(libs.testNg)
     testImplementation(libs.openTest4J)
 }
 
