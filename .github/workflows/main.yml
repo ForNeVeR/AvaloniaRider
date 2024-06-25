@@ -52,20 +52,20 @@ jobs:
 
       # Distribution
       - name: Build Distribution
-        if: matrix.image == 'ubuntu-20.04'
+        if: matrix.image == 'ubuntu-22.04'
         run: ./gradlew -PbuildConfiguration=Release -PbuildNumber=${{ github.run_number }} buildPlugin
       - name: Determine Version
-        if: matrix.image == 'ubuntu-20.04'
+        if: matrix.image == 'ubuntu-22.04'
         shell: pwsh
         run: |
           $version = ./scripts/Get-Version.ps1
           "AVALONIA_RIDER_VERSION=$version" | Out-File $env:GITHUB_ENV
       - name: Unpack Distribution # for the purpose of uploading
-        if: matrix.image == 'ubuntu-20.04'
+        if: matrix.image == 'ubuntu-22.04'
         shell: pwsh
         run: scripts/Unpack-Distribution.ps1
       - name: Upload Distribution
-        if: matrix.image == 'ubuntu-20.04'
+        if: matrix.image == 'ubuntu-22.04'
         uses: actions/upload-artifact@v4
         with:
           name: avaloniarider-${{ env.AVALONIA_RIDER_VERSION }}
