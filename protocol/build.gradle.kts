@@ -19,8 +19,8 @@ dependencies {
 }
 
 rdgen {
-    val csOutput = file("$projectDir/src/dotnet/AvaloniaRider.Plugin/Model")
-    val ktOutput = file("$projectDir/src/rider/main/kotlin/me/fornever/avaloniarider/model")
+    val csOutput = rootProject.projectDir.resolve("src/dotnet/AvaloniaRider.Plugin/Model")
+    val ktOutput = rootProject.projectDir.resolve("src/rider/main/kotlin/me/fornever/avaloniarider/model")
 
     verbose = true
     packages = "model.rider"
