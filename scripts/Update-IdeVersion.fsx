@@ -216,7 +216,16 @@ let GenerateResult latestSpec =
         BranchName = $"dependencies/rider-{fullVersion}"
         CommitMessage = $"Dependencies: update Rider to {fullVersion}"
         PrTitle = $"Rider {fullVersion}"
-        PrBodyMarkdown = $"""Update Rider to {fullVersion}.
+        PrBodyMarkdown = $"""
+## Maintainer Note
+> [!WARNING]
+> This PR will not trigger CI by default. Please **close it and reopen manually** to trigger the CI.
+>
+> Unfortunately, this is a consequence of the current GitHub Action security model (by default, PRs created
+> automatically aren't allowed to trigger other automation).
+
+## PR Description
+Update Rider to {fullVersion}.
 
 Update Kotlin to {latestSpec.KotlinVersion}.
 """
