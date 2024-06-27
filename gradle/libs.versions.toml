@@ -1,6 +1,8 @@
 [versions]
 kotlin = "1.9.24" # https://plugins.jetbrains.com/docs/intellij/using-kotlin.html#kotlin-standard-library
 rdGen = "2024.1.1"
+riderSdk = "2024.2-EAP4-SNAPSHOT"
+riderSdkPreview = "2024.2-EAP4-SNAPSHOT"
 
 [libraries]
 bson4Jackson = "de.undercouch:bson4jackson:2.15.1"

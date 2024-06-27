@@ -2,6 +2,7 @@ import com.jetbrains.plugin.structure.base.utils.isFile
 import org.jetbrains.changelog.exceptions.MissingVersionException
 import org.jetbrains.intellij.platform.gradle.Constants
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
+import org.jetbrains.intellij.platform.gradle.tasks.CustomTestIdeTask
 import org.jetbrains.intellij.platform.gradle.tasks.PrepareSandboxTask
 import kotlin.io.path.absolute
 import kotlin.io.path.isDirectory
@@ -29,14 +30,13 @@ repositories {
 val dotNetPluginId = "AvaloniaRider.Plugin"
 val intellijPluginId = "avalonia-rider"
 
-val riderSdkVersion: String by project
 val untilBuildVersion: String by project
 val pluginVersionBase: String by project
 val buildRelease: String by project
 
 dependencies {
     intellijPlatform {
-        rider(riderSdkVersion)
+        rider(libs.versions.riderSdk)
         jetbrainsRuntime()
         instrumentationTools()
 
@@ -167,7 +167,7 @@ tasks {
         jvmArgs("-Xmx1500m")
     }
 
-    test {
+    withType<Test> {
         useTestNG()
         testLogging {
             showStandardStreams = true
@@ -199,6 +199,13 @@ tasks {
             }
         }
     }
+
+    val testRiderPreview by registering(CustomTestIdeTask::class) {
+        version = libs.versions.riderSdkPreview
+        enabled = libs.versions.riderSdk.get() != libs.versions.riderSdkPreview.get()
+    }
+
+    check { dependsOn(testRiderPreview) }
 }
 
 val riderModel: Configuration by configurations.creating {

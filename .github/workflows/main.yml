@@ -36,7 +36,7 @@ jobs:
 
       # Frontend
       - name: Test
-        run: ./gradlew -PbuildConfiguration=Release -PbuildNumber=${{ github.run_number }} test
+        run: ./gradlew -PbuildConfiguration=Release -PbuildNumber=${{ github.run_number }} :check
       - name: Upload Test Results
         uses: actions/upload-artifact@v4
         with:

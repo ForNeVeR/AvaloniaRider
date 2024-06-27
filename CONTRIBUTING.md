@@ -40,7 +40,7 @@ $ ./gradlew runIde
 Execute the following shell command:
 
 ```console
-$ ./gradlew test
+$ ./gradlew :check
 ```
 
 Development
