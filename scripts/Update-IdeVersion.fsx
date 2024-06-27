@@ -7,7 +7,7 @@ open System.Threading.Tasks
 open System.Xml.Linq
 open System.Xml.XPath
 
-let metadataUrl = Uri "https://d2s4y8xcwt8bet.cloudfront.net/com/jetbrains/intellij/rider/riderRD/maven-metadata.xml"
+let metadataUrl = Uri "https://www.jetbrains.com/intellij-repository/snapshots/com/jetbrains/intellij/rider/riderRD/maven-metadata.xml"
 
 type TaskResult =
     | HasChanges of {|
