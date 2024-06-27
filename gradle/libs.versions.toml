@@ -3,7 +3,7 @@ kotlin = "1.9.24" # https://plugins.jetbrains.com/docs/intellij/using-kotlin.htm
 rdGen = "2024.1.1"
 
 [libraries]
-bson4Jackson = "de.undercouch:bson4jackson:2.13.1"
+bson4Jackson = "de.undercouch:bson4jackson:2.15.1"
 kotlinStdLib = { group = "org.jetbrains.kotlin", name = "kotlin-stdlib", version.ref = "kotlin" }
 openTest4J = "org.opentest4j:opentest4j:1.3.0"
 rdGen = { group = "com.jetbrains.rd", name = "rd-gen", version.ref = "rdGen" }
