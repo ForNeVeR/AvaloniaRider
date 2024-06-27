@@ -1,14 +1,13 @@
-﻿#r "nuget: HtmlAgilityPack, 1.11.61"
-
-open System
+﻿open System
 open System.Diagnostics
 open System.IO
 open System.Net.Http
 open System.Text.RegularExpressions
 open System.Threading.Tasks
-open HtmlAgilityPack
+open System.Xml.Linq
+open System.Xml.XPath
 
-let repositoryUrl = Uri "https://www.jetbrains.com/intellij-repository/snapshots/"
+let metadataUrl = Uri "https://d2s4y8xcwt8bet.cloudfront.net/com/jetbrains/intellij/rider/riderRD/maven-metadata.xml"
 
 type TaskResult =
     | HasChanges of {|
@@ -34,7 +33,7 @@ type IdeFlavor =
         else if x = "" then Stable
         else failwithf $"Cannot parse IDE flavor: {x}."
 
-type IdeVersion =
+type IdeVersion = // TODO: Verify ordering
     {
         Wave: IdeWave
         Minor: int
@@ -95,7 +94,6 @@ type IdeBuildSpec = {
 // https://plugins.jetbrains.com/docs/intellij/using-kotlin.html#kotlin-standard-library
 let GetKotlinVersion wave =
     match wave with
-    | YearBased(2024, 3) -> Version.Parse "1.9.24" // tentative
     | YearBased(2024, 2) -> Version.Parse "1.9.24"
     | YearBased(2024, 1) -> Version.Parse "1.9.22"
     | YearBased(2023, 3) -> Version.Parse "1.9.21"
@@ -104,42 +102,25 @@ let GetKotlinVersion wave =
     | _ -> failwithf $"Cannot determine Kotlin version for IDE wave {wave}."
 
 let ReadLatestIdeSpec filter = task {
-    printfn $"Loading page \"{repositoryUrl}\"."
+    printfn $"Loading document \"{metadataUrl}\"."
     let sw = Stopwatch.StartNew()
+
     use http = new HttpClient()
-    let! response = http.GetAsync(repositoryUrl)
+    let! response = http.GetAsync(metadataUrl)
     response.EnsureSuccessStatusCode() |> ignore
 
     let! content = response.Content.ReadAsStringAsync()
-    let document = HtmlDocument()
-    document.LoadHtml content
-    printfn $"Loaded and processed the page in {sw.ElapsedMilliseconds} ms."
+    let document = XDocument.Parse content
+    printfn $"Loaded and processed the document in {sw.ElapsedMilliseconds} ms."
 
-    // body > h2:nth-child(179)
-    let headers = document.DocumentNode.SelectNodes "//body//h2"
-    let riderSectionHeader =
-        headers
-        |> Seq.tryFind(fun h2 -> h2.InnerText = "com.jetbrains.intellij.rider")
-        |> Option.defaultWith(fun() -> failwith "Cannot find Rider section at the page.")
-
-    let nextNonTextSibling(x: HtmlNode) =
-        let mutable c = x.NextSibling
-        while c :? HtmlTextNode do
-            let prev = c
-            c <- c.NextSibling
-            if c = null then failwithf $"Cannot find new non-text sibling of element {prev}."
-        c
-
-    let table = nextNonTextSibling riderSectionHeader
-    if table.Name <> "table" then
-        failwithf $"Next element after Rider section header is a {table.Name} and not a table."
-
-    let rows = table.SelectNodes "tbody//tr"
-    if rows.Count = 0 then failwithf "No rows found in Rider version table."
+    let versions =
+        document.XPathSelectElements "//metadata//versioning//versions//version"
+        |> Seq.toArray
+    if versions.Length = 0 then failwithf "No Rider SDK versions found."
     let maxVersion =
-        rows
-        |> Seq.map(fun row ->
-            let version = row.SelectNodes("td").[0].InnerText
+        versions
+        |> Seq.map(fun version ->
+            let version = version.Value
             printfn $"Version found: {version}"
             version
         )
