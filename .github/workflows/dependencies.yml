@@ -19,7 +19,7 @@ jobs:
 
       - id: update
         name: "Update the dependency versions"
-        run: dotnet run scripts/Update-IdeVersion.fsx
+        run: dotnet fsi scripts/Update-IdeVersion.fsx
 
       - if: steps.update.outputs.has-changes == 'true'
         name: "Create a PR"
