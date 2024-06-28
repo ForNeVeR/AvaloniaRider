@@ -22,6 +22,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - if: matrix.image == 'ubuntu-22.04'
+        name: Free disk space
+        uses: jlumbroso/free-disk-space@v1.3.1
+        with:
+          tool-cache: false
+          large-packages: false
+
       # Common preparation
       - name: Prepare build
         run: ./gradlew prepare
