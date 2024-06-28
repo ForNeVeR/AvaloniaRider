@@ -1,5 +1,5 @@
 [versions]
-kotlin = "1.9.24" # https://plugins.jetbrains.com/docs/intellij/using-kotlin.html#kotlin-standard-library
+kotlin = "1.9.24"
 rdGen = "2024.1.1"
 riderSdk = "2024.2-EAP4-SNAPSHOT"
 riderSdkPreview = "2024.2-EAP4-SNAPSHOT"
