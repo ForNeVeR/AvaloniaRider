@@ -7,7 +7,10 @@ open System.Threading.Tasks
 open System.Xml.Linq
 open System.Xml.XPath
 
-let metadataUrl = Uri "https://www.jetbrains.com/intellij-repository/snapshots/com/jetbrains/intellij/rider/riderRD/maven-metadata.xml"
+let snapshotMetadataUrl =
+    Uri "https://www.jetbrains.com/intellij-repository/snapshots/com/jetbrains/intellij/rider/riderRD/maven-metadata.xml"
+let releaseMetadataUrl =
+    Uri "https://www.jetbrains.com/intellij-repository/releases/com/jetbrains/intellij/rider/riderRD/maven-metadata.xml"
 
 type TaskResult =
     | HasChanges of {|
@@ -87,7 +90,7 @@ type IdeVersion = // TODO[#358]: Verify ordering
         |]
 
 type IdeBuildSpec = {
-    IdeVersion: IdeVersion
+    IdeVersions: Map<string, IdeVersion>
     KotlinVersion: Version
 }
 
@@ -101,46 +104,67 @@ let GetKotlinVersion wave =
     | YearBased(2023, 1) -> Version.Parse "1.8.0"
     | _ -> failwithf $"Cannot determine Kotlin version for IDE wave {wave}."
 
-let ReadLatestIdeSpec filter = task {
-    printfn $"Loading document \"{metadataUrl}\"."
-    let sw = Stopwatch.StartNew()
-
+let ReadLatestIdeSpecs specs kotlinSpecName = task {
     use http = new HttpClient()
-    let! response = http.GetAsync(metadataUrl)
-    response.EnsureSuccessStatusCode() |> ignore
+    let readVersions (url: Uri) filter = task {
+        printfn $"Loading document \"{url}\"."
+        let sw = Stopwatch.StartNew()
 
-    let! content = response.Content.ReadAsStringAsync()
-    let document = XDocument.Parse content
-    printfn $"Loaded and processed the document in {sw.ElapsedMilliseconds} ms."
+        let! response = http.GetAsync(url)
+        response.EnsureSuccessStatusCode() |> ignore
 
-    let versions =
-        document.XPathSelectElements "//metadata//versioning//versions//version"
-        |> Seq.toArray
-    if versions.Length = 0 then failwithf "No Rider SDK versions found."
-    let maxVersion =
-        versions
-        |> Seq.map(fun version ->
-            let version = version.Value
-            printfn $"Version found: {version}"
-            version
-        )
-        |> Seq.map IdeVersion.Parse
-        |> Seq.filter filter
-        |> Seq.max
+        let! content = response.Content.ReadAsStringAsync()
+        let document = XDocument.Parse content
+        printfn $"Loaded and processed the document in {sw.ElapsedMilliseconds} ms."
+
+        let versions =
+            document.XPathSelectElements "//metadata//versioning//versions//version"
+            |> Seq.toArray
+        if versions.Length = 0 then failwithf "No Rider SDK versions found."
+        let maxVersion =
+            versions
+            |> Seq.map(fun version ->
+                let version = version.Value
+                printfn $"Version found: {version}"
+                version
+            )
+            |> Seq.map IdeVersion.Parse
+            |> Seq.filter filter
+            |> Seq.max
+
+        return maxVersion
+    }
+
+    let! pairs =
+        specs
+        |> Map.toSeq
+        |> Seq.map(fun(id, (url, filter)) -> task {
+            let! versions = readVersions url filter
+            return id, versions
+        })
+        |> Task.WhenAll
+
+    let ideVersions = Map.ofArray pairs
+    let ideVersionForKotlin = ideVersions |> Map.find kotlinSpecName
 
     return {
-        IdeVersion = maxVersion
-        KotlinVersion = GetKotlinVersion maxVersion.Wave
+        IdeVersions = ideVersions
+        KotlinVersion = GetKotlinVersion ideVersionForKotlin.Wave
     }
 }
 
 let FindRepoRoot() = Task.FromResult(Environment.CurrentDirectory)
-let ReadIdeVersion filePath = task {
-    let! properties = File.ReadAllTextAsync filePath
-    let re = Regex @"[\r\n]riderSdkVersion=(.*?)[\r\n]"
-    let matches = re.Match(properties)
-    if not matches.Success then failwithf $"Cannot parse properties file \"{filePath}.\""
-    return IdeVersion.Parse matches.Groups[1].Value
+let ReadIdeVersions tomlFilePath keys = task {
+    let! toml = File.ReadAllTextAsync tomlFilePath
+    return
+        keys
+        |> Seq.map(fun key ->
+            let re = Regex $@"[\r\n]{Regex.Escape key} = ""(.*?)"""
+            let matches = re.Match(toml)
+            if not matches.Success then failwithf $"Cannot find the key {key} in the TOML file \"{tomlFilePath}.\""
+            key, IdeVersion.Parse matches.Groups[1].Value
+        )
+        |> Map.ofSeq
 }
 
 let ReadKotlinVersion filePath = task {
@@ -151,25 +175,26 @@ let ReadKotlinVersion filePath = task {
     return Version.Parse matches.Groups[1].Value
 }
 
-let ReadCurrentIdeSpec() = task {
+let ReadCurrentIdeSpecs(ideVersionKeys: string seq) = task {
     let! repoRoot = FindRepoRoot()
-    let gradleProperties = Path.Combine(repoRoot, "gradle.properties")
     let versionsTomlFile = Path.Combine(repoRoot, "gradle/libs.versions.toml")
-    let! ideVersion = ReadIdeVersion gradleProperties
+    let! ideVersions = ReadIdeVersions versionsTomlFile ideVersionKeys
     let! kotlinVersion = ReadKotlinVersion versionsTomlFile
     return {
-        IdeVersion = ideVersion
+        IdeVersions = ideVersions
         KotlinVersion = kotlinVersion
     }
 }
 
-let WriteIdeVersion (ide: IdeVersion) filePath = task {
-    let! properties = File.ReadAllTextAsync filePath
-    let re = Regex @"[\r\n]riderSdkVersion=(.*?)[\r\n]"
-    let version = ide.ToString()
-    let newContent = re.Replace(properties, $"\nriderSdkVersion={version}\n")
-    do! File.WriteAllTextAsync(filePath, newContent)
-    return properties = newContent
+let WriteIdeVersions (versions: Map<string, IdeVersion>) tomlFilePath = task {
+    let! toml = File.ReadAllTextAsync tomlFilePath
+    let mutable newContent = toml
+    for key, version in Map.toSeq versions do
+        let re = Regex $@"[\r\n]{Regex.Escape key} = ""(.*?)"""
+        let version = version.ToString()
+        newContent <- re.Replace(newContent, $"\n{key} = \"{version}\"")
+    do! File.WriteAllTextAsync(tomlFilePath, newContent)
+    return toml = newContent
 }
 
 let WriteKotlinVersion (version: Version) filePath = task {
@@ -181,35 +206,50 @@ let WriteKotlinVersion (version: Version) filePath = task {
     return toml = newContent
 }
 
-let ApplySpec { IdeVersion = ide; KotlinVersion = kotlin } = task {
+let ApplySpec { IdeVersions = ideVersions; KotlinVersion = kotlin } = task {
     let! repoRoot = FindRepoRoot()
     let gradleProperties = Path.Combine(repoRoot, "gradle.properties")
     let versionsTomlFile = Path.Combine(repoRoot, "gradle/libs.versions.toml")
 
-    let! ideVersionUpdated = WriteIdeVersion ide gradleProperties
+    let! ideVersionsUpdated = WriteIdeVersions ideVersions versionsTomlFile
     let! kotlinVersionUpdated = WriteKotlinVersion kotlin versionsTomlFile
-    if not ideVersionUpdated && not kotlinVersionUpdated then
+    if not ideVersionsUpdated && not kotlinVersionUpdated then
         failwithf "Cannot update neither IDE nor Kotlin version in the configuration files."
 }
-let GenerateResult latestSpec =
-    let newIdeVersion = latestSpec.IdeVersion
-    let (YearBased(year, number)) = newIdeVersion.Wave
-    let fullVersion = String.concat "" [|
-        string year
-        "."
-        string number
+let GenerateResult localSpec remoteSpec =
+    let fullVersion v =
+        let (YearBased(year, number)) = v.Wave
+        String.concat "" [|
+            string year
+            "."
+            string number
 
-        match newIdeVersion.Minor with
-        | 0 -> ()
-        | x -> string x
+            match v.Minor with
+            | 0 -> ()
+            | x -> string x
 
-        match newIdeVersion.Flavor with
-        | Snapshot -> ()
-        | EAP(n, dev) ->
-            let d = if dev then "D" else ""
-            $" EAP{string n}{d}"
-        | RC n -> $" RC{string n}"
-        | Stable -> ()
+            match v.Flavor with
+            | Snapshot -> ()
+            | EAP(n, dev) ->
+                let d = if dev then "D" else ""
+                $" EAP{string n}{d}"
+            | RC n -> $" RC{string n}"
+            | Stable -> ()
+        |]
+
+    let message = String.concat "\n" [|
+        yield!
+            localSpec.IdeVersions
+            |> Map.toSeq
+            |> Seq.map(fun(key, version) ->
+                let localVersion = fullVersion version
+                let remoteVersion =
+                    remoteSpec.IdeVersions
+                    |> Map.find key
+                    |> fullVersion
+                $"- {key}: {localVersion} -> {remoteVersion}"
+            )
+        $"- Kotlin: {localSpec.KotlinVersion} -> {remoteSpec.KotlinVersion}"
     |]
 
     {|
@@ -224,12 +264,13 @@ let GenerateResult latestSpec =
 > Unfortunately, this is a consequence of the current GitHub Action security model (by default, PRs created
 > automatically aren't allowed to trigger other automation).
 
-## PR Description
-Update Rider to {fullVersion}.
-
-Update Kotlin to {latestSpec.KotlinVersion}.
+## Version updates
+{message}
 """
     |}
+
+let isStable version =
+    version.Flavor = Stable
 
 let atLeastEap version =
     match version.Flavor with
@@ -238,15 +279,20 @@ let atLeastEap version =
     | RC _ -> true
     | Stable -> true
 
+let ideVersionSpec = Map.ofArray [|
+    "riderSdk", (releaseMetadataUrl, isStable)
+    "riderSdkPreview", (snapshotMetadataUrl, atLeastEap)
+|]
+
 let main() = task {
-    let! latestSpec = ReadLatestIdeSpec atLeastEap
-    let! currentSpec = ReadCurrentIdeSpec()
+    let! latestSpec = ReadLatestIdeSpecs ideVersionSpec "riderSdk"
+    let! currentSpec = ReadCurrentIdeSpecs ideVersionSpec.Keys
     if latestSpec <> currentSpec then
         printfn "Changes detected."
         printfn $"Local spec: {currentSpec}."
         printfn $"Remote spec: {latestSpec}."
         do! ApplySpec latestSpec
-        return HasChanges <| GenerateResult latestSpec
+        return HasChanges <| GenerateResult currentSpec latestSpec
     else
         printfn $"No changes detected: both local and remote specs are {latestSpec}."
         return NoChanges
