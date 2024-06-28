@@ -77,6 +77,9 @@ type IdeVersion = // TODO[#358]: Verify ordering
             string year
             "."
             string number
+            if this.Minor <> 0 then
+                "."
+                string this.Minor
 
             match this.Flavor with
             | Snapshot -> ""
@@ -92,6 +95,7 @@ type IdeVersion = // TODO[#358]: Verify ordering
 type IdeBuildSpec = {
     IdeVersions: Map<string, IdeVersion>
     KotlinVersion: Version
+    UntilVersion: string
 }
 
 // https://plugins.jetbrains.com/docs/intellij/using-kotlin.html#kotlin-standard-library
@@ -104,7 +108,12 @@ let GetKotlinVersion wave =
     | YearBased(2023, 1) -> Version.Parse "1.8.0"
     | _ -> failwithf $"Cannot determine Kotlin version for IDE wave {wave}."
 
-let ReadLatestIdeSpecs specs kotlinSpecName = task {
+let GetUntilVersion ide =
+    let (YearBased(year, number)) = ide.Wave
+    let waveNumber = ((string year) |> Seq.skip 2 |> Seq.toArray |> String) + (string number)
+    $"{waveNumber}.*"
+
+let ReadLatestIdeSpecs specs kotlinKey untilKey = task {
     use http = new HttpClient()
     let readVersions (url: Uri) filter = task {
         printfn $"Loading document \"{url}\"."
@@ -145,11 +154,13 @@ let ReadLatestIdeSpecs specs kotlinSpecName = task {
         |> Task.WhenAll
 
     let ideVersions = Map.ofArray pairs
-    let ideVersionForKotlin = ideVersions |> Map.find kotlinSpecName
+    let ideVersionForKotlin = ideVersions |> Map.find kotlinKey
+    let ideVersionForUntilBuild = ideVersions |> Map.find untilKey
 
     return {
         IdeVersions = ideVersions
         KotlinVersion = GetKotlinVersion ideVersionForKotlin.Wave
+        UntilVersion = GetUntilVersion ideVersionForUntilBuild
     }
 }
 
@@ -175,14 +186,25 @@ let ReadKotlinVersion filePath = task {
     return Version.Parse matches.Groups[1].Value
 }
 
+let ReadUntilBuild propertiesFilePath = task {
+    let! properties = File.ReadAllTextAsync propertiesFilePath
+    let re = Regex @"\r?\nuntilBuildVersion=(.*?)\r?\n"
+    let matches = re.Match(properties)
+    if not matches.Success then failwithf $"Cannot parse properties file \"{propertiesFilePath}.\""
+    return matches.Groups[1].Value
+}
+
 let ReadCurrentIdeSpecs(ideVersionKeys: string seq) = task {
     let! repoRoot = FindRepoRoot()
+    let gradleProperties = Path.Combine(repoRoot, "gradle.properties")
     let versionsTomlFile = Path.Combine(repoRoot, "gradle/libs.versions.toml")
     let! ideVersions = ReadIdeVersions versionsTomlFile ideVersionKeys
     let! kotlinVersion = ReadKotlinVersion versionsTomlFile
+    let! untilBuild = ReadUntilBuild gradleProperties
     return {
         IdeVersions = ideVersions
         KotlinVersion = kotlinVersion
+        UntilVersion = untilBuild
     }
 }
 
@@ -194,7 +216,7 @@ let WriteIdeVersions (versions: Map<string, IdeVersion>) tomlFilePath = task {
         let version = version.ToString()
         newContent <- re.Replace(newContent, $"\n{key} = \"{version}\"")
     do! File.WriteAllTextAsync(tomlFilePath, newContent)
-    return toml = newContent
+    return toml <> newContent
 }
 
 let WriteKotlinVersion (version: Version) filePath = task {
@@ -203,17 +225,26 @@ let WriteKotlinVersion (version: Version) filePath = task {
     let version = version.ToString()
     let newContent = re.Replace(toml, $"\nkotlin = \"{version}\"")
     do! File.WriteAllTextAsync(filePath, newContent)
-    return toml = newContent
+    return toml <> newContent
 }
 
-let ApplySpec { IdeVersions = ideVersions; KotlinVersion = kotlin } = task {
+let WriteUntilVersion (version: string) propertiesFilePath = task {
+    let! properties = File.ReadAllTextAsync propertiesFilePath
+    let re = Regex @"\r?\nuntilBuildVersion=(.*?)\r?\n"
+    let newContent = re.Replace(properties, $"\nuntilBuildVersion={version}\n")
+    do! File.WriteAllTextAsync(propertiesFilePath, newContent)
+    return properties <> newContent
+}
+
+let ApplySpec { IdeVersions = ideVersions; KotlinVersion = kotlin; UntilVersion = untilVersion } = task {
     let! repoRoot = FindRepoRoot()
     let gradleProperties = Path.Combine(repoRoot, "gradle.properties")
     let versionsTomlFile = Path.Combine(repoRoot, "gradle/libs.versions.toml")
 
     let! ideVersionsUpdated = WriteIdeVersions ideVersions versionsTomlFile
     let! kotlinVersionUpdated = WriteKotlinVersion kotlin versionsTomlFile
-    if not ideVersionsUpdated && not kotlinVersionUpdated then
+    let! untilVersionUpdated = WriteUntilVersion untilVersion gradleProperties
+    if not ideVersionsUpdated && not kotlinVersionUpdated && not untilVersionUpdated then
         failwithf "Cannot update neither IDE nor Kotlin version in the configuration files."
 }
 let GenerateResult localSpec remoteSpec =
@@ -250,6 +281,7 @@ let GenerateResult localSpec remoteSpec =
                 $"- {key}: {localVersion} -> {remoteVersion}"
             )
         $"- Kotlin: {localSpec.KotlinVersion} -> {remoteSpec.KotlinVersion}"
+        $"- untilBuildVersion: {localSpec.UntilVersion} -> {remoteSpec.UntilVersion}"
     |]
 
     {|
@@ -285,7 +317,7 @@ let ideVersionSpec = Map.ofArray [|
 |]
 
 let main() = task {
-    let! latestSpec = ReadLatestIdeSpecs ideVersionSpec "riderSdk"
+    let! latestSpec = ReadLatestIdeSpecs ideVersionSpec "riderSdk" "riderSdkPreview"
     let! currentSpec = ReadCurrentIdeSpecs ideVersionSpec.Keys
     if latestSpec <> currentSpec then
         printfn "Changes detected."
