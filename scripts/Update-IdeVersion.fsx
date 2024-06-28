@@ -285,9 +285,9 @@ let GenerateResult localSpec remoteSpec =
     |]
 
     {|
-        BranchName = $"dependencies/rider-{fullVersion}"
-        CommitMessage = $"Dependencies: update Rider to {fullVersion}"
-        PrTitle = $"Rider {fullVersion}"
+        BranchName = "dependencies/rider"
+        CommitMessage = "Dependencies: update Rider"
+        PrTitle = "Rider Update"
         PrBodyMarkdown = $"""
 ## Maintainer Note
 > [!WARNING]
