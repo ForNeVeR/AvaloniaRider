@@ -255,9 +255,9 @@ let GenerateResult localSpec remoteSpec =
             "."
             string number
 
-            match v.Minor with
-            | 0 -> ()
-            | x -> string x
+            if v.Minor <> 0 then
+                "."
+                string v.Minor
 
             match v.Flavor with
             | Snapshot -> ()
