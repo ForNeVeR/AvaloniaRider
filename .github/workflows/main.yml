@@ -82,4 +82,4 @@ jobs:
     name: "Validate Gradle wrapper"
     steps:
       - uses: actions/checkout@v4
-      - uses: gradle/wrapper-validation-action@v2
+      - uses: gradle/wrapper-validation-action@v3
