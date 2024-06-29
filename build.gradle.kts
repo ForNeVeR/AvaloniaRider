@@ -43,7 +43,7 @@ dependencies {
         plugin("com.intellij.javafx:1.0.3")
         bundledPlugin("com.jetbrains.xaml.previewer")
 
-        testFramework(TestFrameworkType.Platform.Bundled)
+        testFramework(TestFrameworkType.Bundled)
     }
 
     implementation(libs.bson4Jackson)
