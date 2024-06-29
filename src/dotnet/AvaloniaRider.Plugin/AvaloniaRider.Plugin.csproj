@@ -7,7 +7,7 @@
 
   <Import Project="$(JetBrainsRiderRdBackendCommonReference)" Condition="Exists('$(JetBrainsRiderRdBackendCommonReference)')" />
   <ItemGroup>
-    <PackageReference Include="Microsoft.NETCore.Platforms" Version="5.0.4" />
-    <PackageReference Include="Microsoft.NETCore.Targets" Version="1.1.4" />
+    <PackageReference Include="Microsoft.NETCore.Platforms" Version="7.0.4" />
+    <PackageReference Include="Microsoft.NETCore.Targets" Version="5.0.0" />
   </ItemGroup>
 </Project>
