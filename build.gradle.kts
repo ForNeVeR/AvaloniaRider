@@ -48,7 +48,6 @@ dependencies {
 
     implementation(libs.bson4Jackson)
 
-    testImplementation(libs.testNg)
     testImplementation(libs.openTest4J)
 }
 
