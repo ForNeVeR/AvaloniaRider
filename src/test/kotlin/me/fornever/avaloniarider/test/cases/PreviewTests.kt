@@ -28,7 +28,7 @@ class PreviewTests : BaseTestWithSolution() {
     override val traceScenarios = setOf(RdLogTraceScenarios.Commands)
 
     private val mainWindowFile
-        get() = getVirtualFileFromPath("Views/MainWindow.xaml", correctTestSolutionDirectory.toFile())
+        get() = getVirtualFileFromPath("Views/MainWindow.axaml", correctTestSolutionDirectory.toFile())
 
     private val projectFilePathProperty
         get() = OptProperty(correctTestSolutionDirectory.resolve("AvaloniaMvvm.csproj"))

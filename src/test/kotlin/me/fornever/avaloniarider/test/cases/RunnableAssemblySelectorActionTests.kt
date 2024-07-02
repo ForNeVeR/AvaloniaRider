@@ -149,7 +149,7 @@ class RunnableAssemblySelectorActionTests : AvaloniaIntegrationTest() {
         val action = RunnableAssemblySelectorAction(
             testLifetime,
             project,
-            getVirtualFileFromPath("Views/MainWindow.xaml", correctTestSolutionDirectory.toFile())
+            getVirtualFileFromPath("Views/MainWindow.axaml", correctTestSolutionDirectory.toFile())
         )
         pumpMessages(Duration.ofSeconds(5L)) { !action.isLoading.value }.shouldBeTrue()
 
