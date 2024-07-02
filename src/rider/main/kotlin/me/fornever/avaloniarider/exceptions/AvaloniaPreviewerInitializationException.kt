@@ -1,3 +1,5 @@
 package me.fornever.avaloniarider.exceptions
 
-class AvaloniaPreviewerInitializationException(message: String): Exception(message)
+import org.jetbrains.annotations.Nls
+
+class AvaloniaPreviewerInitializationException(message: @Nls String): Exception(message)

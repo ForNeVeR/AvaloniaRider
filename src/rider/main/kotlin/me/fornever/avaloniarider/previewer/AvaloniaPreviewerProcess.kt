@@ -16,6 +16,7 @@ import com.jetbrains.rd.util.lifetime.Lifetime
 import com.jetbrains.rider.runtime.DotNetRuntime
 import com.jetbrains.rider.runtime.dotNetCore.DotNetCoreRuntime
 import kotlinx.coroutines.CompletableDeferred
+import me.fornever.avaloniarider.AvaloniaRiderBundle
 import java.nio.file.Path
 
 data class AvaloniaPreviewerParameters(
@@ -85,7 +86,7 @@ class AvaloniaPreviewerProcess(
 
                 override fun notifyProcessTerminated(exitCode: Int) {
                     consoleView?.print(
-                        "Process terminated with exit code $exitCode\n",
+                        AvaloniaRiderBundle.message("previewer.console.process-terminated", exitCode) + "\n",
                         ConsoleViewContentType.SYSTEM_OUTPUT
                     )
                     logger.info("Process $title exited with $exitCode")

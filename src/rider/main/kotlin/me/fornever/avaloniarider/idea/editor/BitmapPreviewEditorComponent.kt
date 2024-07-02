@@ -5,6 +5,7 @@ import com.intellij.ui.components.JBScrollPane
 import com.intellij.util.application
 import com.intellij.util.ui.AsyncProcessIcon
 import com.jetbrains.rd.util.lifetime.Lifetime
+import me.fornever.avaloniarider.AvaloniaRiderBundle
 import me.fornever.avaloniarider.controlmessages.FrameMessage
 import me.fornever.avaloniarider.controlmessages.UpdateXamlResultMessage
 import me.fornever.avaloniarider.idea.concurrency.adviseOnUiThread
@@ -33,7 +34,7 @@ class BitmapPreviewEditorComponent(
         PreviewImageView(lifetime, controller, settings)
     }
     private val spinnerView = lazy { AsyncProcessIcon.Big("Loading") }
-    private val terminatedView = lazy { JLabel("Previewer has been terminated") }
+    private val terminatedView = lazy { JLabel(AvaloniaRiderBundle.message("previewer.termination-message")) }
 
     private var status: Status = Status.Idle
 
@@ -128,6 +129,9 @@ class BitmapPreviewEditorComponent(
     }
 
     private fun handleCriticalError(error: Throwable) {
-        terminatedView.value.text = "Previewer has been terminated: ${error.localizedMessage}".plainTextToHtml()
+        terminatedView.value.text = AvaloniaRiderBundle.message(
+            "previewer.critical-error",
+            error.localizedMessage
+        ).plainTextToHtml()
     }
 }

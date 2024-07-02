@@ -9,6 +9,7 @@ import com.intellij.openapi.project.DumbAware
 import com.intellij.util.application
 import com.jetbrains.rd.util.lifetime.Lifetime
 import com.jetbrains.rd.util.lifetime.isAlive
+import me.fornever.avaloniarider.AvaloniaRiderBundle
 import me.fornever.avaloniarider.previewer.AvaloniaPreviewerSessionController
 import java.net.URI
 
@@ -16,8 +17,8 @@ class OpenBrowserAction(
     private val lifetime: Lifetime,
     sessionController: AvaloniaPreviewerSessionController
 ) : AnAction(
-    "Open in Browser",
-    "Open the current previewer session in a browser",
+    AvaloniaRiderBundle.messagePointer("action.open-in-browser.text"),
+    AvaloniaRiderBundle.messagePointer("action.open-in-browser.description"),
     AllIcons.General.Web
 ), DumbAware {
     private var currentUri: URI? = null
