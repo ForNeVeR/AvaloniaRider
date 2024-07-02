@@ -10,12 +10,14 @@ import com.jetbrains.rider.run.environment.MSBuildEvaluator
 import com.jetbrains.rider.runtime.DotNetRuntime
 import com.jetbrains.rider.runtime.RiderDotNetActiveRuntimeHost
 import com.jetbrains.rider.runtime.dotNetCore.DotNetCoreRuntime
+import me.fornever.avaloniarider.AvaloniaRiderBundle
 import me.fornever.avaloniarider.exceptions.AvaloniaPreviewerInitializationException
 import me.fornever.avaloniarider.idea.settings.AvaloniaWorkspaceSettings
 import me.fornever.avaloniarider.idea.settings.getCorrectWorkingDirectory
 import me.fornever.avaloniarider.idea.settings.getPath
 import me.fornever.avaloniarider.model.RdProjectOutput
 import me.fornever.avaloniarider.rider.AvaloniaRiderProjectModelHost
+import org.jetbrains.annotations.Nls
 import org.jetbrains.concurrency.await
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -46,11 +48,12 @@ class MsBuildParameterCollector(private val project: Project) {
         xamlContainingProjectProperties: Map<String, String>,
         runnableProjectWorkingDirectory: Path
     ): AvaloniaPreviewerParameters {
-        fun getProperty(properties: Map<String, String>, key: String, errorMessage: String? = null): String {
+        fun getProperty(properties: Map<String, String>, key: String, errorMessage: @Nls String? = null): String {
             val property = properties[key]
             if (property.isNullOrEmpty()) {
                 throw AvaloniaPreviewerInitializationException(
-                    errorMessage ?: "Cannot determine value of property \"$key\" from MSBuild")
+                    errorMessage ?: AvaloniaRiderBundle.message("msbuild.error.property-not-found", key)
+                )
             }
 
             return property
@@ -60,7 +63,10 @@ class MsBuildParameterCollector(private val project: Project) {
             getProperty(
                 runnableProjectProperties,
                 avaloniaPreviewerPathKey,
-                "Avalonia could not be found. Please ensure project ${runnableProjectFilePath.nameWithoutExtension} includes package Avalonia version 0.7 or higher"
+                AvaloniaRiderBundle.message(
+                    "msbuild.error.avalonia-not-found-in-project",
+                    runnableProjectFilePath.nameWithoutExtension
+                )
             )
         )
         val targetDir = Paths.get(getProperty(runnableProjectProperties, "TargetDir"))
@@ -98,7 +104,10 @@ class MsBuildParameterCollector(private val project: Project) {
                         }"
                     )
                     throw AvaloniaPreviewerInitializationException(
-                        "Could not find runnable project for path ${FileUtil.getNameWithoutExtension(runnableProjectFilePath.toString())}"
+                        AvaloniaRiderBundle.message(
+                            "msbuild.error.runnable-project-not-found",
+                            FileUtil.getNameWithoutExtension(runnableProjectFilePath.toString())
+                        )
                     )
                 }
         val xamlContainingProjectPath = xamlContainingProject.url!!.toPath().toString()
@@ -106,8 +115,11 @@ class MsBuildParameterCollector(private val project: Project) {
         val tfm = runnableProjectOutput.tfm
         val projectOutput = runnableProject.projectOutputs.singleOrNull { it.tfm == tfm }
             ?: throw AvaloniaPreviewerInitializationException(
-                """Could not determine project output for project "${runnableProject.name}",
-                    | TFM "${tfm.presentableName}".""".trimMargin()
+                AvaloniaRiderBundle.message(
+                    "msbuild.error.project-output-not-found",
+                    runnableProject.name,
+                    tfm.presentableName
+                )
             )
         val runtime = DotNetRuntime.detectRuntimeForProjectOrThrow(
             project,

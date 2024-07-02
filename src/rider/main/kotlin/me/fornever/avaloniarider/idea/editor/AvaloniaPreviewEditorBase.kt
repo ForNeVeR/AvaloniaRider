@@ -64,7 +64,7 @@ abstract class AvaloniaPreviewEditorBase(
     override fun updateLayout() {
     }
 
-    override fun getName() = "Avalonia Preview"
+    override fun getName() = AvaloniaRiderBundle.message("previewer.editor.name")
     override fun isValid() = true
 
     override fun getFile() = currentFile

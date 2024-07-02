@@ -9,6 +9,7 @@ import com.jetbrains.rd.util.lifetime.Lifetime
 import com.jetbrains.rd.util.lifetime.isAlive
 import com.jetbrains.rd.util.reactive.IOptPropertyView
 import com.jetbrains.rd.util.reactive.hasValue
+import me.fornever.avaloniarider.AvaloniaRiderBundle
 import me.fornever.avaloniarider.previewer.AvaloniaPreviewerSessionController
 import java.nio.file.Path
 
@@ -17,8 +18,8 @@ class RestartPreviewerAction(
     private val sessionController: AvaloniaPreviewerSessionController,
     private val selectedProjectPath: IOptPropertyView<Path>
 ) : AnAction(
-    "Restart Previewer",
-    "Restarts the previewer session for the current document",
+    AvaloniaRiderBundle.messagePointer("action.restart-preview.text"),
+    AvaloniaRiderBundle.messagePointer("action.restart-preview.description"),
     AllIcons.Actions.Restart
 ), DumbAware {
 
