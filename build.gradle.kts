@@ -2,7 +2,6 @@ import com.jetbrains.plugin.structure.base.utils.isFile
 import org.jetbrains.changelog.exceptions.MissingVersionException
 import org.jetbrains.intellij.platform.gradle.Constants
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
-import org.jetbrains.intellij.platform.gradle.tasks.CustomTestIdeTask
 import org.jetbrains.intellij.platform.gradle.tasks.PrepareSandboxTask
 import kotlin.io.path.absolute
 import kotlin.io.path.isDirectory
@@ -22,7 +21,11 @@ allprojects {
 
 repositories {
     intellijPlatform {
-        defaultRepositories()
+        localPlatformArtifacts()
+        intellijDependencies()
+        releases()
+        snapshots()
+        marketplace()
         jetbrainsRuntime()
     }
 }
@@ -199,12 +202,14 @@ tasks {
         }
     }
 
-    val testRiderPreview by registering(CustomTestIdeTask::class) {
+    val testRiderPreview by intellijPlatformTesting.testIde.registering {
         version = libs.versions.riderSdkPreview
-        enabled = libs.versions.riderSdk.get() != libs.versions.riderSdkPreview.get()
+        task {
+            enabled = libs.versions.riderSdk.get() != libs.versions.riderSdkPreview.get()
+        }
     }
 
-    check { dependsOn(testRiderPreview) }
+    check { dependsOn(testRiderPreview.name) }
 }
 
 val riderModel: Configuration by configurations.creating {
