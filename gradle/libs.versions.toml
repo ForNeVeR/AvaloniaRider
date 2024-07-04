@@ -11,7 +11,7 @@ openTest4J = "org.opentest4j:opentest4j:1.3.0"
 rdGen = { group = "com.jetbrains.rd", name = "rd-gen", version.ref = "rdGen" }
 
 [plugins]
-changelog = "org.jetbrains.changelog:2.2.0"
+changelog = "org.jetbrains.changelog:2.2.1"
 gradleJvmWrapper = "me.filippov.gradle.jvm.wrapper:0.14.0"
 intelliJPlatform = "org.jetbrains.intellij.platform:2.0.0-beta8"
 kotlinJvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
