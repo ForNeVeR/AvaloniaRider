@@ -25,7 +25,6 @@ repositories {
         intellijDependencies()
         releases()
         snapshots()
-        marketplace()
         jetbrainsRuntime()
     }
 }
