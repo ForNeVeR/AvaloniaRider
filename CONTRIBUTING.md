@@ -6,9 +6,9 @@ Build
 
 ### Prerequisites
 
-- OpenJDK-compatible JDK version 17 or later, should include JavaFX (will be
-  downloaded automatically during build)
-- .NET SDK 8.0 or later
+- OpenJDK-compatible JDK version 17 or later (will be
+  downloaded automatically during the build),
+- .NET SDK 8.0 or later.
 
 ### Build
 

@@ -5,7 +5,6 @@
     <vendor url="https://fornever.me">fvnever</vendor>
 
     <depends>com.intellij.modules.rider</depends>
-    <depends>com.intellij.javafx</depends>
     <depends>com.jetbrains.xaml.previewer</depends>
 
     <description>

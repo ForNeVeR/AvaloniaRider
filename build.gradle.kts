@@ -43,7 +43,6 @@ dependencies {
         jetbrainsRuntime()
         instrumentationTools()
 
-        plugin("com.intellij.javafx:1.0.3")
         bundledPlugin("com.jetbrains.xaml.previewer")
 
         testFramework(TestFrameworkType.Bundled)

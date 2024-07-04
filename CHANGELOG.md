@@ -9,6 +9,7 @@ When considering version compatibility (and thus incrementing the major version)
 ## [Unreleased]
 ### Changed
 - **(Requirement update!)** Update the minimally supported Rider version to 2024.2 EAP 4.
+- The plugin no longer requires JavaFX (and thus JavaFX plugin for Rider), since it now relies on JCEF.
 
 ## [1.3.2] - 2024-02-17
 ### Changed

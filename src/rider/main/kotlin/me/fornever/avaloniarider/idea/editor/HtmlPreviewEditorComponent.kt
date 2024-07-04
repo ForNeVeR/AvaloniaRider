@@ -1,28 +1,27 @@
 package me.fornever.avaloniarider.idea.editor
 
+import com.intellij.ui.components.JBLabel
+import com.intellij.ui.jcef.JBCefApp
+import com.intellij.ui.jcef.JBCefBrowser
 import com.jetbrains.rd.util.lifetime.Lifetime
-import javafx.application.Platform
-import javafx.embed.swing.JFXPanel
-import javafx.scene.Scene
-import javafx.scene.web.WebView
-import me.fornever.avaloniarider.idea.JavaFxPlatformInterop
+import me.fornever.avaloniarider.AvaloniaRiderBundle
 import me.fornever.avaloniarider.previewer.AvaloniaPreviewerSessionController
-import java.awt.FlowLayout
+import java.awt.BorderLayout
 import javax.swing.JPanel
 
 class HtmlPreviewEditorComponent(lifetime: Lifetime, controller: AvaloniaPreviewerSessionController): JPanel() {
 
-    private lateinit var webView: WebView
+    private var browser: JBCefBrowser? = null
     init {
-        JavaFxPlatformInterop.initialize()
-        layout = FlowLayout()
+        layout = BorderLayout()
 
-        add(JFXPanel().apply {
-            Platform.runLater {
-                webView = WebView()
-                scene = Scene(webView)
+        if (JBCefApp.isSupported()) {
+            browser = JBCefBrowser().apply {
+                add(component, BorderLayout.CENTER)
             }
-        })
+        } else {
+            add(JBLabel(AvaloniaRiderBundle.message("previewer.error.jcef-not-supported")), BorderLayout.CENTER)
+        }
 
         controller.htmlTransportStarted.advise(lifetime) {
             connectTo(it.uri)
@@ -30,8 +29,6 @@ class HtmlPreviewEditorComponent(lifetime: Lifetime, controller: AvaloniaPreview
     }
 
     private fun connectTo(uri: String) {
-        Platform.runLater {
-            webView.engine.load(uri)
-        }
+        browser?.loadURL(uri)
     }
 }
