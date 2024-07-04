@@ -15,7 +15,7 @@ class AvaloniaProjectSettingsConfigurable(private val project: Project) : Config
     private val projectSettings by lazy { AvaloniaProjectSettings.getInstance(project) }
     private val workspaceSettings by lazy { AvaloniaWorkspaceSettings.getInstance(project) }
 
-    override fun getDisplayName() = "Avalonia"
+    override fun getDisplayName() = AvaloniaRiderBundle.message("settings.page.name")
 
     private val panel by lazy {
         panel {

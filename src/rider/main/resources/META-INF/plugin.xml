@@ -13,6 +13,8 @@
     </description>
     <extensions defaultExtensionNs="com.intellij">
         <projectConfigurable groupId="language"
+                             key="settings.page.name"
+                             bundle="messages.AvaloniaRiderBundle"
                              instance="me.fornever.avaloniarider.idea.settings.AvaloniaProjectSettingsConfigurable" />
 
         <rider.xaml.preview.editor implementation="me.fornever.avaloniarider.idea.editor.AvaloniaPreviewerXamlEditorExtension"/>
