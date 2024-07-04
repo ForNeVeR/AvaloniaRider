@@ -20,7 +20,7 @@ class AvaloniaProjectSettingsConfigurable(private val project: Project) : Config
     private val panel by lazy {
         panel {
             row(AvaloniaRiderBundle.message("settings.previewerMethod")) {
-                comboBox(AvaloniaPreviewerMethod.values().toList()).bindItem(
+                comboBox(AvaloniaPreviewerMethod.entries).bindItem(
                     { projectSettings.previewerTransportType },
                     { projectSettings.state.previewerMethod = it ?: AvaloniaPreviewerMethod.AvaloniaRemote },
                 )
@@ -38,7 +38,7 @@ class AvaloniaProjectSettingsConfigurable(private val project: Project) : Config
                 )
             }
             row(AvaloniaRiderBundle.message("settings.workingDirectory")) {
-                comboBox(WorkingDirectorySpecification.values().toList(), object :
+                comboBox(WorkingDirectorySpecification.entries, object :
                     SimpleListCellRenderer<WorkingDirectorySpecification>() {
                     override fun customize(
                         list: JList<out WorkingDirectorySpecification>,
