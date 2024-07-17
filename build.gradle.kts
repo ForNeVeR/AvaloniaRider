@@ -21,10 +21,7 @@ allprojects {
 
 repositories {
     intellijPlatform {
-        localPlatformArtifacts()
-        intellijDependencies()
-        releases()
-        snapshots()
+        defaultRepositories()
         jetbrainsRuntime()
     }
 }
@@ -38,7 +35,7 @@ val buildRelease: String by project
 
 dependencies {
     intellijPlatform {
-        rider(libs.versions.riderSdk)
+        rider(libs.versions.riderSdk, useInstaller = false)
         jetbrainsRuntime()
         instrumentationTools()
 
@@ -202,6 +199,7 @@ tasks {
 
     val testRiderPreview by intellijPlatformTesting.testIde.registering {
         version = libs.versions.riderSdkPreview
+        useInstaller = false
         task {
             enabled = libs.versions.riderSdk.get() != libs.versions.riderSdkPreview.get()
         }
@@ -219,7 +217,7 @@ artifacts {
     add(riderModel.name, provider {
         intellijPlatform.platformPath.resolve("lib/rd/rider-model.jar").also {
             check(it.isFile) {
-                "rider-model.jar is not found at $riderModel"
+                "rider-model.jar is not found at \"$it\"."
             }
         }
     }) {
