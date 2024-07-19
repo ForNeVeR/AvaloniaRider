@@ -2,7 +2,7 @@
 kotlin = "1.9.22"
 rdGen = "2024.1.1"
 riderSdk = "2024.1.4"
-riderSdkPreview = "2024.2-EAP7-SNAPSHOT"
+riderSdkPreview = "2024.2-EAP8-SNAPSHOT"
 
 [libraries]
 bson4Jackson = "de.undercouch:bson4jackson:2.15.1"
