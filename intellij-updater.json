@@ -1,0 +1,20 @@
+{
+  "updates": [{
+    "file": "gradle/libs.versions.toml",
+    "field": "riderSdk",
+    "kind": "rider",
+    "versionFlavor": "release"
+  }, {
+    "file": "gradle/libs.versions.toml",
+    "field": "riderSdkPreview",
+    "kind": "rider",
+    "versionFlavor": "eap"
+  }, {
+    "file": "gradle.properties",
+    "field": "untilBuildVersion",
+    "kind": "rider",
+    "versionFlavor": "release",
+    "augmentation": "nextMajor"
+  }],
+  "prBodyPrefix": "## Maintainer Note\n> [!WARNING]\n> This PR will not trigger CI by default. Please **close it and reopen manually** to trigger the CI.\n>\n> Unfortunately, this is a consequence of the current GitHub Action security model (by default, PRs created automatically aren't allowed to trigger other automation)."
+}

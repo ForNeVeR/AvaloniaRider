@@ -2,6 +2,12 @@ name: "Dependency Checker"
 on:
   schedule:
     - cron: '0 0 * * *' # Every day
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
   workflow_dispatch:
 
 jobs:
@@ -12,16 +18,11 @@ jobs:
       - name: "Check out the sources"
         uses: actions/checkout@v4
 
-      - name: Set up .NET SDK
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: '8.0.x'
-
       - id: update
+        uses: ForNeVeR/intellij-updater@main
         name: "Update the dependency versions"
-        run: dotnet fsi scripts/Update-IdeVersion.fsx
 
-      - if: steps.update.outputs.has-changes == 'true'
+      - if: steps.update.outputs.has-changes == 'true' && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
         name: "Create a PR"
         uses: peter-evans/create-pull-request@v6
         with:
