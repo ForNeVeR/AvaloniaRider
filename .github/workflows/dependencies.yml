@@ -19,7 +19,7 @@ jobs:
         uses: actions/checkout@v4
 
       - id: update
-        uses: ForNeVeR/intellij-updater@main
+        uses: ForNeVeR/intellij-updater@v1
         name: "Update the dependency versions"
 
       - if: steps.update.outputs.has-changes == 'true' && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
