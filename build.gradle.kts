@@ -167,6 +167,18 @@ tasks {
         jvmArgs("-Xmx1500m")
     }
 
+    val generateDisabledPluginsTxt by registering { // RIDER-115748
+        val out = layout.buildDirectory.file("disabled_plugins.txt")
+        outputs.file(out)
+        doLast {
+            file(out).writeText(
+                """
+          com.intellij.ml.llm
+        """.trimIndent()
+            )
+        }
+    }
+
     withType<Test> {
         useTestNG()
         testLogging {
@@ -177,7 +189,10 @@ tasks {
     }
 
     withType<PrepareSandboxTask> {
-        dependsOn(compileDotNet)
+        dependsOn(compileDotNet, generateDisabledPluginsTxt)
+        from(generateDisabledPluginsTxt.map { it.outputs.files.singleFile }) {
+            into("../config-test")
+        }
 
         val reSharperPluginDesc = "fvnever.$intellijPluginId"
         from("src/extensions") { into("${rootProject.name}/dotnet/Extensions/$reSharperPluginDesc") }
