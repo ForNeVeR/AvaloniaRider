@@ -39,7 +39,10 @@ dependencies {
         jetbrainsRuntime()
         instrumentationTools()
 
-        bundledPlugin("com.jetbrains.xaml.previewer")
+        bundledPlugins(
+            "com.jetbrains.xaml.previewer",
+            "com.jetbrains.dpa" // for tests; see RIDER-115746
+        )
 
         testFramework(TestFrameworkType.Bundled)
     }
