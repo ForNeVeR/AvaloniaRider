@@ -3,7 +3,7 @@
     "file": "gradle/libs.versions.toml",
     "field": "riderSdk",
     "kind": "rider",
-    "versionFlavor": "release"
+    "versionFlavor": "eap"
   }, {
     "file": "gradle/libs.versions.toml",
     "field": "riderSdkPreview",
