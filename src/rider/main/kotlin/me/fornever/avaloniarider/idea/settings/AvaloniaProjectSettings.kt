@@ -20,6 +20,8 @@ class AvaloniaProjectSettingsState : BaseState() {
     var synchronizeWithRunConfiguration by property(false)
 
     var fpsLimit by property(0)
+
+    var isDarkTheme by property(false)
 }
 
 @State(name = "Avalonia") // TODO[#265]: Move to avalonia.xml
@@ -37,4 +39,7 @@ class AvaloniaProjectSettings : SimplePersistentStateComponent<AvaloniaProjectSe
 
     val fpsLimit: Int
         get() = state.fpsLimit
+
+    val isDarkTheme: Boolean
+        get() = state.isDarkTheme
 }

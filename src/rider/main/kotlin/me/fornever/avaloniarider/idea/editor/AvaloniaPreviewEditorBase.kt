@@ -36,6 +36,7 @@ import me.fornever.avaloniarider.AvaloniaRiderBundle
 import me.fornever.avaloniarider.idea.editor.actions.RestartPreviewerAction
 import me.fornever.avaloniarider.idea.editor.actions.RunnableAssemblySelectorAction
 import me.fornever.avaloniarider.idea.editor.actions.TogglePreviewerLogAction
+import me.fornever.avaloniarider.idea.editor.actions.ToggleThemeAction
 import me.fornever.avaloniarider.previewer.AvaloniaPreviewerSessionController
 import me.fornever.avaloniarider.ui.bindVisible
 import java.awt.BorderLayout
@@ -181,6 +182,7 @@ abstract class AvaloniaPreviewEditorBase(
             add(assemblySelectorAction)
             add(RestartPreviewerAction(lifetime, sessionController, selectedProjectPath))
             addAll(*actions)
+            add(ToggleThemeAction(AvaloniaProjectSettings.getInstance(project)))
             add(TogglePreviewerLogAction(isLogManuallyVisible))
         }
 

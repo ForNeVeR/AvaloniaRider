@@ -71,7 +71,7 @@ class PreviewImageView(
     }
 
     private fun isDarkTheme(): Boolean {
-        return !JBColor.isBright()
+        return settings.isDarkTheme
     }
 
     private fun paintGrid(g: Graphics2D) {
