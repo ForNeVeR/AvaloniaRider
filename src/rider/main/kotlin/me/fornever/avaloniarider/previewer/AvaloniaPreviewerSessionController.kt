@@ -1,12 +1,12 @@
 package me.fornever.avaloniarider.previewer
 
 import com.intellij.execution.ui.ConsoleView
+import com.intellij.openapi.application.EDT
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.debug
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.rd.util.*
 import com.intellij.openapi.util.Computable
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.platform.backend.workspace.WorkspaceModel
@@ -17,6 +17,8 @@ import com.jetbrains.rd.util.lifetime.LifetimeDefinition
 import com.jetbrains.rd.util.lifetime.SequentialLifetimes
 import com.jetbrains.rd.util.lifetime.isAlive
 import com.jetbrains.rd.util.reactive.*
+import com.jetbrains.rd.util.threading.coroutines.async
+import com.jetbrains.rd.util.threading.coroutines.launch
 import com.jetbrains.rd.util.throttleLast
 import com.jetbrains.rider.build.BuildHost
 import com.jetbrains.rider.model.riderSolutionLifecycle
@@ -28,6 +30,8 @@ import com.jetbrains.rider.ui.SwingScheduler
 import com.jetbrains.rider.ui.components.utils.documentChanged
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import me.fornever.avaloniarider.controlmessages.AvaloniaInputEventMessage
 import me.fornever.avaloniarider.controlmessages.FrameMessage
 import me.fornever.avaloniarider.controlmessages.HtmlTransportStartedMessage
@@ -245,14 +249,14 @@ class AvaloniaPreviewerSessionController(
         statusProperty.set(Status.Connecting)
 
         logger.info("Receiving the containing project for the file $xamlFile")
-        val xamlContainingProject = withUiContext(lifetime) { getProjectContainingFile(xamlFile) }
+        val xamlContainingProject = withContext(Dispatchers.EDT) { getProjectContainingFile(xamlFile) }
 
         logger.info("Calculating a project output for the project $projectFilePath")
         val riderProjectOutputHost = AvaloniaRiderProjectModelHost.getInstance(project)
         val projectOutput = riderProjectOutputHost.getProjectOutput(lifetime, projectFilePath)
 
         val outputPath = Path.of(projectOutput.outputPath)
-        val isOutputExists = withSyncIOBackgroundContext { Files.exists(outputPath) }
+        val isOutputExists = withContext(Dispatchers.IO) { Files.exists(outputPath) }
         if (!isOutputExists) {
             logger.info("File \"${projectOutput.outputPath}\" not found.")
             statusProperty.value = Status.NoOutputAssembly(outputPath)
@@ -267,7 +271,7 @@ class AvaloniaPreviewerSessionController(
             xamlContainingProject
         )
 
-        val socket = withSyncIOBackgroundContext(lifetime) {
+        val socket = withContext(Dispatchers.IO) {
             ServerSocket(0).apply {
                 lifetime.onTermination { close() }
             }
@@ -283,7 +287,7 @@ class AvaloniaPreviewerSessionController(
         val process = AvaloniaPreviewerProcess(lifetime, parameters)
         session = newSession
 
-        val sessionJob = lifetime.startSyncIOBackgroundAsync {
+        val sessionJob = lifetime.async(Dispatchers.IO) {
             logger.info("Starting socket listener")
             try {
                 newSession.processSocketMessages()
@@ -299,7 +303,7 @@ class AvaloniaPreviewerSessionController(
                 }
             }
         }
-        val processJob = lifetime.startBackgroundAsync {
+        val processJob = lifetime.async {
             logger.info("Starting previewer process")
             process.run(consoleView, transport, method, processTitle)
         }
@@ -313,7 +317,7 @@ class AvaloniaPreviewerSessionController(
 
         val lt = sessionLifetimeSource.next()
         currentSessionLifetime = lt
-        lt.launchBackground {
+        lt.launch {
             try {
                 executePreviewerAsync(currentSessionLifetime!!, projectFilePath)
             } catch (ex: AvaloniaPreviewerInitializationException) {

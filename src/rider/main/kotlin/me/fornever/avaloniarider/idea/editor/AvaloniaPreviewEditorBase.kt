@@ -6,12 +6,11 @@ import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.ActionPlaces
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.DefaultActionGroup
+import com.intellij.openapi.application.EDT
 import com.intellij.openapi.fileEditor.FileEditorLocation
 import com.intellij.openapi.fileEditor.FileEditorState
 import com.intellij.openapi.observable.properties.AtomicProperty
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.rd.util.launchBackground
-import com.intellij.openapi.rd.util.launchOnUi
 import com.intellij.openapi.ui.Splitter
 import com.intellij.openapi.util.UserDataHolderBase
 import com.intellij.openapi.vfs.VirtualFile
@@ -24,6 +23,7 @@ import com.jetbrains.rd.util.lifetime.LifetimeDefinition
 import com.jetbrains.rd.util.reactive.IPropertyView
 import com.jetbrains.rd.util.reactive.Property
 import com.jetbrains.rd.util.reactive.compose
+import com.jetbrains.rd.util.threading.coroutines.launch
 import com.jetbrains.rd.util.threading.coroutines.nextValue
 import com.jetbrains.rider.build.BuildParameters
 import com.jetbrains.rider.build.tasks.BuildTaskThrottler
@@ -32,6 +32,7 @@ import com.jetbrains.rider.xaml.core.XamlPreviewEditor
 import com.jetbrains.rider.xaml.previewEditor.PreviewEditorToolbar
 import com.jetbrains.rider.xaml.splitEditor.XamlSplitEditor
 import com.jetbrains.rider.xaml.splitEditor.XamlSplitEditorSplitLayout
+import kotlinx.coroutines.Dispatchers
 import me.fornever.avaloniarider.AvaloniaRiderBundle
 import me.fornever.avaloniarider.idea.editor.actions.RestartPreviewerAction
 import me.fornever.avaloniarider.idea.editor.actions.RunnableAssemblySelectorAction
@@ -101,7 +102,7 @@ abstract class AvaloniaPreviewEditorBase(
                     row {
                         link(AvaloniaRiderBundle.message("previewer.build-project")) {
                             val selectedProjectPath = selectedProjectPath.valueOrNull ?: return@link
-                            lifetime.launchBackground {
+                            lifetime.launch {
                                 val parameters = BuildParameters(BuildTarget(), listOf(selectedProjectPath.toString()))
                                 buildTaskThrottler.value.buildSequentially(parameters)
                             }
@@ -118,7 +119,7 @@ abstract class AvaloniaPreviewEditorBase(
     private val selectedProjectPath = assemblySelectorAction.selectedProjectPath
     protected val sessionController = AvaloniaPreviewerSessionController(project, lifetime, consoleView, file, selectedProjectPath)
     init {
-        lifetime.launchOnUi {
+        lifetime.launch(Dispatchers.EDT) {
             sessionController.status.nextValue { it == AvaloniaPreviewerSessionController.Status.Working }
             parentEditor?.triggerLayoutChange(XamlSplitEditorSplitLayout.SPLIT, requestFocus = false)
         }

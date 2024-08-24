@@ -10,6 +10,8 @@ import com.jetbrains.rider.run.environment.MSBuildEvaluator
 import com.jetbrains.rider.runtime.DotNetRuntime
 import com.jetbrains.rider.runtime.RiderDotNetActiveRuntimeHost
 import com.jetbrains.rider.runtime.dotNetCore.DotNetCoreRuntime
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import me.fornever.avaloniarider.AvaloniaRiderBundle
 import me.fornever.avaloniarider.exceptions.AvaloniaPreviewerInitializationException
 import me.fornever.avaloniarider.idea.settings.AvaloniaWorkspaceSettings
@@ -18,7 +20,6 @@ import me.fornever.avaloniarider.idea.settings.getPath
 import me.fornever.avaloniarider.model.RdProjectOutput
 import me.fornever.avaloniarider.rider.AvaloniaRiderProjectModelHost
 import org.jetbrains.annotations.Nls
-import org.jetbrains.concurrency.await
 import java.nio.file.Path
 import java.nio.file.Paths
 import kotlin.io.path.nameWithoutExtension
@@ -131,28 +132,34 @@ class MsBuildParameterCollector(private val project: Project) {
         )
         val avaloniaPreviewerPathKey = getPathKey(runtime)
 
-        val runnableProjectProperties = msBuildEvaluator.evaluateProperties(
-            MSBuildEvaluator.PropertyRequest(
-                runnableProjectFilePath.toString(),
-                tfm,
-                listOf(avaloniaPreviewerPathKey, "TargetDir", "TargetName", "TargetPath")
-            )
-        )
-        val xamlProjectProperties = msBuildEvaluator.evaluateProperties(
-            MSBuildEvaluator.PropertyRequest(
-                xamlContainingProjectPath,
-                tfm,
-                listOf("TargetPath")
-            )
-        )
+        return coroutineScope {
+            val runnableProjectProperties = async {
+                msBuildEvaluator.evaluatePropertiesSuspending(
+                    MSBuildEvaluator.PropertyRequest(
+                        runnableProjectFilePath.toString(),
+                        tfm,
+                        listOf(avaloniaPreviewerPathKey, "TargetDir", "TargetName", "TargetPath")
+                    )
+                )
+            }
+            val xamlProjectProperties = async {
+                msBuildEvaluator.evaluatePropertiesSuspending(
+                    MSBuildEvaluator.PropertyRequest(
+                        xamlContainingProjectPath,
+                        tfm,
+                        listOf("TargetPath")
+                    )
+                )
+            }
 
-        return createParameters(
-            runtime,
-            runnableProjectFilePath,
-            avaloniaPreviewerPathKey,
-            runnableProjectProperties.await(),
-            xamlProjectProperties.await(),
-            projectOutput.getCorrectWorkingDirectory()
-        )
+            createParameters(
+                runtime,
+                runnableProjectFilePath,
+                avaloniaPreviewerPathKey,
+                runnableProjectProperties.await(),
+                xamlProjectProperties.await(),
+                projectOutput.getCorrectWorkingDirectory()
+            )
+        }
     }
 }

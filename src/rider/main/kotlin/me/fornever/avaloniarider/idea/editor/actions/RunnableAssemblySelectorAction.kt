@@ -10,12 +10,12 @@ import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.actionSystem.ex.ComboBoxAction
 import com.intellij.openapi.actionSystem.ex.TooltipDescriptionProvider
+import com.intellij.openapi.application.EDT
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.rd.createNestedDisposable
-import com.intellij.openapi.rd.util.launchOnUi
 import com.intellij.openapi.util.io.FileUtil
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
@@ -26,6 +26,7 @@ import com.intellij.util.messages.MessageBus
 import com.intellij.workspaceModel.ide.toPath
 import com.jetbrains.rd.util.lifetime.Lifetime
 import com.jetbrains.rd.util.reactive.*
+import com.jetbrains.rd.util.threading.coroutines.launch
 import com.jetbrains.rider.model.RunnableProject
 import com.jetbrains.rider.projectView.calculateIcon
 import com.jetbrains.rider.projectView.solution
@@ -33,6 +34,7 @@ import com.jetbrains.rider.projectView.workspace.getProjectModelEntities
 import com.jetbrains.rider.projectView.workspace.isProject
 import com.jetbrains.rider.projectView.workspace.isUnloadedProject
 import com.jetbrains.rider.run.configurations.IProjectBasedRunConfiguration
+import kotlinx.coroutines.Dispatchers
 import me.fornever.avaloniarider.AvaloniaRiderBundle.message
 import me.fornever.avaloniarider.idea.settings.AvaloniaProjectSettings
 import me.fornever.avaloniarider.idea.settings.AvaloniaWorkspaceSettings
@@ -220,7 +222,7 @@ class RunnableAssemblySelectorAction(
 
     private fun fillWithActions(valueLifetime: Lifetime, filteredProjects: Sequence<RunnableProject>) {
         isProcessingProjectList.set(true)
-        valueLifetime.launchOnUi {
+        valueLifetime.launch(Dispatchers.EDT) {
             val selectableRunnableProjects = getSelectableRunnableProjects(filteredProjects)
             valueLifetime.executeIfAlive {
                 availableProjects.set(selectableRunnableProjects)

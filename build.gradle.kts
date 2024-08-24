@@ -136,6 +136,8 @@ tasks {
         kotlinOptions {
             jvmTarget = "17"
             freeCompilerArgs = freeCompilerArgs + "-opt-in=kotlin.RequiresOptIn"
+            // TODO: Enable this after https://github.com/JetBrains/rd/issues/492 gets resolved.
+            // allWarningsAsErrors = true
         }
     }
 
