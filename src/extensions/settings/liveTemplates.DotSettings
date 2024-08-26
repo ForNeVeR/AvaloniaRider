@@ -8,7 +8,7 @@
 	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=61B0A0150C68AB429CA8914D9E1A9164/Text/@EntryValue">private $propertyType$ _$camelCasePropertyName$;
 
 public static readonly DirectProperty&lt;$containingType$, $propertyType$&gt; $propertyName$Property = AvaloniaProperty.RegisterDirect&lt;$containingType$, $propertyType$&gt;(
-  "$propertyName$", o =&gt; o.$propertyName$, (o, v) =&gt; o.$propertyName$ = v);
+  nameof($propertyName$), o =&gt; o.$propertyName$, (o, v) =&gt; o.$propertyName$ = v);
 
 public $propertyType$ $propertyName$
 {
@@ -40,7 +40,7 @@ public $propertyType$ $propertyName$
 	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=64F4DB660557CC4DBA3B50515C0E7F8E/Shortcut/@EntryValue">styledProperty</s:String>
 	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=64F4DB660557CC4DBA3B50515C0E7F8E/ShortenQualifiedReferences/@EntryValue">True</s:Boolean>
 	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=64F4DB660557CC4DBA3B50515C0E7F8E/Text/@EntryValue">public static readonly StyledProperty&lt;$propertyType$&gt; $propertyName$Property = AvaloniaProperty.Register&lt;$containingType$, $propertyType$&gt;(
-  "$propertyName$");
+  nameof($propertyName$));
 
 public $propertyType$ $propertyName$
 {
