@@ -34,6 +34,7 @@ import com.jetbrains.rider.xaml.splitEditor.XamlSplitEditor
 import com.jetbrains.rider.xaml.splitEditor.XamlSplitEditorSplitLayout
 import kotlinx.coroutines.Dispatchers
 import me.fornever.avaloniarider.AvaloniaRiderBundle
+import me.fornever.avaloniarider.idea.editor.actions.DebugPreviewerAction
 import me.fornever.avaloniarider.idea.editor.actions.RestartPreviewerAction
 import me.fornever.avaloniarider.idea.editor.actions.RunnableAssemblySelectorAction
 import me.fornever.avaloniarider.idea.editor.actions.TogglePreviewerLogAction
@@ -183,6 +184,7 @@ abstract class AvaloniaPreviewEditorBase(
             add(RestartPreviewerAction(lifetime, sessionController, selectedProjectPath))
             addAll(*actions)
             add(TogglePreviewerLogAction(isLogManuallyVisible))
+            add(DebugPreviewerAction())
         }
 
         val toolbar = ActionManager.getInstance().createActionToolbar(ActionPlaces.EDITOR_TOOLBAR, actionGroup, true).apply {
