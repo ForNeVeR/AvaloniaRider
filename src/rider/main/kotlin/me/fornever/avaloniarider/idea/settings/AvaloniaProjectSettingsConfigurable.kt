@@ -12,6 +12,7 @@ import javax.swing.JList
 
 class AvaloniaProjectSettingsConfigurable(private val project: Project) : Configurable {
 
+    private val applicationSettings by lazy { AvaloniaApplicationSettings.getInstance() }
     private val projectSettings by lazy { AvaloniaProjectSettings.getInstance(project) }
     private val workspaceSettings by lazy { AvaloniaWorkspaceSettings.getInstance(project) }
 
@@ -59,6 +60,16 @@ class AvaloniaProjectSettingsConfigurable(private val project: Project) : Config
                             it ?: WorkingDirectorySpecification.DefinedByMsBuild
                     }
                 )
+            }
+            group(AvaloniaRiderBundle.message("settings.application-wide.label")) {
+                row {
+                    checkBox(AvaloniaRiderBundle.message("settings.developer-mode.label"))
+                        .bindSelected(
+                            { applicationSettings.isDeveloperModeEnabled },
+                            { applicationSettings.state.isDeveloperModeEnabled = it }
+                        )
+                        .comment(AvaloniaRiderBundle.message("settings.developer-mode.comment"))
+                }
             }
         }
     }
