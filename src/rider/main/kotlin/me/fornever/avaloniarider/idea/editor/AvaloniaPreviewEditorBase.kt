@@ -184,7 +184,7 @@ abstract class AvaloniaPreviewEditorBase(
             add(RestartPreviewerAction(lifetime, sessionController, selectedProjectPath))
             addAll(*actions)
             add(TogglePreviewerLogAction(isLogManuallyVisible))
-            add(DebugPreviewerAction())
+            add(DebugPreviewerAction(lifetime))
         }
 
         val toolbar = ActionManager.getInstance().createActionToolbar(ActionPlaces.EDITOR_TOOLBAR, actionGroup, true).apply {
