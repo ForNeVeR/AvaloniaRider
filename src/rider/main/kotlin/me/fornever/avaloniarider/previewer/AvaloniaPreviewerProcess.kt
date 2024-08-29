@@ -70,6 +70,16 @@ class AvaloniaPreviewerProcess(
     }
 
     private fun startProcess(
+        executionMode: ProcessExecutionMode,
+        commandLine: GeneralCommandLine,
+        consoleView: ConsoleView?,
+        title: String
+    ): OSProcessHandler = when (executionMode) {
+        ProcessExecutionMode.Run -> runProcess(commandLine, consoleView, title)
+        ProcessExecutionMode.Debug -> debugProcess(commandLine, consoleView, title)
+    }
+
+    private fun runProcess(
         commandLine: GeneralCommandLine,
         consoleView: ConsoleView?,
         title: String
@@ -106,6 +116,14 @@ class AvaloniaPreviewerProcess(
         return processHandler
     }
 
+    private fun debugProcess(
+        commandLine: GeneralCommandLine,
+        consoleView: ConsoleView?,
+        title: String
+    ): OSProcessHandler {
+        TODO("Debug the process.")
+    }
+
     private suspend fun waitForTermination(process: ProcessHandler, title: String) {
         val result = CompletableDeferred<Unit>()
         process.addProcessListener(object : ProcessAdapter() {
@@ -121,6 +139,7 @@ class AvaloniaPreviewerProcess(
     }
 
     suspend fun run(
+        executionMode: ProcessExecutionMode,
         consoleView: ConsoleView?,
         transport: PreviewerTransport,
         method: PreviewerMethod,
@@ -129,8 +148,13 @@ class AvaloniaPreviewerProcess(
         logger.info("1/4: generating process command line")
         val commandLine = getCommandLine(transport, method)
         logger.info("2/3: starting a process")
-        val process = startProcess(commandLine, consoleView, title)
+        val process = startProcess(executionMode, commandLine, consoleView, title)
         logger.info("3/3: awaiting termination")
         waitForTermination(process, title)
     }
+}
+
+enum class ProcessExecutionMode {
+    Run,
+    Debug
 }

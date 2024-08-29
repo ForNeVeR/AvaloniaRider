@@ -243,7 +243,11 @@ class AvaloniaPreviewerSessionController(
         }
     }
 
-    private suspend fun executePreviewerAsync(lifetime: Lifetime, projectFilePath: Path) {
+    private suspend fun executePreviewerAsync(
+        lifetime: Lifetime,
+        executionMode: ProcessExecutionMode,
+        projectFilePath: Path
+    ) {
         val settings = AvaloniaProjectSettings.getInstance(project).state
 
         statusProperty.set(Status.Connecting)
@@ -305,21 +309,25 @@ class AvaloniaPreviewerSessionController(
         }
         val processJob = lifetime.async {
             logger.info("Starting previewer process")
-            process.run(consoleView, transport, method, processTitle)
+            process.run(executionMode, consoleView, transport, method, processTitle)
         }
 
         processJob.await()
         sessionJob.await()
     }
 
-    fun start(projectFilePath: Path, force: Boolean = false) {
+    fun start(
+        projectFilePath: Path,
+        force: Boolean = false,
+        executionMode: ProcessExecutionMode = ProcessExecutionMode.Run
+    ) {
         if (status.value == Status.Suspended && !force) return
 
         val lt = sessionLifetimeSource.next()
         currentSessionLifetime = lt
         lt.launch {
             try {
-                executePreviewerAsync(currentSessionLifetime!!, projectFilePath)
+                executePreviewerAsync(currentSessionLifetime!!, executionMode, projectFilePath)
             } catch (ex: AvaloniaPreviewerInitializationException) {
                 criticalErrorSignal.fire(ex)
                 logger.warn(ex)
