@@ -5,11 +5,20 @@ import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.jetbrains.rd.util.lifetime.Lifetime
-import kotlinx.coroutines.launch
+import com.jetbrains.rd.util.lifetime.isAlive
+import com.jetbrains.rd.util.reactive.IOptPropertyView
+import com.jetbrains.rd.util.reactive.hasValue
 import me.fornever.avaloniarider.AvaloniaRiderBundle
 import me.fornever.avaloniarider.idea.settings.AvaloniaApplicationSettings
+import me.fornever.avaloniarider.previewer.AvaloniaPreviewerSessionController
+import me.fornever.avaloniarider.previewer.ProcessExecutionMode
+import java.nio.file.Path
 
-class DebugPreviewerAction(private val lifetime: Lifetime) : AnAction(
+class DebugPreviewerAction(
+    private val lifetime: Lifetime,
+    private val sessionController: AvaloniaPreviewerSessionController,
+    private val selectedProjectPath: IOptPropertyView<Path>
+) : AnAction(
     AvaloniaRiderBundle.messagePointer("action.debug-previewer.text"),
     AvaloniaRiderBundle.messagePointer("action.debug-previewer.description"),
     AllIcons.Debugger.Console
@@ -23,13 +32,12 @@ class DebugPreviewerAction(private val lifetime: Lifetime) : AnAction(
             return
         }
 
-        presentation.isEnabledAndVisible = true
+        presentation.isEnabledAndVisible = lifetime.isAlive
+            && sessionController.status.value != AvaloniaPreviewerSessionController.Status.Suspended
+            && selectedProjectPath.hasValue
     }
 
     override fun actionPerformed(p0: AnActionEvent) {
-         lifetime.coroutineScope.launch {
-             TODO("Get the debugger process startup command")
-             TODO("Start the debug session")
-         }
+        sessionController.start(selectedProjectPath.valueOrNull ?: return, executionMode = ProcessExecutionMode.Debug)
     }
 }
