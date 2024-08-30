@@ -87,17 +87,17 @@ class AvaloniaPreviewerSessionController(
         object Working : Status()
 
         /**
-         * Previewer process has reported a XAML error.
+         * Previewer process has reported an XAML error.
          */
         object XamlError : Status()
 
         /**
-         * Preview has been suspended (e.g. by an ongoing build session).
+         * Preview has been suspended (e.g., by an ongoing build session).
          */
         object Suspended : Status()
 
         /**
-         * Preview process has been terminated, and no other process is present.
+         * The preview process has been terminated, and no other process is present.
          */
         object Terminated : Status()
     }
@@ -285,10 +285,10 @@ class AvaloniaPreviewerSessionController(
             AvaloniaPreviewerMethod.AvaloniaRemote -> AvaloniaRemoteMethod
             AvaloniaPreviewerMethod.Html -> HtmlMethod
         }
-        val sessionNestedLifetime = lifetime.createNested() // to terminate later than process
+        val sessionNestedLifetime = lifetime.createNested() // to terminate later than the process
         val newSession = createSession(sessionNestedLifetime, socket, parameters, xamlFile)
         val processTitle = "${xamlFile.name} (port ${socket.localPort})"
-        val process = AvaloniaPreviewerProcess(lifetime, parameters)
+        val process = AvaloniaPreviewerProcess(project, lifetime, parameters)
         session = newSession
 
         val sessionJob = lifetime.async(Dispatchers.IO) {
@@ -331,7 +331,7 @@ class AvaloniaPreviewerSessionController(
             } catch (ex: AvaloniaPreviewerInitializationException) {
                 criticalErrorSignal.fire(ex)
                 logger.warn(ex)
-            } catch (ex: CancellationException) {
+            } catch (_: CancellationException) {
                 logger.info("${xamlFile.name}: previewer session has been cancelled")
             } catch (t: Throwable) {
                 logger.error(t)
