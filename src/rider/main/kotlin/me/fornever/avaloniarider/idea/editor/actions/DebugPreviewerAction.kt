@@ -21,7 +21,7 @@ class DebugPreviewerAction(
 ) : AnAction(
     AvaloniaRiderBundle.messagePointer("action.debug-previewer.text"),
     AvaloniaRiderBundle.messagePointer("action.debug-previewer.description"),
-    AllIcons.Debugger.Console
+    AllIcons.Actions.StartDebugger
 ) {
     override fun getActionUpdateThread() = ActionUpdateThread.BGT
 

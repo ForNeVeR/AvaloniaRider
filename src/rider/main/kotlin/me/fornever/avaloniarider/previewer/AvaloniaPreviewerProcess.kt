@@ -8,6 +8,7 @@ import com.intellij.execution.process.ProcessHandler
 import com.intellij.execution.ui.ConsoleView
 import com.intellij.execution.ui.ConsoleViewContentType
 import com.intellij.openapi.diagnostic.Logger
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.rd.createNestedDisposable
 import com.intellij.openapi.util.Key
 import com.intellij.util.io.BaseOutputReader
@@ -31,13 +32,14 @@ data class AvaloniaPreviewerParameters(
      */
     val targetPath: Path,
     /**
-     * Path to the assembly containing a XAML file in question.
+     * Path to the assembly containing the XAML file in question.
      */
     val xamlContainingAssemblyPath: Path,
     val workingDirectory: Path
 )
 
 class AvaloniaPreviewerProcess(
+    private val project: Project,
     private val lifetime: Lifetime,
     private val parameters: AvaloniaPreviewerParameters
 ) {
@@ -71,14 +73,14 @@ class AvaloniaPreviewerProcess(
             }
     }
 
-    private fun startProcess(
+    private suspend fun startProcess(
         executionMode: ProcessExecutionMode,
         commandLine: GeneralCommandLine,
         consoleView: ConsoleView?,
         title: String
     ): ProcessHandler = when (executionMode) {
         ProcessExecutionMode.Run -> runProcess(commandLine, consoleView, title)
-        ProcessExecutionMode.Debug -> debugProcess(commandLine)
+        ProcessExecutionMode.Debug -> debugProcess(commandLine, consoleView)
     }
 
     private fun runProcess(
@@ -118,8 +120,12 @@ class AvaloniaPreviewerProcess(
         return processHandler
     }
 
-    private fun debugProcess(commandLine: GeneralCommandLine): ProcessHandler {
-        val configuration = createExeConfiguration(commandLine)
+    private suspend fun debugProcess(commandLine: GeneralCommandLine, consoleView: ConsoleView?): ProcessHandler {
+        consoleView?.print(
+            AvaloniaRiderBundle.message("previewer.console.debugging-started"),
+            ConsoleViewContentType.SYSTEM_OUTPUT
+        )
+        val configuration = createExeConfiguration(project, commandLine)
         val contentDescriptor = launchConfiguration(lifetime, configuration)
         return contentDescriptor.processHandler ?: error("Process handler is not available")
     }
