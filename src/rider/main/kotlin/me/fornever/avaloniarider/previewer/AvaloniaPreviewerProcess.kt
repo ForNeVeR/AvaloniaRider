@@ -17,6 +17,8 @@ import com.jetbrains.rider.runtime.DotNetRuntime
 import com.jetbrains.rider.runtime.dotNetCore.DotNetCoreRuntime
 import kotlinx.coroutines.CompletableDeferred
 import me.fornever.avaloniarider.AvaloniaRiderBundle
+import me.fornever.avaloniarider.rider.createExeConfiguration
+import me.fornever.avaloniarider.rider.launchConfiguration
 import java.nio.file.Path
 
 data class AvaloniaPreviewerParameters(
@@ -74,9 +76,9 @@ class AvaloniaPreviewerProcess(
         commandLine: GeneralCommandLine,
         consoleView: ConsoleView?,
         title: String
-    ): OSProcessHandler = when (executionMode) {
+    ): ProcessHandler = when (executionMode) {
         ProcessExecutionMode.Run -> runProcess(commandLine, consoleView, title)
-        ProcessExecutionMode.Debug -> debugProcess(commandLine, consoleView, title)
+        ProcessExecutionMode.Debug -> debugProcess(commandLine)
     }
 
     private fun runProcess(
@@ -116,12 +118,10 @@ class AvaloniaPreviewerProcess(
         return processHandler
     }
 
-    private fun debugProcess(
-        commandLine: GeneralCommandLine,
-        consoleView: ConsoleView?,
-        title: String
-    ): OSProcessHandler {
-        TODO("Debug the process.")
+    private fun debugProcess(commandLine: GeneralCommandLine): ProcessHandler {
+        val configuration = createExeConfiguration(commandLine)
+        val contentDescriptor = launchConfiguration(lifetime, configuration)
+        return contentDescriptor.processHandler ?: error("Process handler is not available")
     }
 
     private suspend fun waitForTermination(process: ProcessHandler, title: String) {
