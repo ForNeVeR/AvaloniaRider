@@ -3,6 +3,7 @@ package me.fornever.avaloniarider.rider
 import com.intellij.execution.ProgramRunnerUtil
 import com.intellij.execution.configurations.ConfigurationTypeUtil
 import com.intellij.execution.configurations.GeneralCommandLine
+import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.execution.executors.DefaultDebugExecutor
 import com.intellij.execution.runners.ExecutionEnvironmentBuilder
 import com.intellij.execution.runners.ProgramRunner
@@ -43,7 +44,7 @@ fun createExeConfiguration(project: Project, commandLine: GeneralCommandLine): D
     )
 }
 
-suspend fun launchConfiguration(lifetime: Lifetime, configuration: DotNetExeConfiguration): RunContentDescriptor {
+suspend fun launchDebugger(lifetime: Lifetime, configuration: RunConfiguration): RunContentDescriptor {
     val environment = ExecutionEnvironmentBuilder.create(
         DefaultDebugExecutor.getDebugExecutorInstance(),
         configuration

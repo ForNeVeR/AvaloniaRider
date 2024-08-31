@@ -19,7 +19,7 @@ import com.jetbrains.rider.runtime.dotNetCore.DotNetCoreRuntime
 import kotlinx.coroutines.CompletableDeferred
 import me.fornever.avaloniarider.AvaloniaRiderBundle
 import me.fornever.avaloniarider.rider.createExeConfiguration
-import me.fornever.avaloniarider.rider.launchConfiguration
+import me.fornever.avaloniarider.rider.launchDebugger
 import java.nio.file.Path
 
 data class AvaloniaPreviewerParameters(
@@ -126,7 +126,7 @@ class AvaloniaPreviewerProcess(
             ConsoleViewContentType.SYSTEM_OUTPUT
         )
         val configuration = createExeConfiguration(project, commandLine)
-        val contentDescriptor = launchConfiguration(lifetime, configuration)
+        val contentDescriptor = launchDebugger(lifetime, configuration)
         return contentDescriptor.processHandler ?: error("Process handler is not available")
     }
 
