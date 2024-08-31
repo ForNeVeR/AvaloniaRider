@@ -3,7 +3,9 @@
     "file": "gradle/libs.versions.toml",
     "field": "riderSdk",
     "kind": "rider",
-    "versionFlavor": "release"
+    "versionFlavor": "release",
+    "versionConstraint": "latestWave",
+    "order": "oldest"
   }, {
     "file": "gradle/libs.versions.toml",
     "field": "riderSdkPreview",
