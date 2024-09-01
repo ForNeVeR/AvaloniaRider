@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 
 When considering version compatibility (and thus incrementing the major version), we only consider the configuration file major user experience changes. The host IDE version is not considered a version compatibility factor (since otherwise we'd have to increase the major version pretty often and that would make no sense).
 
+## [1.5.0] - 2024-09-01
+### Changed
+- **(Requirement update!)** Update the minimally supported Rider version to 2024.2.
+- Expand the supported Rider range to 2024.3 (not yet released).
+- Replace a lot of deprecated IDE APIs used by the plugin.
+- `directProperty` and `styledProperty` templates: use the modern `nameof` syntax. Thanks to @rabbitism!
+
+### Added
+- [#319: Debug previewer for the current file](https://github.com/ForNeVeR/AvaloniaRider/issues/319).
+
 ## [1.4.0] - 2024-08-11
 ### Changed
 - **(Requirement update!)** Update the minimally supported Rider version to 2024.2 RC1.
@@ -94,4 +104,5 @@ The initial plugin release. The plugin provides the following features for JetBr
 [1.3.1]: https://github.com/ForNeVeR/AvaloniaRider/compare/v1.3.0...v1.3.1
 [1.3.2]: https://github.com/ForNeVeR/AvaloniaRider/compare/v1.3.1...v1.3.2
 [1.4.0]: https://github.com/ForNeVeR/AvaloniaRider/compare/v1.3.2...v1.4.0
-[Unreleased]: https://github.com/ForNeVeR/AvaloniaRider/compare/v1.4.0...HEAD
+[1.5.0]: https://github.com/ForNeVeR/AvaloniaRider/compare/v1.4.0...v1.5.0
+[Unreleased]: https://github.com/ForNeVeR/AvaloniaRider/compare/v1.5.0...HEAD

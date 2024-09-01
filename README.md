@@ -5,7 +5,7 @@ Install
 
 ### Stable Release
 
-Either search for Avalonia on the **Plugins** settings page, or [visit the Plugin Marketplace][marketplace].
+Either search for Avalonia on the **Plugins** settings page or [visit the Plugin Marketplace][marketplace].
 
 ### Development Release
 
@@ -21,15 +21,17 @@ How to Use
 
 ### Previewer
 
-Make sure your Avalonia project is built, open a XAML file, and you'll see a XAML preview in Rider.
+Make sure your Avalonia project is built, open an XAML file, and you'll see an XAML preview in Rider.
 
 ![Preview Screenshot][preview-screenshot]
 
 It's possible to interact with the previewer using the mouse, and zoom with `Ctrl+Scroll Wheel`.
 
+There's a separate button to **debug** the previewer process for the current file, but it's hidden by default. To enable that feature, go to the **Avalonia** settings page in Rider and enable the **Developer mode** checkbox.
+
 ### File templates
 
-Right-click a directory or an Avalonia-enabled project, and choose among the available file templates:
+Right-click a directory or an Avalonia-enabled project and choose among the available file templates:
 - Avalonia User Control
 - Avalonia Templated control
 - Avalonia Window
@@ -38,10 +40,10 @@ Right-click a directory or an Avalonia-enabled project, and choose among the ava
 
 ### Live templates
 
-Type in editor to use [Live templates][live-templates]:
-- `directProperty`
-- `styledProperty`
-- `attachedAvaloniaProperty`
+Type in an editor to use [Live templates][live-templates]:
+- `directProperty`,
+- `styledProperty`,
+- `attachedAvaloniaProperty`.
 
 Documentation
 -------------
