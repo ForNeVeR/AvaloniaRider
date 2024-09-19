@@ -2,12 +2,10 @@ package me.fornever.avaloniarider.previewer
 
 import com.intellij.execution.ui.ConsoleView
 import com.intellij.openapi.application.EDT
-import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.debug
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.util.Computable
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.ui.scale.JBUIScale
@@ -124,10 +122,8 @@ class AvaloniaPreviewerSessionController(
 
     private val inFlightUpdate = Property(false)
 
-    private var _session: AvaloniaPreviewerSession? = null
-    private var session: AvaloniaPreviewerSession?
-        get() = application.runReadAction(Computable { _session })
-        set(value) = WriteCommandAction.runWriteCommandAction(project) { _session = value }
+    @Volatile
+    private var session: AvaloniaPreviewerSession? = null
 
     private val sessionLifetimeSource = SequentialLifetimes(controllerLifetime)
     private var currentSessionLifetime: LifetimeDefinition? = null
