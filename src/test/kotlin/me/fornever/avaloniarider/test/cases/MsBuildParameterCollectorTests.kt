@@ -21,7 +21,7 @@ import org.testng.annotations.Test
 @TestEnvironment(sdkVersion = SdkVersion.AUTODETECT, buildTool = BuildTool.AUTODETECT)
 class MsBuildParameterCollectorTests : AvaloniaIntegrationTest() {
 
-    override fun getSolutionDirectoryName() = "MSBuildParameters"
+    override val testSolution = "MSBuildParameters"
 
     @Test
     fun testLaunchSettingsParametersCollection() {

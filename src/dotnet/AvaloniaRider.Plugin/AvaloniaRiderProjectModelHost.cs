@@ -2,6 +2,7 @@
 using System.Linq;
 using AvaloniaRider.Model;
 using JetBrains.Application.Components;
+using JetBrains.Application.Parts;
 using JetBrains.Diagnostics;
 using JetBrains.Lifetimes;
 using JetBrains.ProjectModel;
@@ -15,7 +16,7 @@ using JetBrains.Util;
 
 namespace AvaloniaRider
 {
-    [SolutionComponent]
+    [SolutionComponent(Instantiation.ContainerAsyncPrimaryThread)] // hooks up the protocol; needs to instantiate early
     public class AvaloniaRiderProjectModelHost
     {
         private readonly ISolution _solution;

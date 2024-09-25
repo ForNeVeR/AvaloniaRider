@@ -22,7 +22,7 @@ import java.time.Duration
 
 @TestEnvironment(sdkVersion = SdkVersion.AUTODETECT, buildTool = BuildTool.AUTODETECT)
 class PreviewTests : BaseTestWithSolution() {
-    override fun getSolutionDirectoryName() = "AvaloniaMvvm"
+    override val testSolution = "AvaloniaMvvm"
     override val restoreNuGetPackages = true
     override val backendLoadedTimeout: Duration = Duration.ofMinutes(2L)
     override val traceScenarios = setOf(RdLogTraceScenarios.Commands)

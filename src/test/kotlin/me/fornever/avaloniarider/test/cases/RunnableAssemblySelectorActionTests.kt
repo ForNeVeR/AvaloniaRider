@@ -38,7 +38,7 @@ import kotlin.test.assertTrue
 
 @TestEnvironment(sdkVersion = SdkVersion.AUTODETECT, buildTool = BuildTool.AUTODETECT)
 class RunnableAssemblySelectorActionTests : AvaloniaIntegrationTest() {
-    override fun getSolutionDirectoryName() = "MultiProjectSolution"
+    override val testSolution = "MultiProjectSolution"
 
     private lateinit var testLifetime: LifetimeDefinition
 

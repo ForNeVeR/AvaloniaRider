@@ -9,7 +9,7 @@ import org.testng.annotations.Test
 
 class RunConfigurationUtilsTests : AvaloniaIntegrationTest() {
 
-    override fun getSolutionDirectoryName() = "MSBuildParameters"
+    override val testSolution = "MSBuildParameters"
 
     @Test
     fun testCreateExeConfiguration() {
