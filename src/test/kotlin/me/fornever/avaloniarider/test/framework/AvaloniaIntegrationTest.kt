@@ -1,26 +1,20 @@
 package me.fornever.avaloniarider.test.framework
 
-import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.SystemInfo
 import com.jetbrains.rider.test.OpenSolutionParams
 import com.jetbrains.rider.test.base.BaseTestWithSolution
+import com.jetbrains.rider.test.facades.RiderSolutionApiFacade
 import com.jetbrains.rider.test.facades.solution.SolutionApiFacade
-import java.io.File
 import java.nio.file.Path
 
 abstract class AvaloniaIntegrationTest : BaseTestWithSolution() {
 
-    override val solutionApiFacade: SolutionApiFacade = run {
-        val delegate = super.solutionApiFacade
-        object : SolutionApiFacade by delegate {
-            override fun openSolution(
-                solutionFile: File,
-                params: OpenSolutionParams
-            ): Project {
-                // This may take a long time sometimes.
-                params.projectModelReadyTimeout = params.projectModelReadyTimeout.multipliedBy(10L)
-                return delegate.openSolution(solutionFile, params)
-            }
+    override val solutionApiFacade: SolutionApiFacade = object : RiderSolutionApiFacade() {
+        override fun waitForSolution(params: OpenSolutionParams) {
+            // This may sometimes take a long time (especially on GitHub Actions).
+            params.projectModelReadyTimeout = params.projectModelReadyTimeout.multipliedBy(10L)
+
+            return super.waitForSolution(params)
         }
     }
 }
