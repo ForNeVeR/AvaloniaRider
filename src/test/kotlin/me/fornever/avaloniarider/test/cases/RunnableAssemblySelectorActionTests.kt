@@ -2,6 +2,7 @@ package me.fornever.avaloniarider.test.cases
 
 import com.intellij.execution.RunManager
 import com.intellij.openapi.actionSystem.ActionPlaces
+import com.intellij.openapi.actionSystem.ActionUiKind
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.util.io.systemIndependentPath
@@ -82,7 +83,7 @@ class RunnableAssemblySelectorActionTests : AvaloniaIntegrationTest() {
         val isSolutionLoading = OptProperty(true)
         val action = createMockSelector(isSolutionLoading)
         val dataContext = { _: Any -> null }
-        val event = AnActionEvent.createFromDataContext(ActionPlaces.UNKNOWN, null, dataContext)
+        val event = AnActionEvent.createEvent(dataContext, null, ActionPlaces.UNKNOWN, ActionUiKind.NONE, null)
         val presentation = event.presentation
 
         action.update(event)
@@ -126,7 +127,7 @@ class RunnableAssemblySelectorActionTests : AvaloniaIntegrationTest() {
     @Test
     fun onlyReferencedAssembliesShouldBeAvailable() {
         val runnableProjectsModel = project.solution.runnableProjectsModel
-        pumpMessages { runnableProjectsModel.projects.valueOrNull?.isNotEmpty() ?: false }
+        pumpMessages { runnableProjectsModel.projects.valueOrNull?.isNotEmpty() == true }
         runnableProjectsModel.projects.valueOrThrow
             .filter { it.kind == RunnableProjectKinds.DotNetCore || it.kind == RunnableProjectKinds.Console }
             .size.shouldBe(3)
@@ -144,7 +145,7 @@ class RunnableAssemblySelectorActionTests : AvaloniaIntegrationTest() {
     @Test
     fun targetProjectItselfShouldBeAvailable() {
         val runnableProjectsModel = project.solution.runnableProjectsModel
-        pumpMessages { runnableProjectsModel.projects.valueOrNull?.isNotEmpty() ?: false }
+        pumpMessages { runnableProjectsModel.projects.valueOrNull?.isNotEmpty() == true }
 
         val action = RunnableAssemblySelectorAction(
             testLifetime,
