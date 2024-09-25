@@ -39,6 +39,7 @@ dependencies {
         jetbrainsRuntime()
         instrumentationTools()
 
+        bundledModule("intellij.rider")
         bundledPlugins("com.jetbrains.xaml.previewer")
 
         testFramework(TestFrameworkType.Bundled)
