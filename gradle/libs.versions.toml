@@ -1,8 +1,8 @@
 [versions]
 kotlin = "1.9.22"
 rdGen = "2024.3.1"
-riderSdk = "2024.3-EAP4-SNAPSHOT"
-riderSdkPreview = "2024.3-EAP4-SNAPSHOT"
+riderSdk = "2024.3-EAP5-SNAPSHOT"
+riderSdkPreview = "2024.3-EAP5-SNAPSHOT"
 
 [libraries]
 bson4Jackson = "de.undercouch:bson4jackson:2.15.1"
