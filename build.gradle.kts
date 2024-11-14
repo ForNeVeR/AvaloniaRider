@@ -122,14 +122,10 @@ tasks {
         dependsOn(rdGen, generateDotNetSdkProperties, generateNuGetConfig)
     }
 
-    val compileDotNet by registering {
+    val compileDotNet by registering(Exec::class) {
         dependsOn(rdGen, generateDotNetSdkProperties, generateNuGetConfig)
-        doLast {
-            exec {
-                executable("dotnet")
-                args("build", "-c", buildConfiguration)
-            }
-        }
+        executable("dotnet")
+        args("build", "-c", buildConfiguration)
     }
 
     withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
