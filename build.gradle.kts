@@ -30,7 +30,6 @@ repositories {
 val dotNetPluginId = "AvaloniaRider.Plugin"
 val intellijPluginId = "avalonia-rider"
 
-val untilBuildVersion: String by project
 val pluginVersionBase: String by project
 val buildRelease: String by project
 
@@ -137,7 +136,6 @@ tasks {
     }
 
     patchPluginXml {
-        untilBuild.set(untilBuildVersion)
         val latestChangelog = try {
             changelog.getUnreleased()
         } catch (_: MissingVersionException) {
