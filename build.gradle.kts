@@ -2,6 +2,7 @@ import org.jetbrains.changelog.exceptions.MissingVersionException
 import org.jetbrains.intellij.platform.gradle.Constants
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
 import org.jetbrains.intellij.platform.gradle.tasks.PrepareSandboxTask
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import kotlin.io.path.absolute
 import kotlin.io.path.isDirectory
 import kotlin.io.path.isRegularFile
@@ -37,7 +38,6 @@ dependencies {
     intellijPlatform {
         rider(libs.versions.riderSdk, useInstaller = false)
         jetbrainsRuntime()
-        instrumentationTools()
 
         bundledModule("intellij.rider")
         bundledPlugins("com.jetbrains.xaml.previewer")
@@ -128,11 +128,9 @@ tasks {
         args("build", "-c", buildConfiguration)
     }
 
-    withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
+    withType<KotlinCompile> {
         dependsOn(rdGen)
-        kotlinOptions {
-            jvmTarget = "17"
-            freeCompilerArgs = freeCompilerArgs + "-opt-in=kotlin.RequiresOptIn"
+        compilerOptions {
             // TODO[#416]: Enable this after https://github.com/JetBrains/rd/issues/492 gets resolved.
             // allWarningsAsErrors = true
         }
