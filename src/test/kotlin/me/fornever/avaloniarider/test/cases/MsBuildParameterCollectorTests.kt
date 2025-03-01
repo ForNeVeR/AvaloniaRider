@@ -5,6 +5,7 @@ import com.jetbrains.rider.model.runnableProjectsModel
 import com.jetbrains.rider.projectView.solution
 import com.jetbrains.rider.projectView.workspace.getProjectModelEntities
 import com.jetbrains.rider.run.configurations.RunnableProjectKinds
+import com.jetbrains.rider.test.annotations.Solution
 import com.jetbrains.rider.test.annotations.TestEnvironment
 import com.jetbrains.rider.test.asserts.shouldBe
 import com.jetbrains.rider.test.asserts.shouldContains
@@ -19,9 +20,8 @@ import me.fornever.avaloniarider.test.framework.runPumping
 import org.testng.annotations.Test
 
 @TestEnvironment(sdkVersion = SdkVersion.AUTODETECT, buildTool = BuildTool.AUTODETECT)
+@Solution("MSBuildParameters")
 class MsBuildParameterCollectorTests : AvaloniaIntegrationTest() {
-
-    override val testSolution = "MSBuildParameters"
 
     @Test
     fun testLaunchSettingsParametersCollection() {
