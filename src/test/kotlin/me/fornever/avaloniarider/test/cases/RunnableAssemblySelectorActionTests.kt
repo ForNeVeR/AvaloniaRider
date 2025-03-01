@@ -6,7 +6,6 @@ import com.intellij.openapi.actionSystem.ActionUiKind
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.util.io.systemIndependentPath
-import com.jetbrains.rd.util.lifetime.LifetimeDefinition
 import com.jetbrains.rd.util.reactive.IOptPropertyView
 import com.jetbrains.rd.util.reactive.OptProperty
 import com.jetbrains.rd.util.reactive.hasValue
@@ -16,6 +15,7 @@ import com.jetbrains.rider.model.RunnableProject
 import com.jetbrains.rider.model.runnableProjectsModel
 import com.jetbrains.rider.projectView.solution
 import com.jetbrains.rider.run.configurations.RunnableProjectKinds
+import com.jetbrains.rider.test.annotations.Solution
 import com.jetbrains.rider.test.annotations.TestEnvironment
 import com.jetbrains.rider.test.asserts.shouldBe
 import com.jetbrains.rider.test.asserts.shouldBeTrue
@@ -30,28 +30,14 @@ import me.fornever.avaloniarider.model.avaloniaRiderProjectModel
 import me.fornever.avaloniarider.test.framework.AvaloniaIntegrationTest
 import me.fornever.avaloniarider.test.framework.correctTestSolutionDirectory
 import org.testng.Assert.assertFalse
-import org.testng.annotations.AfterMethod
-import org.testng.annotations.BeforeMethod
 import org.testng.annotations.Test
 import java.nio.file.Paths
 import java.time.Duration
 import kotlin.test.assertTrue
 
 @TestEnvironment(sdkVersion = SdkVersion.AUTODETECT, buildTool = BuildTool.AUTODETECT)
+@Solution("MultiProjectSolution")
 class RunnableAssemblySelectorActionTests : AvaloniaIntegrationTest() {
-    override val testSolution = "MultiProjectSolution"
-
-    private lateinit var testLifetime: LifetimeDefinition
-
-    @BeforeMethod
-    fun beforeMethod() {
-        testLifetime = LifetimeDefinition()
-    }
-
-    @AfterMethod
-    fun afterMethod() {
-        testLifetime.terminate()
-    }
 
     private val testXamlFile
         get() = getVirtualFileFromPath("ClassLibrary1/MyControl.axaml", correctTestSolutionDirectory.toFile())
@@ -140,8 +126,11 @@ class RunnableAssemblySelectorActionTests : AvaloniaIntegrationTest() {
         items.shouldContains { it == "AvaloniaApp1" }
         items.shouldContains { it == "AvaloniaApp2" }
     }
+}
 
-    @TestEnvironment(solution = "AvaloniaMvvm")
+@TestEnvironment(sdkVersion = SdkVersion.AUTODETECT, buildTool = BuildTool.AUTODETECT)
+@Solution("AvaloniaMvvm")
+class RunnableMvvmAssemblySelectorActionTests : AvaloniaIntegrationTest() {
     @Test
     fun targetProjectItselfShouldBeAvailable() {
         val runnableProjectsModel = project.solution.runnableProjectsModel
