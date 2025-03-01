@@ -1,5 +1,6 @@
 import org.jetbrains.changelog.exceptions.MissingVersionException
 import org.jetbrains.intellij.platform.gradle.Constants
+import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
 import org.jetbrains.intellij.platform.gradle.tasks.PrepareSandboxTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
@@ -41,6 +42,8 @@ dependencies {
         bundledModule("intellij.rider")
         bundledPlugins("com.jetbrains.xaml.previewer")
 
+        pluginVerifier()
+
         testFramework(TestFrameworkType.Bundled)
     }
 
@@ -75,6 +78,21 @@ sourceSets {
     main {
         kotlin.srcDir("src/rider/main/kotlin")
         resources.srcDir("src/rider/main/resources")
+    }
+}
+
+intellijPlatform {
+    pluginVerification {
+        ides {
+            fun rider(version: Provider<String>) {
+                ide(provider { IntelliJPlatformType.Rider }, version, useInstaller = false)
+            }
+            rider(libs.versions.riderSdk)
+            if (libs.versions.riderSdk.get() != libs.versions.riderSdkPreview.get()) {
+                rider(libs.versions.riderSdkPreview)
+            }
+        }
+        freeArgs.addAll("-mute", "TemplateWordInPluginName")
     }
 }
 
@@ -205,7 +223,9 @@ tasks {
         }
     }
 
-    check { dependsOn(testRiderPreview.name) }
+    check {
+        dependsOn(testRiderPreview, verifyPlugin)
+    }
 }
 
 val riderModel: Configuration by configurations.creating {
