@@ -163,19 +163,12 @@ tasks {
         jvmArgs("-Xmx1500m")
     }
 
-    val generateDisabledPluginsTxt by registering { // RIDER-115748
-        val out = layout.buildDirectory.file("disabled_plugins.txt")
-        outputs.file(out)
-        doLast {
-            file(out).writeText(
-                """
-          com.intellij.ml.llm
-        """.trimIndent()
-            )
-        }
-    }
-
     withType<Test> {
+        classpath -= classpath.filter {
+            (it.name.startsWith("localization-") && it.name.endsWith(".jar")) // TODO: https://youtrack.jetbrains.com/issue/IJPL-178084/External-plugin-tests-break-due-to-localization-issues
+                || it.name == "cwm-plugin.jar" // TODO: Check after 251 EAP5 release
+        }
+
         useTestNG()
         testLogging {
             showStandardStreams = true
@@ -185,10 +178,7 @@ tasks {
     }
 
     withType<PrepareSandboxTask> {
-        dependsOn(compileDotNet, generateDisabledPluginsTxt)
-        from(generateDisabledPluginsTxt.map { it.outputs.files.singleFile }) {
-            into("../config-test")
-        }
+        dependsOn(compileDotNet)
 
         val reSharperPluginDesc = "fvnever.$intellijPluginId"
         from("src/extensions") { into("${rootProject.name}/dotnet/Extensions/$reSharperPluginDesc") }

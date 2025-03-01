@@ -3,7 +3,7 @@ package me.fornever.avaloniarider.test.framework
 import com.intellij.openapi.util.SystemInfo
 import com.jetbrains.rider.test.OpenSolutionParams
 import com.jetbrains.rider.test.base.BaseTestWithSolution
-import com.jetbrains.rider.test.facades.RiderSolutionApiFacade
+import com.jetbrains.rider.test.facades.solution.RiderSolutionApiFacade
 import com.jetbrains.rider.test.facades.solution.SolutionApiFacade
 import java.nio.file.Path
 
