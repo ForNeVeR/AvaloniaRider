@@ -64,7 +64,7 @@ jobs:
           path: ${{ github.workspace }}/build/reports/pluginVerifier
 
   validation:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     name: "Validate Gradle wrapper"
     steps:
       - uses: actions/checkout@v4
