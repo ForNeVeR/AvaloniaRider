@@ -6,6 +6,11 @@
     "versionFlavor": "eap"
   }, {
     "file": "gradle/libs.versions.toml",
+    "kind": "kotlin",
+    "versionFlavor": "eap",
+    "field": "kotlin"
+  }, {
+    "file": "gradle/libs.versions.toml",
     "field": "riderSdkPreview",
     "kind": "rider",
     "versionFlavor": "eap"
