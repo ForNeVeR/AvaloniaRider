@@ -9,7 +9,8 @@
         "org.jetbrains.kotlin.jvm",
         "org.jetbrains.kotlin:kotlin-stdlib"
       ],
-      "enabled": false
+      "enabled": false,
+      "description": "Kotlin is managed by intellij-updater."
     }
   ]
 }
