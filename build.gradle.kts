@@ -97,11 +97,6 @@ intellijPlatform {
 }
 
 tasks {
-    wrapper {
-        gradleVersion = "8.13"
-        distributionType = Wrapper.DistributionType.ALL
-    }
-
     val riderSdkPath by lazy {
         val path = intellijPlatform.platformPath.resolve("lib/DotNetSdkForRdPlugins").absolute()
         if (!path.isDirectory()) error("$path does not exist or not a directory")
