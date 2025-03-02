@@ -31,7 +31,7 @@ jobs:
 
       # Common preparation
       - name: Prepare build
-        run: ./gradlew prepare
+        run: ./gradlew --info prepare
 
       # Backend
       - name: Set up .NET SDK
@@ -43,7 +43,7 @@ jobs:
 
       # Frontend
       - name: Test
-        run: ./gradlew -PbuildConfiguration=Release -PbuildNumber=${{ github.run_number }} check
+        run: ./gradlew --info -PbuildConfiguration=Release -PbuildNumber=${{ github.run_number }} check
       - name: Collect test results
         uses: actions/upload-artifact@v4
         with:

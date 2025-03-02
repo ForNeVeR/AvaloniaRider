@@ -1,3 +1,4 @@
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.jetbrains.changelog.exceptions.MissingVersionException
 import org.jetbrains.intellij.platform.gradle.Constants
 import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
@@ -102,7 +103,7 @@ tasks {
             val path = intellijPlatform.platformPath.resolve("lib/DotNetSdkForRdPlugins")
             if (!path.isDirectory()) error("$path does not exist or not a directory")
 
-            println("Rider .NET SDK path: $path")
+            logger.info("Rider .NET SDK path: $path")
             path
         }
         provider { path.value }
@@ -156,10 +157,14 @@ tasks {
     val compileDotNet by registering(Exec::class) {
         dependsOn(rdGen, generateDotNetSdkProperties, generateNuGetConfig)
 
-        inputs.file(file("AvaloniaRider.sln"))
-        inputs.files(fileTree("src/dotnet") {
-            exclude("**/bin/**", "**/obj/**")
-        })
+        inputs.files(
+            "AvaloniaRider.sln",
+            dotNetSdkGeneratedPropsFile,
+            nuGetConfigFile,
+            fileTree("src/dotnet") {
+                exclude("**/bin/**", "**/obj/**")
+            }
+        )
         inputs.property("buildConfiguration", buildConfiguration)
         outputs.files(dotNetPluginFiles)
 
@@ -208,7 +213,7 @@ tasks {
         useTestNG()
         testLogging {
             showStandardStreams = true
-            exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+            exceptionFormat = TestExceptionFormat.FULL
         }
         environment["LOCAL_ENV_RUN"] = "true"
     }
