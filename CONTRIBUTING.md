@@ -6,8 +6,7 @@ Build
 
 ### Prerequisites
 
-- OpenJDK-compatible JDK version 17 or later (will be
-  downloaded automatically during the build),
+- OpenJDK-compatible JDK version 21 or later (will be downloaded automatically during the build),
 - .NET SDK 8.0 or later.
 
 ### Build
