@@ -25,6 +25,14 @@ jobs:
       - name: Build Backend
         run: dotnet build -c Release
 
+      - name: 'Cache downloaded JDK'
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.local/share/gradle-jvm
+            ~/AppData/Local/gradle-jvm
+          key: ${{ runner.os }}.jvm.${{ hashFiles('gradlew*') }}
+
       # Distribution
       - name: Build Distribution
         run: ./gradlew -PbuildConfiguration=Release -PbuildNumber=${{ github.run_number }} buildPlugin

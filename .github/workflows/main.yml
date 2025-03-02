@@ -29,6 +29,14 @@ jobs:
           tool-cache: false
           large-packages: false
 
+      - name: 'Cache downloaded JDK'
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.local/share/gradle-jvm
+            ~/AppData/Local/gradle-jvm
+          key: ${{ runner.os }}.jvm.${{ hashFiles('gradlew*') }}
+
       # Common preparation
       - name: Prepare build
         run: ./gradlew prepare
