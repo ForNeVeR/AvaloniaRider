@@ -18,10 +18,10 @@ dependencies {
     )
 }
 
-rdgen {
-    val csOutput = rootProject.projectDir.resolve("src/dotnet/AvaloniaRider.Plugin/Model")
-    val ktOutput = rootProject.projectDir.resolve("src/rider/main/kotlin/me/fornever/avaloniarider/model")
+val csOutput = rootProject.projectDir.resolve("src/dotnet/AvaloniaRider.Plugin/Model")
+val ktOutput = rootProject.projectDir.resolve("src/rider/main/kotlin/me/fornever/avaloniarider/model")
 
+rdgen {
     verbose = true
     packages = "model.rider"
 
@@ -42,6 +42,8 @@ rdgen {
 
 tasks.withType<RdGenTask> {
     val classPath = sourceSets["main"].runtimeClasspath
-    dependsOn(classPath)
+    inputs.files(classPath)
+    outputs.dirs(csOutput, ktOutput)
+
     classpath(classPath)
 }

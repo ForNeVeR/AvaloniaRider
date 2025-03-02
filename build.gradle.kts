@@ -5,7 +5,7 @@ import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
 import org.jetbrains.intellij.platform.gradle.tasks.PrepareSandboxTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import kotlin.io.path.absolute
+import kotlin.io.path.absolutePathString
 import kotlin.io.path.isDirectory
 import kotlin.io.path.isRegularFile
 
@@ -65,16 +65,6 @@ version =
     if (buildRelease.equals("true", ignoreCase = true) || buildRelease == "1") pluginVersionBase
     else "$pluginVersionBase.$buildNumber"
 
-fun File.writeTextIfChanged(content: String) {
-    val bytes = content.toByteArray()
-
-    if (!exists() || !readBytes().contentEquals(bytes)) {
-        println("Writing $path")
-        parentFile.mkdirs()
-        writeBytes(bytes)
-    }
-}
-
 sourceSets {
     main {
         kotlin.srcDir("src/rider/main/kotlin")
@@ -111,11 +101,11 @@ tasks {
 
     val generateDotNetSdkProperties by registering {
         dependsOn(Constants.Tasks.INITIALIZE_INTELLIJ_PLATFORM_PLUGIN)
-        inputs.dir(riderDotNetSdk)
+        inputs.property("riderDotNetSdk", riderDotNetSdk.map { it.absolutePathString() })
         outputs.file(dotNetSdkGeneratedPropsFile)
         doLast {
-            val riderSdkPath = riderDotNetSdk.get().absolute()
-            dotNetSdkGeneratedPropsFile.writeTextIfChanged("""<Project>
+            val riderSdkPath = riderDotNetSdk.get().absolutePathString()
+            dotNetSdkGeneratedPropsFile.writeText("""<Project>
   <PropertyGroup>
     <DotNetSdkPath>$riderSdkPath</DotNetSdkPath>
   </PropertyGroup>
@@ -126,11 +116,11 @@ tasks {
 
     val generateNuGetConfig by registering {
         dependsOn(Constants.Tasks.INITIALIZE_INTELLIJ_PLATFORM_PLUGIN)
-        inputs.dir(riderDotNetSdk)
+        inputs.property("riderDotNetSdk", riderDotNetSdk.map { it.absolutePathString() })
         outputs.file(nuGetConfigFile)
         doLast {
-            val riderSdkPath = riderDotNetSdk.get().absolute()
-            nuGetConfigFile.writeTextIfChanged("""<?xml version="1.0" encoding="utf-8"?>
+            val riderSdkPath = riderDotNetSdk.get().absolutePathString()
+            nuGetConfigFile.writeText("""<?xml version="1.0" encoding="utf-8"?>
 <configuration>
   <packageSources>
     <add key="rider-sdk" value="$riderSdkPath" />
@@ -161,6 +151,7 @@ tasks {
             "AvaloniaRider.sln",
             dotNetSdkGeneratedPropsFile,
             nuGetConfigFile,
+            riderDotNetSdk,
             fileTree("src/dotnet") {
                 exclude("**/bin/**", "**/obj/**")
             }
@@ -229,8 +220,7 @@ tasks {
         }
 
         doFirst {
-            for (f in dotNetPluginFiles) {
-                val file = file(f)
+            for (file in dotNetPluginFiles) {
                 if (!file.exists()) throw RuntimeException("File \"$file\" does not exist")
             }
         }
