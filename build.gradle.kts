@@ -97,16 +97,23 @@ intellijPlatform {
 }
 
 tasks {
-    val riderSdkPath by lazy {
-        val path = intellijPlatform.platformPath.resolve("lib/DotNetSdkForRdPlugins").absolute()
-        if (!path.isDirectory()) error("$path does not exist or not a directory")
+    val riderDotNetSdk = run {
+        val path = lazy {
+            val path = intellijPlatform.platformPath.resolve("lib/DotNetSdkForRdPlugins")
+            if (!path.isDirectory()) error("$path does not exist or not a directory")
 
-        println("Rider SDK path: $path")
-        return@lazy path
+            println("Rider .NET SDK path: $path")
+            path
+        }
+        provider { path.value }
     }
 
     val generateDotNetSdkProperties by registering {
+        dependsOn(Constants.Tasks.INITIALIZE_INTELLIJ_PLATFORM_PLUGIN)
+        inputs.dir(riderDotNetSdk)
+        outputs.file(dotNetSdkGeneratedPropsFile)
         doLast {
+            val riderSdkPath = riderDotNetSdk.get().absolute()
             dotNetSdkGeneratedPropsFile.writeTextIfChanged("""<Project>
   <PropertyGroup>
     <DotNetSdkPath>$riderSdkPath</DotNetSdkPath>
@@ -117,7 +124,11 @@ tasks {
     }
 
     val generateNuGetConfig by registering {
+        dependsOn(Constants.Tasks.INITIALIZE_INTELLIJ_PLATFORM_PLUGIN)
+        inputs.dir(riderDotNetSdk)
+        outputs.file(nuGetConfigFile)
         doLast {
+            val riderSdkPath = riderDotNetSdk.get().absolute()
             nuGetConfigFile.writeTextIfChanged("""<?xml version="1.0" encoding="utf-8"?>
 <configuration>
   <packageSources>
@@ -134,10 +145,26 @@ tasks {
         dependsOn(rdGen, generateDotNetSdkProperties, generateNuGetConfig)
     }
 
+    val dotNetPluginFiles = run {
+        val outputFolder = dotNetSrcDir.resolve("$dotNetPluginId/bin/${dotNetPluginId}/$buildConfiguration")
+        listOf(
+            outputFolder.resolve("$dotNetPluginId.dll"),
+            outputFolder.resolve("$dotNetPluginId.pdb")
+        )
+    }
+
     val compileDotNet by registering(Exec::class) {
         dependsOn(rdGen, generateDotNetSdkProperties, generateNuGetConfig)
+
+        inputs.file(file("AvaloniaRider.sln"))
+        inputs.files(fileTree("src/dotnet") {
+            exclude("**/bin/**", "**/obj/**")
+        })
+        inputs.property("buildConfiguration", buildConfiguration)
+        outputs.files(dotNetPluginFiles)
+
         executable("dotnet")
-        args("build", "-c", buildConfiguration)
+        args("build", "-consoleLoggerParameters:ErrorsOnly", "--configuration", buildConfiguration)
     }
 
     withType<KotlinCompile> {
@@ -192,18 +219,12 @@ tasks {
         val reSharperPluginDesc = "fvnever.$intellijPluginId"
         from("src/extensions") { into("${rootProject.name}/dotnet/Extensions/$reSharperPluginDesc") }
 
-        val outputFolder = file("$dotNetSrcDir/$dotNetPluginId/bin/${dotNetPluginId}/$buildConfiguration")
-        val dllFiles = listOf(
-            "$outputFolder/${dotNetPluginId}.dll",
-            "$outputFolder/${dotNetPluginId}.pdb"
-        )
-
-        for (f in dllFiles) {
+        for (f in dotNetPluginFiles) {
             from(f) { into("${rootProject.name}/dotnet") }
         }
 
-        doLast {
-            for (f in dllFiles) {
+        doFirst {
+            for (f in dotNetPluginFiles) {
                 val file = file(f)
                 if (!file.exists()) throw RuntimeException("File \"$file\" does not exist")
             }
