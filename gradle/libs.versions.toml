@@ -1,5 +1,5 @@
 [versions]
-kotlin = "2.1.0"
+kotlin = "2.1.10"
 rdGen = "2025.1.1"
 riderSdk = "2025.1-EAP6-SNAPSHOT"
 riderSdkPreview = "2025.1-EAP6-SNAPSHOT"
