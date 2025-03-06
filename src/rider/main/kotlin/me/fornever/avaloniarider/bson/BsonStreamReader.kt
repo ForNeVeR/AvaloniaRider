@@ -2,7 +2,7 @@ package me.fornever.avaloniarider.bson
 
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.MapperFeature
-import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.json.JsonMapper
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.diagnostic.trace
 import de.undercouch.bson4jackson.BsonFactory
@@ -15,11 +15,10 @@ import java.util.*
 class BsonStreamReader(private val typeRegistry: Map<UUID, Class<*>>, private val stream: DataInputStream) {
     companion object {
         private val logger = logger<BsonStreamReader>()
-        private val objectMapper = ObjectMapper(BsonFactory()).apply {
-            @Suppress("DEPRECATION") // TODO[#167]: Migrate to JsonMapper.builder
-            configure(MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES, true)
-            configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-        }
+        private val objectMapper = JsonMapper.builder(BsonFactory())
+            .configure(MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES, true)
+            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+            .build()
     }
 
     private fun readBytes(count: Int) = ByteBuffer.allocate(count).order(ByteOrder.nativeOrder()).apply {

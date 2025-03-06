@@ -4,6 +4,7 @@ import org.jetbrains.intellij.platform.gradle.Constants
 import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
 import org.jetbrains.intellij.platform.gradle.tasks.PrepareSandboxTask
+import org.jetbrains.intellij.platform.gradle.tasks.VerifyPluginTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import kotlin.io.path.absolutePathString
 import kotlin.io.path.isDirectory
@@ -92,6 +93,7 @@ intellijPlatform {
             }
         }
         freeArgs.addAll("-mute", "TemplateWordInPluginName")
+        failureLevel.add(VerifyPluginTask.FailureLevel.DEPRECATED_API_USAGES)
     }
 }
 
