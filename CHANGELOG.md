@@ -6,9 +6,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 
 When considering version compatibility (and thus incrementing the major version), we only consider the configuration file major user experience changes. The host IDE version is not considered a version compatibility factor (since otherwise we'd have to increase the major version pretty often and that would make no sense).
 
-## [Unreleased] (1.5.3)
+## [1.5.3] - 2025-03-07
 ### Changed
-- **(Requirement update!)** Support only Rider 2025.1 EAP6 and later.
+- **(Requirement update!)** Support only Rider 2025.1 EAP7 and later.
+- Minor internal improvements.
 
 ## [1.5.2] - 2024-11-15
 ### Changed
@@ -119,4 +120,5 @@ The initial plugin release. The plugin provides the following features for JetBr
 [1.5.0]: https://github.com/ForNeVeR/AvaloniaRider/compare/v1.4.0...v1.5.0
 [1.5.1]: https://github.com/ForNeVeR/AvaloniaRider/compare/v1.5.0...v1.5.1
 [1.5.2]: https://github.com/ForNeVeR/AvaloniaRider/compare/v1.5.1...v1.5.2
-[Unreleased]: https://github.com/ForNeVeR/AvaloniaRider/compare/v1.5.2...HEAD
+[1.5.3]: https://github.com/ForNeVeR/AvaloniaRider/compare/v1.5.2...v1.5.3
+[Unreleased]: https://github.com/ForNeVeR/AvaloniaRider/compare/v1.5.3...HEAD
