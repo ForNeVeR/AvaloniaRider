@@ -18,7 +18,7 @@ jobs:
           # renovate:
           - macos-14
           # renovate:
-          - ubuntu-22.04
+          - ubuntu-24.04
           # renovate:
           - windows-2022
       fail-fast: false
