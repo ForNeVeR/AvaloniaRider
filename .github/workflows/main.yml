@@ -14,7 +14,13 @@ jobs:
     runs-on: ${{ matrix.image }}
     strategy:
       matrix:
-        image: [macos-13, ubuntu-22.04, windows-2022]
+        image:
+          # renovate:
+          - macos-13
+          # renovate:
+          - ubuntu-22.04
+          # renovate:
+          - windows-2022
       fail-fast: false
     env:
       DOTNET_NOLOGO: 1
