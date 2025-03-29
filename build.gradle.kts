@@ -62,7 +62,7 @@ dependencies {
     testImplementation(libs.openTest4J)
 }
 
-val buildConfiguration = ext.properties["buildConfiguration"] ?: "Debug"
+val buildConfiguration = ext.properties["buildConfiguration"] as String? ?: "Debug"
 val buildNumber = (ext.properties["buildNumber"] as String?)?.toInt() ?: 0
 
 val dotNetSrcDir = File(projectDir, "src/dotnet")
@@ -206,11 +206,6 @@ tasks {
     }
 
     withType<Test> {
-        classpath -= classpath.filter {
-            (it.name.startsWith("localization-") && it.name.endsWith(".jar")) // TODO[#478]: https://youtrack.jetbrains.com/issue/IJPL-178084/External-plugin-tests-break-due-to-localization-issues
-                || it.name == "cwm-plugin.jar" // TODO[#479]: Check after 251 EAP5 release
-        }
-
         useTestNG()
         testLogging {
             showStandardStreams = true
