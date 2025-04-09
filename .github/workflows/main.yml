@@ -20,7 +20,7 @@ jobs:
           # renovate:
           - ubuntu-24.04
           # renovate:
-          - windows-2022
+          - windows-2025
       fail-fast: false
     env:
       DOTNET_NOLOGO: 1
