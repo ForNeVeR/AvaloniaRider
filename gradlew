@@ -114,7 +114,7 @@ case "$( uname )" in                #(
   NONSTOP* )        nonstop=true ;;
 esac
 
-CLASSPATH=$APP_HOME/gradle/wrapper/gradle-wrapper.jar
+CLASSPATH="\\\"\\\""
 
 
 # GRADLE JVM WRAPPER START MARKER
@@ -124,30 +124,30 @@ JVM_TEMP_FILE=$BUILD_DIR/gradle-jvm-temp.tar.gz
 if [ "$darwin" = "true" ]; then
     case $JVM_ARCH in
     x86_64)
-        JVM_URL=https://download.oracle.com/java/17/archive/jdk-17.0.3.1_macos-x64_bin.tar.gz
-        JVM_TARGET_DIR=$BUILD_DIR/jdk-17.0.3.1_macos-x64_bin-1bcf03
+        JVM_URL=https://download.oracle.com/java/21/archive/jdk-21.0.3_macos-x64_bin.tar.gz
+        JVM_TARGET_DIR=$BUILD_DIR/jdk-21.0.3_macos-x64_bin-6c24ae
         ;;
     arm64)
-        JVM_URL=https://download.oracle.com/java/17/archive/jdk-17.0.3.1_macos-aarch64_bin.tar.gz
-        JVM_TARGET_DIR=$BUILD_DIR/jdk-17.0.3.1_macos-aarch64_bin-297fa2
+        JVM_URL=https://download.oracle.com/java/21/archive/jdk-21.0.3_macos-aarch64_bin.tar.gz
+        JVM_TARGET_DIR=$BUILD_DIR/jdk-21.0.3_macos-aarch64_bin-612aa7
         ;;
     *) 
         die "Unknown architecture $JVM_ARCH"
         ;;
     esac
 elif [ "$cygwin" = "true" ] || [ "$msys" = "true" ]; then
-    JVM_URL=https://download.oracle.com/java/17/archive/jdk-17.0.3.1_windows-x64_bin.zip
-    JVM_TARGET_DIR=$BUILD_DIR/jdk-17.0.3.1_windows-x64_bin-d6ede5
+    JVM_URL=https://download.oracle.com/java/21/archive/jdk-21.0.3_windows-x64_bin.zip
+    JVM_TARGET_DIR=$BUILD_DIR/jdk-21.0.3_windows-x64_bin-125c41
 else
     JVM_ARCH=$(linux$(getconf LONG_BIT) uname -m)
      case $JVM_ARCH in
         x86_64)
-            JVM_URL=https://download.oracle.com/java/17/archive/jdk-17.0.3.1_linux-x64_bin.tar.gz
-            JVM_TARGET_DIR=$BUILD_DIR/jdk-17.0.3.1_linux-x64_bin-9324ae
+            JVM_URL=https://download.oracle.com/java/21/archive/jdk-21.0.3_linux-x64_bin.tar.gz
+            JVM_TARGET_DIR=$BUILD_DIR/jdk-21.0.3_linux-x64_bin-5412b9
             ;;
         aarch64)
-            JVM_URL=https://download.oracle.com/java/17/archive/jdk-17.0.3.1_linux-aarch64_bin.tar.gz
-            JVM_TARGET_DIR=$BUILD_DIR/jdk-17.0.3.1_linux-aarch64_bin-319da6
+            JVM_URL=https://download.oracle.com/java/21/archive/jdk-21.0.3_linux-aarch64_bin.tar.gz
+            JVM_TARGET_DIR=$BUILD_DIR/jdk-21.0.3_linux-aarch64_bin-7910df
             ;;
         *) 
             die "Unknown architecture $JVM_ARCH"
@@ -304,7 +304,7 @@ DEFAULT_JVM_OPTS='"-Xmx64m" "-Xms64m"'
 set -- \
         "-Dorg.gradle.appname=$APP_BASE_NAME" \
         -classpath "$CLASSPATH" \
-        org.gradle.wrapper.GradleWrapperMain \
+        -jar "$APP_HOME/gradle/wrapper/gradle-wrapper.jar" \
         "$@"
 
 # Stop when "xargs" is not available.
