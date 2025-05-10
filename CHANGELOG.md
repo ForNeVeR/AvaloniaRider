@@ -6,9 +6,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 
 When considering version compatibility (and thus incrementing the major version), we only consider the configuration file major user experience changes. The host IDE version is not considered a version compatibility factor (since otherwise we'd have to increase the major version pretty often and that would make no sense).
 
-## [Unreleased] (1.5.4)
+## [1.5.4] - 2025-05-11
 ### Changed
 - **(Requirement update!)** Support only Rider 2025.1.2 and later.
+- Update some dependencies.
 
 ### Fixed
 - [#511](https://github.com/ForNeVeR/AvaloniaRider/issues/511): broken Avalonia previewer executable path calculation on Rider 2025.1.2.
@@ -128,4 +129,5 @@ The initial plugin release. The plugin provides the following features for JetBr
 [1.5.1]: https://github.com/ForNeVeR/AvaloniaRider/compare/v1.5.0...v1.5.1
 [1.5.2]: https://github.com/ForNeVeR/AvaloniaRider/compare/v1.5.1...v1.5.2
 [1.5.3]: https://github.com/ForNeVeR/AvaloniaRider/compare/v1.5.2...v1.5.3
-[Unreleased]: https://github.com/ForNeVeR/AvaloniaRider/compare/v1.5.3...HEAD
+[1.5.4]: https://github.com/ForNeVeR/AvaloniaRider/compare/v1.5.3...v1.5.4
+[Unreleased]: https://github.com/ForNeVeR/AvaloniaRider/compare/v1.5.4...HEAD
