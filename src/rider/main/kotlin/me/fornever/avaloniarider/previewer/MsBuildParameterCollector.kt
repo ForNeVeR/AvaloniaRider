@@ -178,9 +178,9 @@ class MsBuildParameterCollector(private val project: Project) {
     }
 
     private suspend fun correctPreviewerExecutablePath(projectFilePath: Path, previewerPath: Path): Path {
-        // TODO: See #511 and RIDER-125656: on Rider 2025.1.2, the path MSBuild property is incorrectly evaluated to
-        //       <Project directory>/../tools/netstandard2.0/designer/Avalonia.Designer.HostApp.dll
-        //       This method tries to apply a workaround and restore the correct path.
+        // TODO[#513]: See #511 and RIDER-125656: on Rider 2025.1.2, the path MSBuild property is incorrectly evaluated to
+        //             <Project directory>/../tools/netstandard2.0/designer/Avalonia.Designer.HostApp.dll
+        //             This method tries to apply a workaround and restore the correct path.
         val projectDir = projectFilePath.parent
         if (previewerPath.startsWith(projectDir)) {
             if (previewerPath.elementAtOrNull(projectDir.nameCount)?.name == "..") {
