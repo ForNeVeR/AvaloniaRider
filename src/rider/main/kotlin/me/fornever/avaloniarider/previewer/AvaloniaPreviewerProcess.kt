@@ -64,6 +64,7 @@ class AvaloniaPreviewerProcess(
                 )
             } else emptyList()
 
+        logger.info("Previewer process path: \"${parameters.previewerBinary}\".")
         return GeneralCommandLine()
             .withExePath(parameters.previewerBinary.toAbsolutePath().toString())
             .withParameters(previewerArguments)

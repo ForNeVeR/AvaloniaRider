@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 
 When considering version compatibility (and thus incrementing the major version), we only consider the configuration file major user experience changes. The host IDE version is not considered a version compatibility factor (since otherwise we'd have to increase the major version pretty often and that would make no sense).
 
+## [Unreleased] (1.5.4)
+### Changed
+- **(Requirement update!)** Support only Rider 2025.1.2 and later.
+
+### Fixed
+- [#511](https://github.com/ForNeVeR/AvaloniaRider/issues/511): broken Avalonia previewer executable path calculation on Rider 2025.1.2.
+
 ## [1.5.3] - 2025-03-07
 ### Changed
 - **(Requirement update!)** Support only Rider 2025.1 EAP7 and later.
