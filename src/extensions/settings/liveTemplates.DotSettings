@@ -90,4 +90,40 @@ public $propertyType$ $propertyName$
 	<s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=D0F4534A917CFB4BAB1FE25437C94EE0/Field/=targetType/Order/@EntryValue">2</s:Int64>
 	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=D0F4534A917CFB4BAB1FE25437C94EE0/Scope/=B68999B9D6B43E47A02B22C12A54C3CC/@KeyIndexDefined">True</s:Boolean>
 	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=D0F4534A917CFB4BAB1FE25437C94EE0/Scope/=B68999B9D6B43E47A02B22C12A54C3CC/CustomProperties/=minimumLanguageVersion/@EntryIndexedValue">2.0</s:String>
-	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=D0F4534A917CFB4BAB1FE25437C94EE0/Scope/=B68999B9D6B43E47A02B22C12A54C3CC/Type/@EntryValue">InCSharpTypeMember</s:String></wpf:ResourceDictionary>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=D0F4534A917CFB4BAB1FE25437C94EE0/Scope/=B68999B9D6B43E47A02B22C12A54C3CC/Type/@EntryValue">InCSharpTypeMember</s:String>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=40ACF64865507C4B828C429C371DBE97/@KeyIndexDefined">True</s:Boolean>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=40ACF64865507C4B828C429C371DBE97/Applicability/=Live/@EntryIndexedValue">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=40ACF64865507C4B828C429C371DBE97/Description/@EntryValue">Avalonia Routed Event</s:String>
+	.	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=40ACF64865507C4B828C429C371DBE97/Shortcut/@EntryValue">avaloniaRoutedEvent</s:String>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=40ACF64865507C4B828C429C371DBE97/ShortenQualifiedReferences/@EntryValue">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=40ACF64865507C4B828C429C371DBE97/Text/@EntryValue">public static readonly RoutedEvent&lt;$eventArgsType$&gt; $eventName$Event = RoutedEvent.Register&lt;$containingType$, $eventArgsType$&gt;(
+  nameof($eventName$), RoutingStrategies.Bubble);
+
+public event EventHandler&lt;$eventArgsType$&gt;? $eventName$
+{
+  add =&gt; AddHandler($eventName$Event, value);
+  remove =&gt; RemoveHandler($eventName$Event, value);
+}</s:String>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=40ACF64865507C4B828C429C371DBE97/Field/=containingType/@KeyIndexDefined">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=40ACF64865507C4B828C429C371DBE97/Field/=containingType/Expression/@EntryValue">typeName()</s:String>
+	<s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=40ACF64865507C4B828C429C371DBE97/Field/=containingType/Order/@EntryValue">0</s:Int64>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=40ACF64865507C4B828C429C371DBE97/Field/=eventArgsType/@KeyIndexDefined">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=40ACF64865507C4B828C429C371DBE97/Field/=eventArgsType/Expression/@EntryValue">constant("RoutedEventArgs")</s:String>
+	<s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=40ACF64865507C4B828C429C371DBE97/Field/=eventArgsType/Order/@EntryValue">1</s:Int64>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=40ACF64865507C4B828C429C371DBE97/Field/=eventName/@KeyIndexDefined">True</s:Boolean>
+	<s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=40ACF64865507C4B828C429C371DBE97/Field/=eventName/Order/@EntryValue">2</s:Int64>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=40ACF64865507C4B828C429C371DBE97/Field/=propertyName/@KeyIndexDefined">False</s:Boolean>
+	<s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=40ACF64865507C4B828C429C371DBE97/Field/=propertyName/Order/@EntryValue">-1</s:Int64>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=40ACF64865507C4B828C429C371DBE97/Field/=propertyType/@KeyIndexDefined">False</s:Boolean>
+	<s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=40ACF64865507C4B828C429C371DBE97/Field/=propertyType/Order/@EntryValue">-1</s:Int64>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=40ACF64865507C4B828C429C371DBE97/Field/=type/@KeyIndexDefined">False</s:Boolean>
+	<s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=40ACF64865507C4B828C429C371DBE97/Field/=type/Order/@EntryValue">-1</s:Int64>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=40ACF64865507C4B828C429C371DBE97/Reformat/@EntryValue">True</s:Boolean>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=40ACF64865507C4B828C429C371DBE97/Scope/=B68999B9D6B43E47A02B22C12A54C3CC/@KeyIndexDefined">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=40ACF64865507C4B828C429C371DBE97/Scope/=B68999B9D6B43E47A02B22C12A54C3CC/CustomProperties/=minimumLanguageVersion/@EntryIndexedValue">2.0</s:String>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=40ACF64865507C4B828C429C371DBE97/Scope/=B68999B9D6B43E47A02B22C12A54C3CC/Type/@EntryValue">InCSharpTypeMember</s:String>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=40ACF64865507C4B828C429C371DBE97/Scope/=C3001E7C0DA78E4487072B7E050D86C5/@KeyIndexDefined">False</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=40ACF64865507C4B828C429C371DBE97/Scope/=C3001E7C0DA78E4487072B7E050D86C5/CustomProperties/=minimumLanguageVersion/@EntryIndexedValue"></s:String>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=40ACF64865507C4B828C429C371DBE97/Scope/=C3001E7C0DA78E4487072B7E050D86C5/CustomProperties/=minimumLanguageVersion/@EntryIndexRemoved">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=40ACF64865507C4B828C429C371DBE97/Scope/=C3001E7C0DA78E4487072B7E050D86C5/Type/@EntryValue"></s:String>
+</wpf:ResourceDictionary>
