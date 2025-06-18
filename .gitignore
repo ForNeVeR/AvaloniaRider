@@ -3,6 +3,7 @@
 !/.idea/dictionaries
 /.gradle/
 /.intellijPlatform/
+/.kotlin/
 /nuget.config
 
 bin/
