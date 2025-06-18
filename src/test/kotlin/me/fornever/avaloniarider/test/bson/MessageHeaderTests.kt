@@ -23,6 +23,6 @@ class MessageHeaderTests {
     fun testSerialization() {
         val header = MessageHeader(57, guid)
         val res = header.toByteArray()
-        res.shouldBe(byteData)
+        res.toTypedArray().shouldBe(byteData.toTypedArray())
     }
 }
