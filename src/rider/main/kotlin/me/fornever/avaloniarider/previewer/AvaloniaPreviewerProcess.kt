@@ -2,9 +2,9 @@ package me.fornever.avaloniarider.previewer
 
 import com.intellij.execution.configurations.GeneralCommandLine
 import com.intellij.execution.process.OSProcessHandler
-import com.intellij.execution.process.ProcessAdapter
 import com.intellij.execution.process.ProcessEvent
 import com.intellij.execution.process.ProcessHandler
+import com.intellij.execution.process.ProcessListener
 import com.intellij.execution.ui.ConsoleView
 import com.intellij.execution.ui.ConsoleViewContentType
 import com.intellij.openapi.diagnostic.Logger
@@ -133,7 +133,7 @@ class AvaloniaPreviewerProcess(
 
     private suspend fun waitForTermination(process: ProcessHandler, title: String) {
         val result = CompletableDeferred<Unit>()
-        process.addProcessListener(object : ProcessAdapter() {
+        process.addProcessListener(object : ProcessListener {
             override fun processTerminated(event: ProcessEvent) {
                 result.complete(Unit)
             }

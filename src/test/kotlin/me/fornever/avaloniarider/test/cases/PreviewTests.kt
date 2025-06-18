@@ -5,9 +5,11 @@ import com.jetbrains.rd.util.lifetime.Lifetime
 import com.jetbrains.rd.util.reactive.OptProperty
 import com.jetbrains.rdclient.util.idea.pumpMessages
 import com.jetbrains.rider.model.PreviewPlatformKind
+import com.jetbrains.rider.test.OpenSolutionParams
+import com.jetbrains.rider.test.annotations.Solution
 import com.jetbrains.rider.test.annotations.TestEnvironment
 import com.jetbrains.rider.test.asserts.shouldBeTrue
-import com.jetbrains.rider.test.base.BaseTestWithSolution
+import com.jetbrains.rider.test.base.PerClassSolutionTestBase
 import com.jetbrains.rider.test.env.enums.BuildTool
 import com.jetbrains.rider.test.env.enums.SdkVersion
 import com.jetbrains.rider.test.scriptingApi.buildSolutionWithReSharperBuild
@@ -21,10 +23,15 @@ import org.testng.annotations.Test
 import java.time.Duration
 
 @TestEnvironment(sdkVersion = SdkVersion.AUTODETECT, buildTool = BuildTool.AUTODETECT)
-class PreviewTests : BaseTestWithSolution() {
-    override val testSolution = "AvaloniaMvvm"
-    override val restoreNuGetPackages = true
-    override val backendLoadedTimeout: Duration = Duration.ofMinutes(2L)
+@Solution("AvaloniaMvvm")
+class PreviewTests : PerClassSolutionTestBase() {
+
+    override fun modifyOpenSolutionParams(params: OpenSolutionParams) {
+        params.restoreNuGetPackages = true
+        params.backendLoadedTimeout = Duration.ofMinutes(2L)
+        super.modifyOpenSolutionParams(params)
+    }
+
     override val traceScenarios = setOf(RdLogTraceScenarios.Commands)
 
     private val mainWindowFile
@@ -34,6 +41,7 @@ class PreviewTests : BaseTestWithSolution() {
         get() = OptProperty(correctTestSolutionDirectory.resolve("AvaloniaMvvm.csproj"))
 
     @Test
+
     fun previewEditorProviderShouldHandleTheXamlFile() {
         val provider = XamlPreviewEditorExtension.EP_NAME
             .extensionList
