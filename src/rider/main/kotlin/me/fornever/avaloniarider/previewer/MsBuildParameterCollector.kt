@@ -142,19 +142,13 @@ class MsBuildParameterCollector(private val project: Project) {
 
         return coroutineScope {
             val runnableProjectProperties = async {
-                val result = msBuildEvaluator.evaluatePropertiesSuspending(
+                msBuildEvaluator.evaluatePropertiesSuspending(
                     MSBuildEvaluator.PropertyRequest(
                         runnableProjectFilePath.toString(),
                         tfm,
                         listOf(avaloniaPreviewerPathKey, "TargetDir", "TargetName", "TargetPath")
                     )
-                ).toMutableMap()
-                val previewerPath = result[avaloniaPreviewerPathKey] ?: return@async result
-                result[avaloniaPreviewerPathKey] = correctPreviewerExecutablePath(
-                    runnableProjectFilePath,
-                    Path(previewerPath)
-                ).pathString
-                result
+                )
             }
             val xamlProjectProperties = async {
                 msBuildEvaluator.evaluatePropertiesSuspending(
@@ -175,55 +169,5 @@ class MsBuildParameterCollector(private val project: Project) {
                 projectOutput.getCorrectWorkingDirectory()
             )
         }
-    }
-
-    private suspend fun correctPreviewerExecutablePath(projectFilePath: Path, previewerPath: Path): Path {
-        // TODO[#513]: See #511 and RIDER-125656: on Rider 2025.1.2, the path MSBuild property is incorrectly evaluated to
-        //             <Project directory>/../tools/netstandard2.0/designer/Avalonia.Designer.HostApp.dll
-        //             This method tries to apply a workaround and restore the correct path.
-        val projectDir = projectFilePath.parent
-        if (previewerPath.startsWith(projectDir)) {
-            if (previewerPath.elementAtOrNull(projectDir.nameCount)?.name == "..") {
-                logger.info("RIDER-125656 workaround mode activated: looking for Avalonia package…")
-                val nuGetPackagePath = withContext(project.protocol.scheduler.asCoroutineDispatcher) {
-                    val nuGet = project.solution.nuGetHost
-                    val avaloniaVersions = nuGet.nuGetProjectModel.projects.values
-                        .asSequence()
-                        .flatMap { nuGetProject ->
-                            val explicitlyInstalledVersions = nuGetProject.explicitPackages
-                                .filter { it.id == "Avalonia" }
-                                .map { it.version }
-                            val otherVersions = nuGetProject.integratedPackages
-                                .filter { it.identity.id == "Avalonia" }
-                                .map { it.identity.version }
-                            explicitlyInstalledVersions + otherVersions
-                        }
-                        .distinct()
-                    // We might do something better, but should work as a workaround for now:
-                    val version = avaloniaVersions.firstOrNull() ?: return@withContext null
-
-                    val packageCache = nuGet.folderManager.folders.valueOrNull
-                        ?.firstOrNull { it.kind == RdNuGetFolderKind.GlobalPackages }
-                    packageCache?.let {
-                        val nuGetFolder = Path(packageCache.path)
-                        nuGetFolder / "avalonia" / version
-                    }
-                }
-
-                if (nuGetPackagePath == null) {
-                    logger.warn("Package Avalonia not found among the installed packages.")
-                } else {
-                    logger.info("Possible Avalonia package found: $nuGetPackagePath")
-                    val previewerRelativePath = previewerPath.drop(projectDir.nameCount + 1)
-                        .joinToString(File.separator) { it.name }
-                    val result = nuGetPackagePath / previewerRelativePath
-
-                    logger.info("Applying RIDER-125656 workaround: \"$result\".")
-                    return result
-                }
-            }
-        }
-
-        return previewerPath
     }
 }
