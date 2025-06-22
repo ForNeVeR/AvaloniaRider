@@ -2,6 +2,7 @@ package me.fornever.avaloniarider.previewer
 
 import com.intellij.execution.configurations.GeneralCommandLine
 import com.intellij.execution.process.OSProcessHandler
+import com.intellij.execution.process.OSProcessUtil
 import com.intellij.execution.process.ProcessEvent
 import com.intellij.execution.process.ProcessHandler
 import com.intellij.execution.process.ProcessListener
@@ -110,6 +111,12 @@ class AvaloniaPreviewerProcess(
             }
         }) { handler ->
             handler.destroyProcess()
+            if (!handler.waitFor(100)) {
+                // TODO: This is a workaround for https://youtrack.jetbrains.com/issue/IJPL-19311
+                // handler.destroyProcess() won't destroy the process if LocalProcessService wasn't instantiated in this
+                // IDE session.
+                OSProcessUtil.killProcess(handler.process)
+            }
             handler.waitFor()
         }
 
