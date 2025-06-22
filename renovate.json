@@ -11,6 +11,13 @@
       ],
       "enabled": false,
       "description": "Kotlin is managed by intellij-updater."
+    },
+    {
+      "matchPackagePatterns": [
+        "com.jetbrains.rd:rd-gen"
+      ],
+      "enabled": false,
+      "description": ["rd-gen is managed by intellij-updater."]
     }
   ],
   "customManagers": [

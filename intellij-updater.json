@@ -6,6 +6,11 @@
     "versionFlavor": "eap"
   }, {
     "file": "gradle/libs.versions.toml",
+    "field": "rdGen",
+    "kind": "rd-gen",
+    "versionFlavor": "eap"
+  }, {
+    "file": "gradle/libs.versions.toml",
     "field": "riderSdkPreview",
     "kind": "rider",
     "versionFlavor": "eap"
