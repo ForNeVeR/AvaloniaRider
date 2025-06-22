@@ -327,8 +327,9 @@ class AvaloniaPreviewerSessionController(
             } catch (ex: AvaloniaPreviewerInitializationException) {
                 criticalErrorSignal.fire(ex)
                 logger.warn(ex)
-            } catch (_: CancellationException) {
+            } catch (x: CancellationException) {
                 logger.info("${xamlFile.name}: previewer session has been cancelled")
+                throw x
             } catch (t: Throwable) {
                 logger.error(t)
             } finally {
