@@ -6,6 +6,17 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 
 When considering version compatibility (and thus incrementing the major version), we only consider the configuration file major user experience changes. The host IDE version is not considered a version compatibility factor (since otherwise we'd have to increase the major version pretty often and that would make no sense).
 
+## [1.6.0] - 2025-07-09
+### Changed
+- **(Requirement update!)** Update the minimal supported Rider version to 2025.2 EAP 5.
+- Minor cleanup of code and workarounds for older Rider issues.
+
+### Added
+- Live template for Avalonia Routed Event. Thanks to @rabbitism!
+
+### Fixed
+- Possible freezes in AvaloniaPreviewerProcess, see [IJPL-193111](https://youtrack.jetbrains.com/issue/IJPL-193111) for more details.
+
 ## [1.5.4] - 2025-05-11
 ### Changed
 - **(Requirement update!)** Support only Rider 2025.1.2 and later.
@@ -130,4 +141,5 @@ The initial plugin release. The plugin provides the following features for JetBr
 [1.5.2]: https://github.com/ForNeVeR/AvaloniaRider/compare/v1.5.1...v1.5.2
 [1.5.3]: https://github.com/ForNeVeR/AvaloniaRider/compare/v1.5.2...v1.5.3
 [1.5.4]: https://github.com/ForNeVeR/AvaloniaRider/compare/v1.5.3...v1.5.4
-[Unreleased]: https://github.com/ForNeVeR/AvaloniaRider/compare/v1.5.4...HEAD
+[1.6.0]: https://github.com/ForNeVeR/AvaloniaRider/compare/v1.5.4...v1.6.0
+[Unreleased]: https://github.com/ForNeVeR/AvaloniaRider/compare/v1.6.0...HEAD

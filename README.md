@@ -41,9 +41,10 @@ Right-click a directory or an Avalonia-enabled project and choose among the avai
 ### Live templates
 
 Type in an editor to use [Live templates][live-templates]:
+- `attachedAvaloniaProperty`
+- `avaloniaRoutedEvent`,
 - `directProperty`,
-- `styledProperty`,
-- `attachedAvaloniaProperty`.
+- `styledProperty`.
 
 Documentation
 -------------
