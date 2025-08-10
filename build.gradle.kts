@@ -246,9 +246,11 @@ tasks {
 
     check {
         dependsOn(
-            testRiderPreview,
-//            verifyPlugin // TODO[#539]: Investigate why this fails.
+            testRiderPreview
         )
+        if (!System.getProperty("os.name").startsWith("Windows", ignoreCase = true)) {
+            dependsOn(verifyPlugin) // TODO[#539]: Investigate why this fails on Windows.
+        }
     }
 }
 
