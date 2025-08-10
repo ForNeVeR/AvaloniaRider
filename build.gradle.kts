@@ -46,7 +46,9 @@ val buildRelease: String by project
 
 dependencies {
     intellijPlatform {
-        rider(libs.versions.riderSdk, useInstaller = false)
+        rider(libs.versions.riderSdk) {
+            useInstaller = false
+        }
         jetbrainsRuntime()
 
         bundledModule("intellij.rider")
@@ -60,6 +62,7 @@ dependencies {
     implementation(libs.bson4Jackson)
 
     testImplementation(libs.openTest4J)
+    testImplementation(libs.junit)
 }
 
 val buildConfiguration = ext.properties["buildConfiguration"] as String? ?: "Debug"
@@ -85,7 +88,9 @@ intellijPlatform {
     pluginVerification {
         ides {
             fun rider(version: Provider<String>) {
-                ide(provider { IntelliJPlatformType.Rider }, version, useInstaller = false)
+                create(IntelliJPlatformType.Rider, version) {
+                    useInstaller = false
+                }
             }
             rider(libs.versions.riderSdk)
             if (libs.versions.riderSdk.get() != libs.versions.riderSdkPreview.get()) {

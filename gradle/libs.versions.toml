@@ -6,6 +6,7 @@ riderSdkPreview = "2025.2-RC2-SNAPSHOT"
 
 [libraries]
 bson4Jackson = "de.undercouch:bson4jackson:2.18.0"
+junit = "junit:junit:4.13.2"
 kotlinStdLib = { group = "org.jetbrains.kotlin", name = "kotlin-stdlib", version.ref = "kotlin" }
 openTest4J = "org.opentest4j:opentest4j:1.3.0"
 rdGen = { group = "com.jetbrains.rd", name = "rd-gen", version.ref = "rdGen" }
