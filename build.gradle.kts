@@ -247,7 +247,7 @@ tasks {
     check {
         dependsOn(
             testRiderPreview,
-//            verifyPlugin // TODO: Investigate why this fails.
+//            verifyPlugin // TODO[#539]: Investigate why this fails.
         )
     }
 }
