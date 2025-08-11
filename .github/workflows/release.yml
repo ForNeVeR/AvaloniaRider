@@ -22,7 +22,7 @@ jobs:
         run: echo "version=$(if ($env:GITHUB_REF.StartsWith('refs/tags/v')) { $env:GITHUB_REF -replace '^refs/tags/v', '' } else { 'next' })" >> $env:GITHUB_OUTPUT
 
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Read the changelog
         uses: ForNeVeR/ChangelogAutomation.action@v2
