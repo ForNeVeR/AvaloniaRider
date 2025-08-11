@@ -16,7 +16,7 @@ jobs:
     timeout-minutes: 15
     steps:
       - name: "Check out the sources"
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - id: update
         uses: ForNeVeR/intellij-updater@v1

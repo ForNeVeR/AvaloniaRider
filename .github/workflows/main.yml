@@ -26,7 +26,7 @@ jobs:
       DOTNET_NOLOGO: 1
       DOTNET_CLI_TELEMETRY_OPTOUT: 1
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - if: matrix.image == 'ubuntu-22.04'
         name: Free disk space
@@ -81,5 +81,5 @@ jobs:
     runs-on: ubuntu-24.04
     name: "Validate Gradle wrapper"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: gradle/actions/wrapper-validation@v4
