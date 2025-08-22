@@ -54,7 +54,7 @@ dependencies {
         bundledModule("intellij.rider")
         bundledPlugins("com.jetbrains.xaml.previewer")
 
-        pluginVerifier()
+        pluginVerifier(libs.intellij.plugin.verifier.cli.map { it.version })
 
         testFramework(TestFrameworkType.Bundled)
     }
@@ -246,11 +246,9 @@ tasks {
 
     check {
         dependsOn(
-            testRiderPreview
+            testRiderPreview,
+            verifyPlugin
         )
-        if (!System.getProperty("os.name").startsWith("Windows", ignoreCase = true)) {
-            dependsOn(verifyPlugin) // TODO[#539]: Investigate why this fails on Windows.
-        }
     }
 }
 
