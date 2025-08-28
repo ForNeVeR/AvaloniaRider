@@ -241,6 +241,11 @@ tasks {
         useInstaller = false
         task {
             enabled = libs.versions.riderSdk.get() != libs.versions.riderSdkPreview.get()
+
+            plugins {
+                bundledModule("intellij.rider")
+                bundledPlugins("com.jetbrains.xaml.previewer")
+            }
         }
     }
 
