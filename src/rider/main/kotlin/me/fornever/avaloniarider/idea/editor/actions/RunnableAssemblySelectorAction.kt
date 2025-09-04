@@ -282,12 +282,8 @@ class RunnableAssemblySelectorAction(
             ))
         return selectableRunnableProjects
     }
-    
+
     private fun isWebAssemblyProject(project: RunnableProject): Boolean {
-        // Filter out WebAssembly/Browser projects which cannot be used for XAML preview
-        // These projects use the Microsoft.NET.Sdk.WebAssembly SDK and won't work with the previewer
-        return project.name.endsWith(".Browser", ignoreCase = true) || 
-               project.name.endsWith(".Wasm", ignoreCase = true) ||
-               project.name.contains("WebAssembly", ignoreCase = true)
+        return project.projectOutputs.all { it.tfm?.presentableName.orEmpty().endsWith("-browser") }
     }
 }
