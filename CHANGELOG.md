@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 
 When considering version compatibility (and thus incrementing the major version), we only consider the configuration file major user experience changes. The host IDE version is not considered a version compatibility factor (since otherwise we'd have to increase the major version pretty often and that would make no sense).
 
+## [Unreleased] (1.7.0)
+### Added
+- A new button to show rendering exception in case when they happen.
+
 ## [1.6.0] - 2025-07-09
 ### Changed
 - **(Requirement update!)** Update the minimal supported Rider version to 2025.2 EAP 5.
