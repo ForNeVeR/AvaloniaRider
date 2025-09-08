@@ -2,11 +2,7 @@ package me.fornever.avaloniarider.idea.editor
 
 import com.intellij.codeHighlighting.BackgroundEditorHighlighter
 import com.intellij.execution.filters.TextConsoleBuilderFactory
-import com.intellij.openapi.actionSystem.ActionManager
-import com.intellij.openapi.actionSystem.ActionPlaces
-import com.intellij.openapi.actionSystem.ActionToolbar
-import com.intellij.openapi.actionSystem.AnAction
-import com.intellij.openapi.actionSystem.DefaultActionGroup
+import com.intellij.openapi.actionSystem.*
 import com.intellij.openapi.application.EDT
 import com.intellij.openapi.fileEditor.FileEditorLocation
 import com.intellij.openapi.fileEditor.FileEditorState
@@ -34,21 +30,13 @@ import com.jetbrains.rider.xaml.previewEditor.PreviewEditorToolbar
 import com.jetbrains.rider.xaml.splitEditor.XamlSplitEditor
 import com.jetbrains.rider.xaml.splitEditor.XamlSplitEditorSplitLayout
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import me.fornever.avaloniarider.AvaloniaRiderBundle
-import me.fornever.avaloniarider.idea.editor.actions.DebugPreviewerAction
-import me.fornever.avaloniarider.idea.editor.actions.RestartPreviewerAction
-import me.fornever.avaloniarider.idea.editor.actions.RunnableAssemblySelectorAction
-import me.fornever.avaloniarider.idea.editor.actions.ShowErrorAction
-import me.fornever.avaloniarider.idea.editor.actions.TogglePreviewerLogAction
-import me.fornever.avaloniarider.idea.editor.actions.getErrorMessageProperty
-import me.fornever.avaloniarider.idea.getCoroutineScope
+import me.fornever.avaloniarider.idea.editor.actions.*
 import me.fornever.avaloniarider.previewer.AvaloniaPreviewerSessionController
 import me.fornever.avaloniarider.ui.bindVisible
 import java.awt.BorderLayout
 import java.awt.GridBagLayout
 import java.beans.PropertyChangeListener
-import java.util.concurrent.Future
 import javax.swing.JComponent
 import javax.swing.JPanel
 

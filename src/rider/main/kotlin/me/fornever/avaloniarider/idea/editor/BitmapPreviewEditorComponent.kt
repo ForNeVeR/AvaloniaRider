@@ -7,7 +7,6 @@ import com.intellij.util.ui.AsyncProcessIcon
 import com.jetbrains.rd.util.lifetime.Lifetime
 import me.fornever.avaloniarider.AvaloniaRiderBundle
 import me.fornever.avaloniarider.controlmessages.FrameMessage
-import me.fornever.avaloniarider.controlmessages.UpdateXamlResultMessage
 import me.fornever.avaloniarider.idea.concurrency.adviseOnUiThread
 import me.fornever.avaloniarider.idea.settings.AvaloniaProjectSettings
 import me.fornever.avaloniarider.plainTextToHtml
