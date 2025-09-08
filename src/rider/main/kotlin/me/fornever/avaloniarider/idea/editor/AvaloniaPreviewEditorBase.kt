@@ -4,6 +4,7 @@ import com.intellij.codeHighlighting.BackgroundEditorHighlighter
 import com.intellij.execution.filters.TextConsoleBuilderFactory
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.ActionPlaces
+import com.intellij.openapi.actionSystem.ActionToolbar
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.application.EDT
@@ -33,16 +34,21 @@ import com.jetbrains.rider.xaml.previewEditor.PreviewEditorToolbar
 import com.jetbrains.rider.xaml.splitEditor.XamlSplitEditor
 import com.jetbrains.rider.xaml.splitEditor.XamlSplitEditorSplitLayout
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import me.fornever.avaloniarider.AvaloniaRiderBundle
 import me.fornever.avaloniarider.idea.editor.actions.DebugPreviewerAction
 import me.fornever.avaloniarider.idea.editor.actions.RestartPreviewerAction
 import me.fornever.avaloniarider.idea.editor.actions.RunnableAssemblySelectorAction
+import me.fornever.avaloniarider.idea.editor.actions.ShowErrorAction
 import me.fornever.avaloniarider.idea.editor.actions.TogglePreviewerLogAction
+import me.fornever.avaloniarider.idea.editor.actions.getErrorMessageProperty
+import me.fornever.avaloniarider.idea.getCoroutineScope
 import me.fornever.avaloniarider.previewer.AvaloniaPreviewerSessionController
 import me.fornever.avaloniarider.ui.bindVisible
 import java.awt.BorderLayout
 import java.awt.GridBagLayout
 import java.beans.PropertyChangeListener
+import java.util.concurrent.Future
 import javax.swing.JComponent
 import javax.swing.JPanel
 
@@ -179,7 +185,13 @@ abstract class AvaloniaPreviewEditorBase(
     override fun getPreferredFocusedComponent() = editorComponent
 
     protected fun createToolbarComponent(targetComponent: JComponent, vararg actions: AnAction): JComponent {
-        val actionGroup = DefaultActionGroup().apply {
+        val actionGroup = DefaultActionGroup()
+        val toolbar = ActionManager.getInstance().createActionToolbar(ActionPlaces.EDITOR_TOOLBAR, actionGroup, true).apply {
+            this.targetComponent = targetComponent
+        }
+
+        actionGroup.apply {
+            add(getShowErrorAction(toolbar))
             add(assemblySelectorAction)
             add(RestartPreviewerAction(lifetime, sessionController, selectedProjectPath))
             addAll(*actions)
@@ -187,9 +199,6 @@ abstract class AvaloniaPreviewEditorBase(
             add(DebugPreviewerAction(lifetime, sessionController, selectedProjectPath))
         }
 
-        val toolbar = ActionManager.getInstance().createActionToolbar(ActionPlaces.EDITOR_TOOLBAR, actionGroup, true).apply {
-            this.targetComponent = targetComponent
-        }
         return toolbar.component
     }
 
@@ -204,4 +213,12 @@ abstract class AvaloniaPreviewEditorBase(
     override fun dispose() {
         lifetimeDefinition.terminate()
     }
+
+    private fun getShowErrorAction(toolbar: ActionToolbar) =
+        ShowErrorAction(
+            lifetime,
+            getErrorMessageProperty(sessionController.updateXamlResult)
+        ) {
+            toolbar.updateActionsAsync()
+        }
 }

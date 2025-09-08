@@ -43,7 +43,6 @@ class BitmapPreviewEditorComponent(
         add(mainScrollView, BorderLayout.CENTER)
 
         controller.status.adviseOnUiThread(lifetime, ::handleStatus)
-        controller.updateXamlResult.adviseOnUiThread(lifetime, ::handleXamlResult)
         controller.criticalError.adviseOnUiThread(lifetime, ::handleCriticalError)
 
         controller.frame.adviseOnUiThread(lifetime) { frame ->
@@ -93,39 +92,6 @@ class BitmapPreviewEditorComponent(
 
         frameBuffer.render(frame)
         return true
-    }
-
-    private fun handleXamlResult(message: UpdateXamlResultMessage) {
-        val errorMessage =
-            if (message.exception == null && message.error == null) ""
-            else {
-                val buffer = StringBuilder()
-                val exception = message.exception
-                if (exception != null) {
-                    val exceptionType = exception.exceptionType ?: "Error"
-                    buffer.append(exceptionType)
-                    if (exception.lineNumber != null || exception.linePosition != null) {
-                        buffer.append(" at ").append(when {
-                            exception.lineNumber != null && exception.linePosition != null ->
-                                "${exception.lineNumber}:${exception.linePosition}"
-                            exception.lineNumber != null -> "${exception.lineNumber}"
-                            else -> "position ${exception.linePosition}"
-                        })
-                    }
-
-                    if (exception.message != null) {
-                        buffer.append(": ").append(exception.message)
-                    }
-                }
-                if (message.error != null) {
-                    if (message.exception != null) buffer.append("\n")
-                    buffer.append(message.error)
-                }
-                buffer.toString()
-            }
-
-        if (errorMessage.isNotEmpty())
-            logger.warn("XAML update error: $errorMessage")
     }
 
     private fun handleCriticalError(error: Throwable) {
