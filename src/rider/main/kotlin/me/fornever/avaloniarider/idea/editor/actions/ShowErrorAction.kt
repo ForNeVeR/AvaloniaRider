@@ -10,9 +10,11 @@ import com.intellij.openapi.ui.popup.Balloon
 import com.intellij.openapi.ui.popup.JBPopupFactory
 import com.intellij.openapi.util.text.HtmlBuilder
 import com.intellij.ui.awt.RelativePoint
-import com.intellij.util.ui.Html
 import com.jetbrains.rd.util.lifetime.Lifetime
-import com.jetbrains.rd.util.reactive.*
+import com.jetbrains.rd.util.reactive.IOptPropertyView
+import com.jetbrains.rd.util.reactive.IPropertyView
+import com.jetbrains.rd.util.reactive.asNullable
+import com.jetbrains.rd.util.reactive.map
 import com.jetbrains.rd.util.threading.coroutines.launch
 import kotlinx.coroutines.Dispatchers
 import me.fornever.avaloniarider.controlmessages.UpdateXamlResultMessage
