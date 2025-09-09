@@ -6,9 +6,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 
 When considering version compatibility (and thus incrementing the major version), we only consider the configuration file major user experience changes. The host IDE version is not considered a version compatibility factor (since otherwise we'd have to increase the major version pretty often and that would make no sense).
 
-## [Unreleased] (1.7.0)
+## [1.7.0] - 2025-09-09
 ### Added
 - A new button to show rendering exception in case when they happen.
+
+### Changed
+- **(Requirement update!)** Update the minimal supported Rider version to 2025.2.
+- Filter WASM projects from the project selector; prioritize the Desktop projects. Thanks to @MikeCodesDotNET!
 
 ## [1.6.0] - 2025-07-09
 ### Changed
@@ -146,4 +150,5 @@ The initial plugin release. The plugin provides the following features for JetBr
 [1.5.3]: https://github.com/ForNeVeR/AvaloniaRider/compare/v1.5.2...v1.5.3
 [1.5.4]: https://github.com/ForNeVeR/AvaloniaRider/compare/v1.5.3...v1.5.4
 [1.6.0]: https://github.com/ForNeVeR/AvaloniaRider/compare/v1.5.4...v1.6.0
-[Unreleased]: https://github.com/ForNeVeR/AvaloniaRider/compare/v1.6.0...HEAD
+[1.7.0]: https://github.com/ForNeVeR/AvaloniaRider/compare/v1.6.0...v1.7.0
+[Unreleased]: https://github.com/ForNeVeR/AvaloniaRider/compare/v1.7.0...HEAD
