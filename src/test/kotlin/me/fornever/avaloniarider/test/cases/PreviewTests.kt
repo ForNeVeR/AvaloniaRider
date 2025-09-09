@@ -4,6 +4,7 @@ import com.jetbrains.rd.platform.diagnostics.RdLogTraceScenarios
 import com.jetbrains.rd.util.lifetime.Lifetime
 import com.jetbrains.rd.util.reactive.OptProperty
 import com.jetbrains.rdclient.util.idea.pumpMessages
+import com.jetbrains.rider.model.BuildResultKind
 import com.jetbrains.rider.model.PreviewPlatformKind
 import com.jetbrains.rider.test.OpenSolutionParams
 import com.jetbrains.rider.test.annotations.Solution
@@ -13,7 +14,7 @@ import com.jetbrains.rider.test.base.PerTestSolutionTestBase
 import com.jetbrains.rider.test.env.enums.BuildTool
 import com.jetbrains.rider.test.env.enums.SdkVersion
 import com.jetbrains.rider.test.framework.frameworkLogger
-import com.jetbrains.rider.test.scriptingApi.buildSolutionWithReSharperBuild
+import com.jetbrains.rider.test.scriptingApi.buildSolutionWithConsoleBuild
 import com.jetbrains.rider.test.scriptingApi.getVirtualFileFromPath
 import com.jetbrains.rider.xaml.core.XamlPreviewEditorExtension
 import me.fornever.avaloniarider.controlmessages.FrameMessage
@@ -24,6 +25,7 @@ import org.testng.annotations.Test
 import java.nio.file.Path
 import java.time.Duration
 import kotlin.io.path.div
+import kotlin.test.assertTrue
 
 @TestEnvironment(sdkVersion = SdkVersion.AUTODETECT, buildTool = BuildTool.AUTODETECT)
 @Solution("AvaloniaMvvm")
@@ -51,7 +53,12 @@ class PreviewTests : PerTestSolutionTestBase() {
 
     @Test
     fun previewControllerShouldRenderTheFrame() {
-        buildSolutionWithReSharperBuild(timeout = Duration.ofMinutes(1L))
+        val buildResult = buildSolutionWithConsoleBuild(timeout = Duration.ofMinutes(1L))
+        assertTrue(
+            buildResult.buildResultKind == BuildResultKind.Successful
+                || buildResult.buildResultKind == BuildResultKind.HasWarnings,
+            "Build should be successful."
+        )
         var frameMsg: FrameMessage? = null
         Lifetime.using { lt ->
             // not init the property, so that the session doesn't start before we handle the frame
