@@ -89,4 +89,4 @@ Here is an example of a modified `csproj` file:
     </ItemGroup>
     <!-- ...... -->
 </Project>
-
+```
