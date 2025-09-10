@@ -62,3 +62,31 @@ Documentation
 [live-templates]: https://www.jetbrains.com/help/rider/Using_Live_Templates.html
 [preview-screenshot]: ./docs/preview-screenshot.png
 [marketplace]: https://plugins.jetbrains.com/plugin/14839-avaloniarider/
+
+### FAQ
+#### How to configure the Working Directory via MSBuild?
+
+1. Go to `Settings -> Languages & Frameworks -> Avalonia` and check if the `Previewer working directory` is set to `Defined by MSBuild`.
+2. Modify the `XXXX.Desktop.csproj` file for the desktop project and configure `StartWorkingDirectory` within the `PropertyGroup`. After this, the Preview will execute in the specified working directory.
+
+Here is an example of a modified `csproj` file:
+```
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <OutputType>WinExe</OutputType>
+        <TargetFramework>net9.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <!-- Note this!!! -->
+        <StartWorkingDirectory>H:\Your\Solution\Work\Directory</StartWorkingDirectory> 
+        <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
+    </PropertyGroup>
+    <ItemGroup>
+        <PackageReference Include="Avalonia.Desktop"/>
+        <PackageReference Include="Avalonia.Diagnostics">
+            <IncludeAssets Condition="'$(Configuration)' != 'Debug'">None</IncludeAssets>
+            <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
+        </PackageReference>
+    </ItemGroup>
+    <!-- ...... -->
+</Project>
+
