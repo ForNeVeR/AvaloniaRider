@@ -46,6 +46,32 @@ Type in an editor to use [Live templates][live-templates]:
 - `directProperty`,
 - `styledProperty`.
 
+### Plugin Settings
+First of all, for each of the previewer editors you have a choice which project the editor should bind to. The previewer _needs_ some runnable project to work, because it observes the UI of your components from the perspective of the project.
+
+Navigate to **Settings -> Languages & Frameworks -> Avalonia** to see more solution-wide settings.
+
+1. **Previewer method**: either the bitmap-based **AvaloniaRemote** (default) or the browser-based **Html**.
+2. **Synchronize the current run configuration and selected project, when possible**: if enabled, then the plugin will try to switch the current project when you switch the active run configuration, if the plugin is able to figure out which project is used by the configuration.
+3. **FPS limit** allows to limit the FPS (and thus the CPU usage) of the **AvaloniaRemote** previewer. By default, the previewer tries to provide smooth animation support, which might be unwanted at times.
+4. **Previewer working directory** allows you to choose under which directory the previewer should execute:
+   - **Defined by MSBuild** will use the `$(RunWorkingDirectory)` MSBuild property (or, generally, what Rider considers the default for the selected project);
+   - **Solution directory** will use the directory containing the solution file.
+
+   If you with to override the working directory, you may modify your project file as follows:
+   ```xml
+   <Project Sdk="Microsoft.NET.Sdk">
+       <PropertyGroup>
+           <!-- … -->
+           <RunWorkingDirectory>H:\Your\Custom\Work\Directory</RunWorkingDirectory>
+       </PropertyGroup>
+       <!-- … -->
+   </Project>
+   ```
+
+There are also some IDE-wide settings (not tied to a particular solution):
+1. **Developer mode**: if enabled, then the plugin will show the **Debug** button in the previewer, allowing to run the previewer process under debugger (in cases when you want to debug preview-specific issues, e.g. blocks under `Design.IsDesignTime`).
+
 Documentation
 -------------
 
@@ -62,31 +88,3 @@ Documentation
 [live-templates]: https://www.jetbrains.com/help/rider/Using_Live_Templates.html
 [preview-screenshot]: ./docs/preview-screenshot.png
 [marketplace]: https://plugins.jetbrains.com/plugin/14839-avaloniarider/
-
-### FAQ
-#### How to configure the Working Directory via MSBuild?
-
-1. Go to `Settings -> Languages & Frameworks -> Avalonia` and check if the `Previewer working directory` is set to `Defined by MSBuild`.
-2. Modify the `XXXX.Desktop.csproj` file for the desktop project and configure `StartWorkingDirectory` within the `PropertyGroup`. After this, the Preview will execute in the specified working directory.
-
-Here is an example of a modified `csproj` file:
-```
-<Project Sdk="Microsoft.NET.Sdk">
-    <PropertyGroup>
-        <OutputType>WinExe</OutputType>
-        <TargetFramework>net9.0</TargetFramework>
-        <Nullable>enable</Nullable>
-        <!-- Note this!!! -->
-        <StartWorkingDirectory>H:\Your\Solution\Work\Directory</StartWorkingDirectory> 
-        <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
-    </PropertyGroup>
-    <ItemGroup>
-        <PackageReference Include="Avalonia.Desktop"/>
-        <PackageReference Include="Avalonia.Diagnostics">
-            <IncludeAssets Condition="'$(Configuration)' != 'Debug'">None</IncludeAssets>
-            <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
-        </PackageReference>
-    </ItemGroup>
-    <!-- ...... -->
-</Project>
-```
