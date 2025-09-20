@@ -45,8 +45,8 @@ set BUILD_DIR=%LOCALAPPDATA%\gradle-jvm
 
 for /f "tokens=3 delims= " %%A in ('reg query "HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Environment" /v "PROCESSOR_ARCHITECTURE"') do set WIN_ARCH=%%A
 if "%WIN_ARCH%" equ "AMD64" (
-    set JVM_TARGET_DIR=%BUILD_DIR%\jdk-21.0.3_windows-x64_bin-125c41\
-    set JVM_URL=https://download.oracle.com/java/21/archive/jdk-21.0.3_windows-x64_bin.zip
+    set JVM_TARGET_DIR=%BUILD_DIR%\jdk-21.0.5_windows-x64_bin-020647\
+    set JVM_URL=https://download.oracle.com/java/21/archive/jdk-21.0.5_windows-x64_bin.zip
 ) else if "%WIN_ARCH%" equ "ARM64" (
     set JVM_TARGET_DIR=%BUILD_DIR%\microsoft-jdk-21.0.6-windows-aarch64-351b9f\
     set JVM_URL=https://aka.ms/download-jdk/microsoft-jdk-21.0.6-windows-aarch64.zip
