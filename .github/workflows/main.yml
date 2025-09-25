@@ -16,7 +16,7 @@ jobs:
       matrix:
         image:
           # renovate:
-          - macos-14
+          - macos-15
           # renovate:
           - ubuntu-24.04
           # renovate:
