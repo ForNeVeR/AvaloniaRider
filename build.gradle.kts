@@ -236,6 +236,7 @@ tasks {
         task {
             plugins {
                 bundledPlugins(requiredPlugins)
+                bundledPlugins("tanvd.grazi")
             }
             enabled = libs.versions.riderSdk.get() != libs.versions.riderSdkPreview.get()
         }
