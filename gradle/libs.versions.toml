@@ -1,7 +1,7 @@
 [versions]
 kotlin = "2.1.10"
 rdGen = "2025.2.3"
-riderSdk = "2025.2"
+riderSdk = "2025.3-EAP5-SNAPSHOT"
 riderSdkPreview = "2025.3-EAP5-SNAPSHOT"
 
 [libraries]

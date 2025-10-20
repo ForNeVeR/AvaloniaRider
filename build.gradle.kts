@@ -36,7 +36,7 @@ val intellijPluginId = "avalonia-rider"
 val pluginVersionBase: String by project
 val buildRelease: String by project
 
-val requiredPlugins = listOf("com.jetbrains.xaml.previewer")
+val requiredPlugins = listOf("com.jetbrains.xaml.previewer", "tanvd.grazi" /* test only */)
 
 dependencies {
     intellijPlatform {
@@ -236,7 +236,6 @@ tasks {
         task {
             plugins {
                 bundledPlugins(requiredPlugins)
-                bundledPlugins("tanvd.grazi")
             }
             enabled = libs.versions.riderSdk.get() != libs.versions.riderSdkPreview.get()
         }
