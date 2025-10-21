@@ -13,6 +13,7 @@ import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.intellij.util.execution.ParametersListUtil
 import com.jetbrains.rd.util.lifetime.Lifetime
+import com.jetbrains.rider.run.configurations.TerminalMode
 import com.jetbrains.rider.run.configurations.dotNetExe.DotNetExeConfiguration
 import com.jetbrains.rider.run.configurations.dotNetExe.DotNetExeConfigurationParameters
 import com.jetbrains.rider.run.configurations.dotNetExe.DotNetExeConfigurationType
@@ -36,7 +37,7 @@ fun createExeConfiguration(project: Project, commandLine: GeneralCommandLine): D
             workingDirectory = commandLine.workDirectory?.path ?: "",
             envs = commandLine.environment,
             isPassParentEnvs = true,
-            useExternalConsole = false,
+            terminalMode = TerminalMode.Auto,
             executeAsIs = true,
             assemblyToDebug = null,
             runtimeArguments = ""

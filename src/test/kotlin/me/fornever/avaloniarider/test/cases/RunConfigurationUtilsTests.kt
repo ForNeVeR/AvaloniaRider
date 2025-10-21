@@ -3,11 +3,15 @@ package me.fornever.avaloniarider.test.cases
 import com.intellij.execution.configurations.GeneralCommandLine
 import com.intellij.openapi.project.ProjectManager
 import com.jetbrains.rider.test.annotations.Solution
+import com.jetbrains.rider.test.annotations.TestSettings
 import com.jetbrains.rider.test.asserts.shouldBe
+import com.jetbrains.rider.test.enums.BuildTool
+import com.jetbrains.rider.test.enums.sdk.SdkVersion
 import me.fornever.avaloniarider.rider.createExeConfiguration
 import me.fornever.avaloniarider.test.framework.AvaloniaIntegrationTest
 import org.testng.annotations.Test
 
+@TestSettings(sdkVersion = SdkVersion.AUTODETECT, buildTool = BuildTool.AUTODETECT)
 @Solution("MSBuildParameters")
 class RunConfigurationUtilsTests : AvaloniaIntegrationTest() {
 

@@ -1,7 +1,5 @@
 package me.fornever.avaloniarider.test.cases
 
-//import com.jetbrains.rider.test.env.enums.BuildTool
-//import com.jetbrains.rider.test.env.enums.SdkVersion
 import com.intellij.execution.RunManager
 import com.intellij.openapi.actionSystem.ActionPlaces
 import com.intellij.openapi.actionSystem.ActionUiKind
@@ -18,9 +16,12 @@ import com.jetbrains.rider.model.runnableProjectsModel
 import com.jetbrains.rider.projectView.solution
 import com.jetbrains.rider.run.configurations.RunnableProjectKinds
 import com.jetbrains.rider.test.annotations.Solution
+import com.jetbrains.rider.test.annotations.TestSettings
 import com.jetbrains.rider.test.asserts.shouldBe
 import com.jetbrains.rider.test.asserts.shouldBeTrue
 import com.jetbrains.rider.test.asserts.shouldContains
+import com.jetbrains.rider.test.enums.BuildTool
+import com.jetbrains.rider.test.enums.sdk.SdkVersion
 import com.jetbrains.rider.test.scriptingApi.getVirtualFileFromPath
 import me.fornever.avaloniarider.idea.editor.actions.RunnableAssemblySelectorAction
 import me.fornever.avaloniarider.idea.settings.AvaloniaProjectSettings
@@ -34,7 +35,7 @@ import java.nio.file.Paths
 import java.time.Duration
 import kotlin.test.assertTrue
 
-//@TestEnvironment(sdkVersion = SdkVersion.AUTODETECT, buildTool = BuildTool.AUTODETECT)
+@TestSettings(sdkVersion = SdkVersion.AUTODETECT, buildTool = BuildTool.AUTODETECT)
 @Solution("MultiProjectSolution")
 class RunnableAssemblySelectorActionTests : AvaloniaIntegrationTest() {
 
@@ -127,7 +128,7 @@ class RunnableAssemblySelectorActionTests : AvaloniaIntegrationTest() {
     }
 }
 
-//@TestEnvironment(sdkVersion = SdkVersion.AUTODETECT, buildTool = BuildTool.AUTODETECT)
+@TestSettings(sdkVersion = SdkVersion.AUTODETECT, buildTool = BuildTool.AUTODETECT)
 @Solution("AvaloniaMvvm")
 class RunnableMvvmAssemblySelectorActionTests : AvaloniaIntegrationTest() {
     @Test

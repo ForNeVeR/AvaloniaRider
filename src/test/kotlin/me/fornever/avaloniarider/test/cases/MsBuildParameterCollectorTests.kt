@@ -1,16 +1,17 @@
 package me.fornever.avaloniarider.test.cases
 
-//import com.jetbrains.rider.test.env.enums.BuildTool
-//import com.jetbrains.rider.test.env.enums.SdkVersion
 import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.jetbrains.rider.model.runnableProjectsModel
 import com.jetbrains.rider.projectView.solution
 import com.jetbrains.rider.projectView.workspace.getProjectModelEntities
 import com.jetbrains.rider.run.configurations.RunnableProjectKinds
 import com.jetbrains.rider.test.annotations.Solution
+import com.jetbrains.rider.test.annotations.TestSettings
 import com.jetbrains.rider.test.asserts.shouldBe
 import com.jetbrains.rider.test.asserts.shouldContains
 import com.jetbrains.rider.test.asserts.shouldNotBeNull
+import com.jetbrains.rider.test.enums.BuildTool
+import com.jetbrains.rider.test.enums.sdk.SdkVersion
 import me.fornever.avaloniarider.model.RdProjectOutput
 import me.fornever.avaloniarider.previewer.MsBuildParameterCollector
 import me.fornever.avaloniarider.test.framework.AvaloniaIntegrationTest
@@ -18,7 +19,7 @@ import me.fornever.avaloniarider.test.framework.correctTestSolutionDirectory
 import me.fornever.avaloniarider.test.framework.runPumping
 import org.testng.annotations.Test
 
-//@TestEnvironment(sdkVersion = SdkVersion.AUTODETECT, buildTool = BuildTool.AUTODETECT)
+@TestSettings(sdkVersion = SdkVersion.AUTODETECT, buildTool = BuildTool.AUTODETECT)
 @Solution("MSBuildParameters")
 class MsBuildParameterCollectorTests : AvaloniaIntegrationTest() {
 

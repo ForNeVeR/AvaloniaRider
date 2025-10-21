@@ -1,7 +1,5 @@
 package me.fornever.avaloniarider.test.cases
 
-//import com.jetbrains.rider.test.env.enums.BuildTool
-//import com.jetbrains.rider.test.env.enums.SdkVersion
 import com.intellij.openapi.util.registry.Registry
 import com.jetbrains.rd.platform.diagnostics.RdLogTraceScenarios
 import com.jetbrains.rd.util.lifetime.Lifetime
@@ -11,8 +9,11 @@ import com.jetbrains.rider.model.BuildResultKind
 import com.jetbrains.rider.model.PreviewPlatformKind
 import com.jetbrains.rider.test.OpenSolutionParams
 import com.jetbrains.rider.test.annotations.Solution
+import com.jetbrains.rider.test.annotations.TestSettings
 import com.jetbrains.rider.test.asserts.shouldBeTrue
 import com.jetbrains.rider.test.base.PerTestSolutionTestBase
+import com.jetbrains.rider.test.enums.BuildTool
+import com.jetbrains.rider.test.enums.sdk.SdkVersion
 import com.jetbrains.rider.test.framework.frameworkLogger
 import com.jetbrains.rider.test.scriptingApi.buildSolutionWithConsoleBuild
 import com.jetbrains.rider.test.scriptingApi.getVirtualFileFromPath
@@ -29,7 +30,7 @@ import java.time.Duration
 import kotlin.io.path.div
 import kotlin.test.assertTrue
 
-//@TestEnvironment(sdkVersion = SdkVersion.AUTODETECT, buildTool = BuildTool.AUTODETECT)
+@TestSettings(sdkVersion = SdkVersion.AUTODETECT, buildTool = BuildTool.AUTODETECT)
 @Solution("AvaloniaMvvm")
 class PreviewTests : PerTestSolutionTestBase() {
 
