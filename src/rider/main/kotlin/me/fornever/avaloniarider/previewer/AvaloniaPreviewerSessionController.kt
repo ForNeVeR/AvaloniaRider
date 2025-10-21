@@ -10,8 +10,8 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.rd.createNestedDisposable
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.platform.backend.workspace.WorkspaceModel
-import com.intellij.util.Alarm
 import com.intellij.ui.scale.JBUIScale
+import com.intellij.util.Alarm
 import com.intellij.util.application
 import com.jetbrains.rd.util.lifetime.Lifetime
 import com.jetbrains.rd.util.lifetime.LifetimeDefinition
@@ -38,6 +38,7 @@ import me.fornever.avaloniarider.controlmessages.AvaloniaInputEventMessage
 import me.fornever.avaloniarider.controlmessages.FrameMessage
 import me.fornever.avaloniarider.controlmessages.HtmlTransportStartedMessage
 import me.fornever.avaloniarider.controlmessages.UpdateXamlResultMessage
+import me.fornever.avaloniarider.exceptions.AvaloniaPreviewerExecutionException
 import me.fornever.avaloniarider.exceptions.AvaloniaPreviewerInitializationException
 import me.fornever.avaloniarider.idea.concurrency.adviseOnUiThread
 import me.fornever.avaloniarider.idea.settings.AvaloniaPreviewerMethod
@@ -131,9 +132,20 @@ class AvaloniaPreviewerSessionController(
     private var session: AvaloniaPreviewerSession? = null
     @Volatile
     private var lastKnownProjectRelativePath: String? = null
+    @Volatile
+    private var lastProjectFilePath: Path? = null
+    @Volatile
+    private var pendingRestart = false
 
     private val sessionLifetimeSource = SequentialLifetimes(controllerLifetime)
     private var currentSessionLifetime: LifetimeDefinition? = null
+    private val restartLifetime = controllerLifetime.createNestedDisposable(
+        "AvaloniaPreviewerSessionController.restartLifetime"
+    )
+    private val restartAlarm = Alarm(restartLifetime)
+
+    private val baseDocument: Document? =
+        application.runReadAction<Document?> { FileDocumentManager.getInstance().getDocument(xamlFile) }
 
     init {
         val isBuildingProperty = BuildHost.getInstance(project).building
@@ -163,6 +175,15 @@ class AvaloniaPreviewerSessionController(
         status.advise(controllerLifetime) { status ->
             logger.info("${xamlFile.name}: $status")
         }
+
+        baseDocument?.documentChanged()
+            ?.throttleLast(xamlEditThrottling, SwingScheduler)
+            ?.advise(controllerLifetime) {
+                if (session != null) return@advise
+                if (!pendingRestart) return@advise
+                val projectPath = lastProjectFilePath ?: return@advise
+                scheduleRestart(projectPath)
+            }
     }
 
     private suspend fun getProjectContainingFile(virtualFile: VirtualFile): ProjectModelEntity? {
@@ -209,6 +230,8 @@ class AvaloniaPreviewerSessionController(
     ).apply {
         sessionStarted.advise(lifetime) {
             statusProperty.value = Status.Working
+            pendingRestart = false
+            updateXamlResultProperty.set(UpdateXamlResultMessage())
 
             sendClientSupportedPixelFormat()
 
@@ -363,7 +386,7 @@ class AvaloniaPreviewerSessionController(
                     is SocketException, is EOFException -> {
                         // Log socket errors only if the session is still alive.
                         if (lifetime.isAlive) {
-                            logger.error("Socket error while session is still alive", ex)
+                            logger.info("Socket closed while session is still alive", ex)
                         }
                     }
                     else -> throw ex
@@ -375,8 +398,12 @@ class AvaloniaPreviewerSessionController(
             process.run(executionMode, consoleView, transport, method, processTitle)
         }
 
-        processJob.await()
+        val processResult = processJob.await()
         sessionJob.await()
+        val exitCode = processResult.exitCode
+        if (exitCode != null && exitCode != 0) {
+            throw AvaloniaPreviewerExecutionException(exitCode, processResult.outputSnippet)
+        }
     }
 
     fun start(
@@ -384,15 +411,26 @@ class AvaloniaPreviewerSessionController(
         force: Boolean = false,
         executionMode: ProcessExecutionMode = ProcessExecutionMode.Run
     ) {
+        lastProjectFilePath = projectFilePath
         if (status.value == Status.Suspended && !force) return
 
         lastKnownProjectRelativePath = null
+        pendingRestart = false
 
         val lt = sessionLifetimeSource.next()
         currentSessionLifetime = lt
         lt.launch {
             try {
                 executePreviewerAsync(currentSessionLifetime!!, executionMode, projectFilePath)
+            } catch (ex: AvaloniaPreviewerExecutionException) {
+                val errorText = ex.processOutput?.ifBlank { null } ?: ex.message
+                if (errorText != null) {
+                    updateXamlResultProperty.set(UpdateXamlResultMessage(error = errorText))
+                }
+                statusProperty.value = Status.XamlError
+                inFlightUpdate.value = false
+                pendingRestart = true
+                logger.warn(ex)
             } catch (ex: AvaloniaPreviewerInitializationException) {
                 criticalErrorSignal.fire(ex)
                 logger.warn(ex)
@@ -407,7 +445,9 @@ class AvaloniaPreviewerSessionController(
 
                 logger.info("Previewer session is terminated.")
                 when (statusProperty.value) {
-                    Status.Suspended, is Status.NoOutputAssembly -> {}
+                    Status.Suspended,
+                    Status.XamlError,
+                    is Status.NoOutputAssembly -> {}
                     else -> statusProperty.set(Status.Terminated)
                 }
             }
@@ -427,5 +467,14 @@ class AvaloniaPreviewerSessionController(
 
     fun sendInputEventMessage(event: AvaloniaInputEventMessage) {
         session?.sendInputEventMessage(event)
+    }
+
+    private fun scheduleRestart(projectFilePath: Path) {
+        restartAlarm.cancelAllRequests()
+        restartAlarm.addRequest({
+            if (session != null) return@addRequest
+            logger.info("Restarting previewer for $xamlFile after document change")
+            start(projectFilePath, force = true)
+        }, projectPathRetryDelay.toMillis().toInt())
     }
 }
