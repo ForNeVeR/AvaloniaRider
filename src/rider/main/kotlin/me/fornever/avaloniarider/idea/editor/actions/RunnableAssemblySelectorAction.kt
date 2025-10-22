@@ -236,6 +236,15 @@ class RunnableAssemblySelectorAction(
     ): List<RunnableProject> {
         val filteredProjectList = filteredProjects.toList()
         val targetFileProjectEntity = xamlFile.getProjectContainingFile(lifetime, project)
+        if (targetFileProjectEntity == null) {
+            logger.warn("Unable to determine project containing file $xamlFile; falling back to all runnable projects")
+            return filteredProjectList
+                .filter { !isWebAssemblyProject(it) }
+                .sortedWith(compareBy(
+                    { !it.name.endsWith(".Desktop", ignoreCase = true) },
+                    { it.name }
+                ))
+        }
         val targetFileProjectPath = targetFileProjectEntity.url!!.toPath()
         val runnableProjectPaths = filteredProjectList
             .filter { !FileUtil.pathsEqual(it.projectFilePath, targetFileProjectPath.toString()) }

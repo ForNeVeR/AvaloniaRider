@@ -28,13 +28,13 @@ val ProjectModelEntity.projectRelativeVirtualPath: String
         return names.joinToString("/")
     }
 
-suspend fun VirtualFile.getProjectContainingFile(lifetime: Lifetime, project: Project): ProjectModelEntity {
+suspend fun VirtualFile.getProjectContainingFile(lifetime: Lifetime, project: Project): ProjectModelEntity? {
     val logger = Logger.getInstance("me.fornever.avaloniarider.rider.ProjectModelNodeExKt")
     val workspaceModel = WorkspaceModel.getInstance(project)
 
     application.assertIsDispatchThread()
 
-    val result = CompletableDeferred<ProjectModelEntity>()
+    val result = CompletableDeferred<ProjectModelEntity?>()
 
     project.solution.riderSolutionLifecycle.isProjectModelReady.adviseUntil(lifetime) { isReady ->
         if (!isReady) return@adviseUntil false
@@ -45,10 +45,14 @@ suspend fun VirtualFile.getProjectContainingFile(lifetime: Lifetime, project: Pr
                 "Project model nodes for file $this: " + projectModelEntities.joinToString(", ")
             }
             val containingProject = projectModelEntities.asSequence()
-                .map { it.containingProjectEntity() }
-                .filterNotNull()
-                .first()
-            result.complete(containingProject)
+                .mapNotNull { it.containingProjectEntity() }
+                .firstOrNull()
+            if (containingProject != null) {
+                result.complete(containingProject)
+            } else {
+                logger.warn("Workspace model doesn't contain project entity for file $this")
+                result.complete(null)
+            }
         } catch (t: Throwable) {
             result.completeExceptionally(t)
         }
