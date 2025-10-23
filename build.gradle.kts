@@ -2,7 +2,6 @@ import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.jetbrains.changelog.exceptions.MissingVersionException
 import org.jetbrains.intellij.platform.gradle.Constants
 import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
-import org.jetbrains.intellij.platform.gradle.TestFrameworkType
 import org.jetbrains.intellij.platform.gradle.models.Coordinates
 import org.jetbrains.intellij.platform.gradle.tasks.PrepareSandboxTask
 import org.jetbrains.intellij.platform.gradle.tasks.VerifyPluginTask
@@ -51,7 +50,13 @@ dependencies {
 
         pluginVerifier(libs.intellij.plugin.verifier.cli.map { it.version })
 
-        testPlatformDependency(Coordinates("com.jetbrains.intellij.rider", "rider-test-framework"))
+        val testFrameworkVersion = libs.versions.riderSdk.map { "RIDER-$it" }
+        fun riderTestPlatformDependency(artifact: String) {
+            testPlatformDependency(Coordinates("com.jetbrains.intellij.rider", artifact), testFrameworkVersion)
+        }
+        riderTestPlatformDependency("rider-test-framework")
+        riderTestPlatformDependency("rider-test-framework-core")
+        riderTestPlatformDependency("rider-test-framework-testng")
     }
 
     implementation(libs.bson4Jackson)
