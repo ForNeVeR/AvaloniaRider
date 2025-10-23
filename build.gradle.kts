@@ -65,6 +65,12 @@ dependencies {
     testImplementation(libs.junit)
 }
 
+configurations {
+    intellijPlatformTestDependencies {
+        exclude("org.jetbrains.intellij.deps", "org.eclipse.jgit")
+    }
+}
+
 val buildConfiguration = ext.properties["buildConfiguration"] as String? ?: "Debug"
 val buildNumber = (ext.properties["buildNumber"] as String?)?.toInt() ?: 0
 
