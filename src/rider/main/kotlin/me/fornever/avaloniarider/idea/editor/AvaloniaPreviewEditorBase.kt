@@ -9,14 +9,17 @@ import com.intellij.openapi.fileEditor.FileEditorState
 import com.intellij.openapi.observable.properties.AtomicProperty
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.Splitter
+import com.intellij.openapi.util.DimensionService
 import com.intellij.openapi.util.UserDataHolderBase
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.openapi.wm.WindowManager
 import com.intellij.ui.dsl.builder.Align
 import com.intellij.ui.dsl.builder.bindText
 import com.intellij.ui.dsl.builder.panel
 import com.intellij.util.ui.UIUtil
 import com.jetbrains.rd.util.lifetime.Lifetime
 import com.jetbrains.rd.util.lifetime.LifetimeDefinition
+import com.jetbrains.rd.util.lifetime.onTermination
 import com.jetbrains.rd.util.reactive.IPropertyView
 import com.jetbrains.rd.util.reactive.Property
 import com.jetbrains.rd.util.reactive.compose
@@ -35,10 +38,15 @@ import me.fornever.avaloniarider.idea.editor.actions.*
 import me.fornever.avaloniarider.previewer.AvaloniaPreviewerSessionController
 import me.fornever.avaloniarider.ui.bindVisible
 import java.awt.BorderLayout
+import java.awt.Dimension
 import java.awt.GridBagLayout
+import java.awt.event.WindowAdapter
+import java.awt.event.WindowEvent
 import java.beans.PropertyChangeListener
 import javax.swing.JComponent
+import javax.swing.JFrame
 import javax.swing.JPanel
+import javax.swing.WindowConstants
 
 abstract class AvaloniaPreviewEditorBase(
     final override val project: Project,
@@ -82,6 +90,25 @@ abstract class AvaloniaPreviewEditorBase(
             component?.let {
                 mainComponentWrapper.add(it, BorderLayout.CENTER)
             }
+            mainComponentWrapper.revalidate()
+            mainComponentWrapper.repaint()
+        }
+    }
+
+    private var detachedWindow: JFrame? = null
+    private val isPreviewDetached = Property(false)
+
+    private val detachedPlaceholderPanel = lazy {
+        panel {
+            row {
+                label(AvaloniaRiderBundle.message("previewer.detached.message"))
+                    .align(Align.CENTER)
+            }
+            row {
+                link(AvaloniaRiderBundle.message("previewer.detached.return")) {
+                    attachPreviewToEditor()
+                }.align(Align.CENTER)
+            }
         }
     }
 
@@ -119,6 +146,19 @@ abstract class AvaloniaPreviewEditorBase(
             parentEditor?.triggerLayoutChange(XamlSplitEditorSplitLayout.SPLIT, requestFocus = false)
         }
 
+        lifetime.onTermination {
+            UIUtil.invokeLaterIfNeeded {
+                detachedWindow?.dispose()
+                detachedWindow = null
+            }
+        }
+
+        isPreviewDetached.advise(lifetime) { detached ->
+            UIUtil.invokeLaterIfNeeded {
+                updateMainComponentForDetachState()
+            }
+        }
+
         sessionController.status.advise(lifetime) { status ->
             UIUtil.invokeLaterIfNeeded {
                 val isTerminated = status == AvaloniaPreviewerSessionController.Status.Terminated
@@ -137,10 +177,92 @@ abstract class AvaloniaPreviewEditorBase(
                     }
 
                     else -> {
-                        mainComponent.value = editorComponent
+                        updateMainComponentForDetachState()
                     }
                 }
             }
+        }
+    }
+
+    private fun updateMainComponentForDetachState() {
+        mainComponent.value = if (isPreviewDetached.value) {
+            detachedPlaceholderPanel.value
+        } else {
+            editorComponent
+        }
+    }
+
+    internal fun isPreviewDetached() = isPreviewDetached.value
+
+    internal fun detachPreviewToWindow() {
+        if (isPreviewDetached.value) return
+
+        UIUtil.invokeLaterIfNeeded {
+            val dimensionKey = "AvaloniaPreviewer.DetachedWindow.${currentFile.path}"
+            val frame = JFrame(AvaloniaRiderBundle.message("previewer.detached.window-title", currentFile.name))
+
+            frame.defaultCloseOperation = WindowConstants.DISPOSE_ON_CLOSE
+            frame.layout = BorderLayout()
+            frame.isResizable = true
+            frame.minimumSize = Dimension(320, 240)
+
+            frame.addWindowListener(object : WindowAdapter() {
+                override fun windowClosing(e: WindowEvent) {
+                    val dimensionService = DimensionService.getInstance()
+                    dimensionService.setSize(dimensionKey, frame.size, project)
+                    dimensionService.setLocation(dimensionKey, frame.location, project)
+                    
+                    attachPreviewToEditor()
+                }
+            })
+
+            // Remove editor component from current parent
+            editorComponent.parent?.remove(editorComponent)
+
+            // Add to detached window
+            frame.contentPane.add(editorComponent, BorderLayout.CENTER)
+
+            // Restore size and location
+            val dimensionService = DimensionService.getInstance()
+            val savedSize = dimensionService.getSize(dimensionKey, project)
+            val savedLocation = dimensionService.getLocation(dimensionKey, project)
+
+            if (savedSize != null) {
+                frame.size = savedSize
+            } else {
+                frame.size = Dimension(800, 600)
+            }
+
+            if (savedLocation != null) {
+                frame.location = savedLocation
+            } else {
+                val parentWindow = WindowManager.getInstance().suggestParentWindow(project)
+                frame.setLocationRelativeTo(parentWindow)
+            }
+
+            detachedWindow = frame
+            isPreviewDetached.value = true
+
+            frame.isVisible = true
+            frame.toFront()
+        }
+    }
+
+    internal fun attachPreviewToEditor() {
+        if (!isPreviewDetached.value) return
+
+        UIUtil.invokeLaterIfNeeded {
+            detachedWindow?.let { frame ->
+                // Remove from detached window
+                frame.contentPane.remove(editorComponent)
+                frame.dispose()
+                detachedWindow = null
+            }
+
+            isPreviewDetached.value = false
+
+            // The mainComponent property observer will handle re-adding to mainComponentWrapper
+            mainComponent.value = editorComponent
         }
     }
 
@@ -182,6 +304,7 @@ abstract class AvaloniaPreviewEditorBase(
             add(getShowErrorAction(toolbar))
             add(assemblySelectorAction)
             add(RestartPreviewerAction(lifetime, sessionController, selectedProjectPath))
+            add(ToggleDetachedPreviewAction(this@AvaloniaPreviewEditorBase))
             addAll(*actions)
             add(TogglePreviewerLogAction(isLogManuallyVisible))
             add(DebugPreviewerAction(lifetime, sessionController, selectedProjectPath))
@@ -199,6 +322,8 @@ abstract class AvaloniaPreviewEditorBase(
     override fun getCurrentLocation(): FileEditorLocation? = null
     override fun getBackgroundHighlighter(): BackgroundEditorHighlighter? = null
     override fun dispose() {
+        detachedWindow?.dispose()
+        detachedWindow = null
         lifetimeDefinition.terminate()
     }
 
