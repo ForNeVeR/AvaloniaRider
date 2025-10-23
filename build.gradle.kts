@@ -3,6 +3,7 @@ import org.jetbrains.changelog.exceptions.MissingVersionException
 import org.jetbrains.intellij.platform.gradle.Constants
 import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
+import org.jetbrains.intellij.platform.gradle.models.Coordinates
 import org.jetbrains.intellij.platform.gradle.tasks.PrepareSandboxTask
 import org.jetbrains.intellij.platform.gradle.tasks.VerifyPluginTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
@@ -50,7 +51,7 @@ dependencies {
 
         pluginVerifier(libs.intellij.plugin.verifier.cli.map { it.version })
 
-        testFramework(TestFrameworkType.Bundled)
+        testPlatformDependency(Coordinates("com.jetbrains.intellij.rider", "rider-test-framework"))
     }
 
     implementation(libs.bson4Jackson)
