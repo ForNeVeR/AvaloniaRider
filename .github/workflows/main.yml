@@ -59,20 +59,20 @@ jobs:
       - name: Test
         run: ./gradlew --info -PbuildConfiguration=Release -PbuildNumber=${{ github.run_number }} check
       - name: Collect test results
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: ${{ runner.os }}.test-results
           path: build/reports/tests
         if: ${{ always() }}
       - name: Collect test logs
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: ${{ runner.os }}.test-logs
           path: build/idea-sandbox/*/log-test
         if: ${{ always() }}
       - name: Collect Plugin Verifier result
         if: ${{ always() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: ${{ runner.os }}.pluginVerifier-result
           path: ${{ github.workspace }}/build/reports/pluginVerifier
