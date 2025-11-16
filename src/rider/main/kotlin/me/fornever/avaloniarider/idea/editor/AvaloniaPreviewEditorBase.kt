@@ -19,7 +19,6 @@ import com.intellij.ui.dsl.builder.panel
 import com.intellij.util.ui.UIUtil
 import com.jetbrains.rd.util.lifetime.Lifetime
 import com.jetbrains.rd.util.lifetime.LifetimeDefinition
-import com.jetbrains.rd.util.lifetime.onTermination
 import com.jetbrains.rd.util.reactive.IPropertyView
 import com.jetbrains.rd.util.reactive.Property
 import com.jetbrains.rd.util.reactive.compose
@@ -99,16 +98,21 @@ abstract class AvaloniaPreviewEditorBase(
     private val isPreviewDetached = Property(false)
 
     private val detachedPlaceholderPanel = lazy {
-        panel {
-            row {
-                label(AvaloniaRiderBundle.message("previewer.detached.message"))
-                    .align(Align.CENTER)
-            }
-            row {
-                link(AvaloniaRiderBundle.message("previewer.detached.return")) {
-                    attachPreviewToEditor()
-                }.align(Align.CENTER)
-            }
+        JPanel().apply {
+            layout = GridBagLayout()
+            add(
+                panel {
+                    row {
+                        label(AvaloniaRiderBundle.message("previewer.detached.message"))
+                            .align(Align.CENTER)
+                    }
+                    row {
+                        link(AvaloniaRiderBundle.message("previewer.detached.return")) {
+                            attachPreviewToEditor()
+                        }.align(Align.CENTER)
+                    }
+                }
+            )
         }
     }
 
@@ -153,7 +157,7 @@ abstract class AvaloniaPreviewEditorBase(
             }
         }
 
-        isPreviewDetached.advise(lifetime) { detached ->
+        isPreviewDetached.advise(lifetime) {
             UIUtil.invokeLaterIfNeeded {
                 updateMainComponentForDetachState()
             }
@@ -211,7 +215,7 @@ abstract class AvaloniaPreviewEditorBase(
                     val dimensionService = DimensionService.getInstance()
                     dimensionService.setSize(dimensionKey, frame.size, project)
                     dimensionService.setLocation(dimensionKey, frame.location, project)
-                    
+
                     attachPreviewToEditor()
                 }
             })
@@ -219,7 +223,7 @@ abstract class AvaloniaPreviewEditorBase(
             // Remove editor component from current parent
             editorComponent.parent?.remove(editorComponent)
 
-            // Add to detached window
+            // Move the content to the detached window:
             frame.contentPane.add(editorComponent, BorderLayout.CENTER)
 
             // Restore size and location
