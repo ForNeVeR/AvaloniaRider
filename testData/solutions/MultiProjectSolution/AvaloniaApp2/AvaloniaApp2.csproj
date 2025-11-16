@@ -11,8 +11,8 @@
         </AvaloniaResource>
     </ItemGroup>
     <ItemGroup>
-        <PackageReference Include="Avalonia" Version="11.3.7" />
-        <PackageReference Include="Avalonia.Desktop" Version="11.3.7" />
+        <PackageReference Include="Avalonia" Version="11.3.8" />
+        <PackageReference Include="Avalonia.Desktop" Version="11.3.8" />
     </ItemGroup>
     <ItemGroup>
       <ProjectReference Include="..\ClassLibrary1\ClassLibrary1.csproj" />
