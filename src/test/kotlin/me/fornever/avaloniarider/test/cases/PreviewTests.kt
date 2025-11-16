@@ -1,6 +1,9 @@
 package me.fornever.avaloniarider.test.cases
 
+import com.intellij.openapi.editor.Document
+import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.util.registry.Registry
+import com.intellij.util.application
 import com.jetbrains.rd.platform.diagnostics.RdLogTraceScenarios
 import com.jetbrains.rd.util.lifetime.Lifetime
 import com.jetbrains.rd.util.reactive.OptProperty
@@ -74,12 +77,16 @@ class PreviewTests : PerTestSolutionTestBase() {
         Lifetime.using { lt ->
             // not init the property, so that the session doesn't start before we handle the frame
             val projectFilePathProperty = OptProperty<Path>()
+            val document = application.runReadAction<Document?> {
+                FileDocumentManager.getInstance().getDocument(mainWindowFile)
+            }
             AvaloniaPreviewerSessionController(
                 project,
                 lt,
                 consoleView = null,
                 mainWindowFile,
-                projectFilePathProperty
+                projectFilePathProperty,
+                document
             ).apply {
                 frame.advise(lt) {
                     frameMsg = it
