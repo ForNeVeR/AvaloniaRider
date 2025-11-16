@@ -238,12 +238,7 @@ class RunnableAssemblySelectorAction(
         val targetFileProjectEntity = xamlFile.getProjectContainingFile(lifetime, project)
         if (targetFileProjectEntity == null) {
             logger.warn("Unable to determine project containing file $xamlFile; falling back to all runnable projects")
-            return filteredProjectList
-                .filter { !isWebAssemblyProject(it) }
-                .sortedWith(compareBy(
-                    { !it.name.endsWith(".Desktop", ignoreCase = true) },
-                    { it.name }
-                ))
+            return filteredProjectList.asSequence().preferDesktopProjects()
         }
         val targetFileProjectPath = targetFileProjectEntity.url!!.toPath()
         val runnableProjectPaths = filteredProjectList
@@ -283,14 +278,19 @@ class RunnableAssemblySelectorAction(
             }
             runnableProject
         }
-            .filter { !isWebAssemblyProject(it) }
+            .asSequence()
+            .preferDesktopProjects()
+        return selectableRunnableProjects
+    }
+
+    private fun Sequence<RunnableProject>.preferDesktopProjects(): List<RunnableProject> =
+        filter { !isWebAssemblyProject(it) }
             .sortedWith(compareBy(
                 // Sort Desktop projects first, then others alphabetically
                 { !it.name.endsWith(".Desktop", ignoreCase = true) },
                 { it.name }
             ))
-        return selectableRunnableProjects
-    }
+            .toList()
 
     private fun isWebAssemblyProject(project: RunnableProject): Boolean {
         return project.projectOutputs.all { it.tfm?.presentableName.orEmpty().endsWith("-browser") }
