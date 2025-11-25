@@ -15,5 +15,5 @@ rdGen = { group = "com.jetbrains.rd", name = "rd-gen", version.ref = "rdGen" }
 [plugins]
 changelog = "org.jetbrains.changelog:2.4.0"
 gradleJvmWrapper = "me.filippov.gradle.jvm.wrapper:0.15.0"
-intelliJPlatform = "org.jetbrains.intellij.platform:2.10.4"
+intelliJPlatform = "org.jetbrains.intellij.platform:2.10.5"
 kotlinJvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
