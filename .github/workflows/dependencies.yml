@@ -24,7 +24,7 @@ jobs:
 
       - if: steps.update.outputs.has-changes == 'true' && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
         name: "Create a PR"
-        uses: peter-evans/create-pull-request@v7
+        uses: peter-evans/create-pull-request@v8
         with:
           branch: ${{ steps.update.outputs.branch-name }}
           author: "AvaloniaRider automation <friedrich@fornever.me>"
