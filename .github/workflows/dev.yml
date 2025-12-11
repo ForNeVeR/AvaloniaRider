@@ -26,7 +26,7 @@ jobs:
         run: dotnet build -c Release
 
       - name: 'Cache downloaded JDK'
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             ~/.local/share/gradle-jvm
