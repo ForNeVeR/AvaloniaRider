@@ -39,6 +39,7 @@ import me.fornever.avaloniarider.ui.bindVisible
 import java.awt.BorderLayout
 import java.awt.Dimension
 import java.awt.GridBagLayout
+import java.awt.Window
 import java.awt.event.WindowAdapter
 import java.awt.event.WindowEvent
 import java.beans.PropertyChangeListener
@@ -50,16 +51,16 @@ import javax.swing.WindowConstants
 abstract class AvaloniaPreviewEditorBase(
     final override val project: Project,
     private val currentFile: VirtualFile,
-    private val buildTaskThrottler: Lazy<BuildTaskThrottler>
+    private val buildTaskThrottler: Lazy<BuildTaskThrottler>,
+    override val parentEditor: XamlSplitEditor? = null
 ) : UserDataHolderBase(), XamlPreviewEditor {
 
-    constructor(project: Project, currentFile: VirtualFile) : this(
+    constructor(project: Project, currentFile: VirtualFile, parentEditor: XamlSplitEditor? = null) : this(
         project,
         currentFile,
-        lazy { BuildTaskThrottler.getInstance(project) }
+        lazy { BuildTaskThrottler.getInstance(project) },
+        parentEditor
     )
-
-    override val parentEditor: XamlSplitEditor? = null
     final override val toolbar: PreviewEditorToolbar? = null
     override val virtualFilePath: String = currentFile.path
     override val zoomFactorLive: IPropertyView<Double> = Property(1.0)
@@ -208,6 +209,8 @@ abstract class AvaloniaPreviewEditorBase(
             frame.defaultCloseOperation = WindowConstants.DISPOSE_ON_CLOSE
             frame.layout = BorderLayout()
             frame.isResizable = true
+            frame.isUndecorated = false
+            frame.type = Window.Type.NORMAL
             frame.minimumSize = Dimension(320, 240)
 
             frame.addWindowListener(object : WindowAdapter() {
@@ -223,8 +226,21 @@ abstract class AvaloniaPreviewEditorBase(
             // Remove editor component from current parent
             editorComponent.parent?.remove(editorComponent)
 
-            // Move the content to the detached window:
-            frame.contentPane.add(editorComponent, BorderLayout.CENTER)
+            // Create a content panel that contains both toolbar and preview
+            val contentPanel = JPanel().apply {
+                layout = BorderLayout()
+
+                // Create toolbar for the detached window (without detach action)
+                val toolbarPanel = JPanel().apply {
+                    layout = BorderLayout()
+                    add(createDetachedWindowToolbar(editorComponent), BorderLayout.LINE_END)
+                }
+                add(toolbarPanel, BorderLayout.PAGE_START)
+                add(editorComponent, BorderLayout.CENTER)
+            }
+
+            // Add the content panel to the frame
+            frame.contentPane.add(contentPanel, BorderLayout.CENTER)
 
             // Restore size and location
             val dimensionService = DimensionService.getInstance()
@@ -247,6 +263,9 @@ abstract class AvaloniaPreviewEditorBase(
             detachedWindow = frame
             isPreviewDetached.value = true
 
+            // Switch to "Editor only" mode to maximize useful space
+            parentEditor?.triggerLayoutChange(XamlSplitEditorSplitLayout.EDITOR_ONLY, requestFocus = false)
+
             frame.isVisible = true
             frame.toFront()
         }
@@ -267,11 +286,15 @@ abstract class AvaloniaPreviewEditorBase(
 
             // The mainComponent property observer will handle re-adding to mainComponentWrapper
             mainComponent.value = editorComponent
+
+            // Restore split mode to show the preview in editor
+            parentEditor?.triggerLayoutChange(XamlSplitEditorSplitLayout.SPLIT, requestFocus = false)
         }
     }
 
     protected abstract fun createToolbar(targetComponent: JComponent): JComponent
     protected abstract val editorComponent: JComponent
+    protected abstract fun getExtraActions(): Array<AnAction>
 
     private val component = lazy {
         JPanel().apply {
@@ -298,7 +321,7 @@ abstract class AvaloniaPreviewEditorBase(
     final override fun getComponent() = component.value
     override fun getPreferredFocusedComponent() = editorComponent
 
-    protected fun createToolbarComponent(targetComponent: JComponent, vararg actions: AnAction): JComponent {
+    protected fun createToolbarComponent(targetComponent: JComponent, includeDetachAction: Boolean, vararg actions: AnAction): JComponent {
         val actionGroup = DefaultActionGroup()
         val toolbar = ActionManager.getInstance().createActionToolbar(ActionPlaces.EDITOR_TOOLBAR, actionGroup, true).apply {
             this.targetComponent = targetComponent
@@ -308,7 +331,9 @@ abstract class AvaloniaPreviewEditorBase(
             add(getShowErrorAction(toolbar))
             add(assemblySelectorAction)
             add(RestartPreviewerAction(lifetime, sessionController, selectedProjectPath))
-            add(ToggleDetachedPreviewAction(this@AvaloniaPreviewEditorBase))
+            if (includeDetachAction) {
+                add(ToggleDetachedPreviewAction(this@AvaloniaPreviewEditorBase))
+            }
             addAll(*actions)
             add(TogglePreviewerLogAction(isLogManuallyVisible))
             add(DebugPreviewerAction(lifetime, sessionController, selectedProjectPath))
@@ -316,6 +341,12 @@ abstract class AvaloniaPreviewEditorBase(
 
         return toolbar.component
     }
+
+    protected fun createToolbarComponent(targetComponent: JComponent, vararg actions: AnAction): JComponent =
+        createToolbarComponent(targetComponent, true, *actions)
+
+    private fun createDetachedWindowToolbar(targetComponent: JComponent): JComponent =
+        createToolbarComponent(targetComponent, false, *getExtraActions())
 
     override fun isModified() = false
     override fun addPropertyChangeListener(listener: PropertyChangeListener) {}
