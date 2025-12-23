@@ -8,6 +8,9 @@ import com.intellij.openapi.fileEditor.FileEditorLocation
 import com.intellij.openapi.fileEditor.FileEditorState
 import com.intellij.openapi.observable.properties.AtomicProperty
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.ui.WindowWrapper
+import com.intellij.openapi.ui.WindowWrapperBuilder
+import com.intellij.openapi.util.BooleanGetter
 import com.intellij.openapi.ui.Splitter
 import com.intellij.openapi.util.DimensionService
 import com.intellij.openapi.util.UserDataHolderBase
@@ -40,13 +43,9 @@ import java.awt.BorderLayout
 import java.awt.Dimension
 import java.awt.GridBagLayout
 import java.awt.Window
-import java.awt.event.WindowAdapter
-import java.awt.event.WindowEvent
 import java.beans.PropertyChangeListener
 import javax.swing.JComponent
-import javax.swing.JFrame
 import javax.swing.JPanel
-import javax.swing.WindowConstants
 
 abstract class AvaloniaPreviewEditorBase(
     final override val project: Project,
@@ -95,8 +94,9 @@ abstract class AvaloniaPreviewEditorBase(
         }
     }
 
-    private var detachedWindow: JFrame? = null
+    private var detachedWindow: WindowWrapper? = null
     private val isPreviewDetached = Property(false)
+    private val detachedWindowDimensionKey = "AvaloniaPreviewer.DetachedWindow.${currentFile.path}"
 
     private val detachedPlaceholderPanel = lazy {
         JPanel().apply {
@@ -153,6 +153,7 @@ abstract class AvaloniaPreviewEditorBase(
 
         lifetime.onTermination {
             UIUtil.invokeLaterIfNeeded {
+                saveDetachedWindowState(detachedWindow?.window)
                 detachedWindow?.dispose()
                 detachedWindow = null
             }
@@ -203,25 +204,7 @@ abstract class AvaloniaPreviewEditorBase(
         if (isPreviewDetached.value) return
 
         UIUtil.invokeLaterIfNeeded {
-            val dimensionKey = "AvaloniaPreviewer.DetachedWindow.${currentFile.path}"
-            val frame = JFrame(AvaloniaRiderBundle.message("previewer.detached.window-title", currentFile.name))
-
-            frame.defaultCloseOperation = WindowConstants.DISPOSE_ON_CLOSE
-            frame.layout = BorderLayout()
-            frame.isResizable = true
-            frame.isUndecorated = false
-            frame.type = Window.Type.NORMAL
-            frame.minimumSize = Dimension(320, 240)
-
-            frame.addWindowListener(object : WindowAdapter() {
-                override fun windowClosing(e: WindowEvent) {
-                    val dimensionService = DimensionService.getInstance()
-                    dimensionService.setSize(dimensionKey, frame.size, project)
-                    dimensionService.setLocation(dimensionKey, frame.location, project)
-
-                    attachPreviewToEditor()
-                }
-            })
+            val windowTitle = AvaloniaRiderBundle.message("previewer.detached.window-title", currentFile.name)
 
             // Remove editor component from current parent
             editorComponent.parent?.remove(editorComponent)
@@ -239,49 +222,49 @@ abstract class AvaloniaPreviewEditorBase(
                 add(editorComponent, BorderLayout.CENTER)
             }
 
-            // Add the content panel to the frame
-            frame.contentPane.add(contentPanel, BorderLayout.CENTER)
-
-            // Restore size and location
-            val dimensionService = DimensionService.getInstance()
-            val savedSize = dimensionService.getSize(dimensionKey, project)
-            val savedLocation = dimensionService.getLocation(dimensionKey, project)
-
-            if (savedSize != null) {
-                frame.size = savedSize
-            } else {
-                frame.size = Dimension(800, 600)
-            }
-
-            if (savedLocation != null) {
-                frame.location = savedLocation
-            } else {
-                val parentWindow = WindowManager.getInstance().suggestParentWindow(project)
-                frame.setLocationRelativeTo(parentWindow)
-            }
-
-            detachedWindow = frame
+            var windowWrapper: WindowWrapper? = null
+            val wrapper = WindowWrapperBuilder(WindowWrapper.Mode.FRAME, contentPanel)
+                .setProject(project)
+                .setTitle(windowTitle)
+                .setPreferredFocusedComponent(editorComponent)
+                .setOnCloseHandler(BooleanGetter {
+                    saveDetachedWindowState(windowWrapper?.window)
+                    attachPreviewToEditor(closeWindow = false)
+                    true
+                })
+                .build()
+            windowWrapper = wrapper
+            detachedWindow = wrapper
             isPreviewDetached.value = true
 
             // Switch to "Editor only" mode to maximize useful space
             parentEditor?.triggerLayoutChange(XamlSplitEditorSplitLayout.EDITOR_ONLY, requestFocus = false)
 
-            frame.isVisible = true
-            frame.toFront()
+            wrapper.show()
+
+            val window = wrapper.window
+            window.minimumSize = Dimension(320, 240)
+            
+            // Ensure the window has decorations (title bar) - fixes regression on Linux
+            if (window is javax.swing.JFrame) {
+                window.isUndecorated = false
+                window.type = Window.Type.NORMAL
+            }
+            
+            restoreDetachedWindowState(window)
+            window.toFront()
         }
     }
 
-    internal fun attachPreviewToEditor() {
+    internal fun attachPreviewToEditor(closeWindow: Boolean = true) {
         if (!isPreviewDetached.value) return
 
         UIUtil.invokeLaterIfNeeded {
-            detachedWindow?.let { frame ->
-                // Remove from detached window
-                frame.contentPane.remove(editorComponent)
-                frame.dispose()
-                detachedWindow = null
-            }
+            val wrapper = detachedWindow
+            saveDetachedWindowState(wrapper?.window)
+            detachedWindow = null
 
+            editorComponent.parent?.remove(editorComponent)
             isPreviewDetached.value = false
 
             // The mainComponent property observer will handle re-adding to mainComponentWrapper
@@ -289,6 +272,10 @@ abstract class AvaloniaPreviewEditorBase(
 
             // Restore split mode to show the preview in editor
             parentEditor?.triggerLayoutChange(XamlSplitEditorSplitLayout.SPLIT, requestFocus = false)
+
+            if (closeWindow) {
+                wrapper?.close()
+            }
         }
     }
 
@@ -357,6 +344,7 @@ abstract class AvaloniaPreviewEditorBase(
     override fun getCurrentLocation(): FileEditorLocation? = null
     override fun getBackgroundHighlighter(): BackgroundEditorHighlighter? = null
     override fun dispose() {
+        saveDetachedWindowState(detachedWindow?.window)
         detachedWindow?.dispose()
         detachedWindow = null
         lifetimeDefinition.terminate()
@@ -369,4 +357,30 @@ abstract class AvaloniaPreviewEditorBase(
         ) {
             toolbar.updateActionsAsync()
         }
+
+    private fun restoreDetachedWindowState(window: Window) {
+        val dimensionService = DimensionService.getInstance()
+        val savedSize = dimensionService.getSize(detachedWindowDimensionKey, project)
+        val savedLocation = dimensionService.getLocation(detachedWindowDimensionKey, project)
+
+        if (savedSize != null) {
+            window.size = savedSize
+        } else {
+            window.size = Dimension(800, 600)
+        }
+
+        if (savedLocation != null) {
+            window.location = savedLocation
+        } else {
+            val parentWindow = WindowManager.getInstance().suggestParentWindow(project)
+            window.setLocationRelativeTo(parentWindow)
+        }
+    }
+
+    private fun saveDetachedWindowState(window: Window?) {
+        if (window == null) return
+        val dimensionService = DimensionService.getInstance()
+        dimensionService.setSize(detachedWindowDimensionKey, window.size, project)
+        dimensionService.setLocation(detachedWindowDimensionKey, window.location, project)
+    }
 }
