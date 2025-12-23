@@ -23,5 +23,5 @@ class AvaloniaRemotePreviewEditor(
     override val editorComponent = panel.value
     override fun getExtraActions(): Array<AnAction> = arrayOf(zoomAction)
     override fun createToolbar(targetComponent: JComponent) =
-        createToolbarComponent(targetComponent, zoomAction)
+        createToolbarComponent(targetComponent, false, zoomAction)
 }
