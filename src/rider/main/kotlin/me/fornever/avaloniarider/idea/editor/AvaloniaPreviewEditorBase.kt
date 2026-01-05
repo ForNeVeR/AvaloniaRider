@@ -148,13 +148,23 @@ abstract class AvaloniaPreviewEditorBase(
     private val selectedProjectPath = assemblySelectorAction.selectedProjectPath
     private val baseDocument: Document? =
         application.runReadAction<Document?> { FileDocumentManager.getInstance().getDocument(file) }
+
+    enum class ThemeOption {
+        NONE,
+        LIGHT,
+        DARK
+    }
+
+    private val selectedTheme = Property<ThemeOption>(ThemeOption.NONE)
+
     protected val sessionController = AvaloniaPreviewerSessionController(
         project,
         lifetime,
         consoleView,
         file,
         selectedProjectPath,
-        baseDocument
+        baseDocument,
+        selectedTheme
     )
     init {
         lifetime.launch(Dispatchers.EDT) {
@@ -319,6 +329,7 @@ abstract class AvaloniaPreviewEditorBase(
         actionGroup.apply {
             add(getShowErrorAction(toolbar))
             add(assemblySelectorAction)
+            add(ThemeSelectorAction(selectedTheme))
             add(RestartPreviewerAction(lifetime, sessionController, selectedProjectPath))
             add(ToggleDetachedPreviewAction(this@AvaloniaPreviewEditorBase))
             addAll(*actions)

@@ -41,6 +41,7 @@ import me.fornever.avaloniarider.controlmessages.UpdateXamlResultMessage
 import me.fornever.avaloniarider.exceptions.AvaloniaPreviewerExecutionException
 import me.fornever.avaloniarider.exceptions.AvaloniaPreviewerInitializationException
 import me.fornever.avaloniarider.idea.concurrency.adviseOnUiThread
+import me.fornever.avaloniarider.idea.editor.AvaloniaPreviewEditorBase
 import me.fornever.avaloniarider.idea.settings.AvaloniaPreviewerMethod
 import me.fornever.avaloniarider.idea.settings.AvaloniaProjectSettings
 import me.fornever.avaloniarider.rd.compose
@@ -64,7 +65,9 @@ class AvaloniaPreviewerSessionController(
     private val consoleView: ConsoleView?,
     private val xamlFile: VirtualFile,
     private val projectFilePathProperty: IOptPropertyView<Path>,
-    private val baseDocument: Document?) {
+    private val baseDocument: Document?,
+    private val selectedTheme: IPropertyView<AvaloniaPreviewEditorBase.ThemeOption>
+) {
     companion object {
         private val logger = Logger.getInstance(AvaloniaPreviewerSessionController::class.java)
 
@@ -178,6 +181,46 @@ class AvaloniaPreviewerSessionController(
                 if (!pendingRestart) return@advise
                 scheduleRestart()
             }
+
+        selectedTheme.advise(controllerLifetime) { _ ->
+            val currentSession = session
+
+            if (currentSession != null && status.value == Status.Working) {
+                application.runReadAction {
+                    val document = FileDocumentManager.getInstance().getDocument(xamlFile)
+                    if (document != null) {
+                        val projectModelItems = workspaceModel.getProjectModelEntities(xamlFile, project)
+                        val item = projectModelItems.firstOrNull()
+                        val documentPath = item?.projectRelativeVirtualPath?.let { "/$it" } ?: ""
+
+                        val xamlText = injectThemeIfNeeded(document.text)
+                        currentSession.sendXamlUpdate(xamlText, documentPath)
+                    }
+                }
+            }
+        }
+    }
+
+    // Inject theme code after first > tag and send to previewer
+    private fun injectThemeIfNeeded(originalXaml: String): String {
+        val theme = selectedTheme.value
+        val settings = AvaloniaProjectSettings.getInstance(project)
+        val themeStyle = when (theme) {
+            AvaloniaPreviewEditorBase.ThemeOption.LIGHT -> settings.lightThemeStyle
+            AvaloniaPreviewEditorBase.ThemeOption.DARK -> settings.darkThemeStyle
+            else -> return originalXaml
+        }
+
+        val firstTagEnd = originalXaml.indexOf('>')
+        if (firstTagEnd == -1) return originalXaml
+
+        return buildString {
+            append(originalXaml.substring(0, firstTagEnd + 1))
+            append("\n")
+            append(themeStyle)
+            append("\n")
+            append(originalXaml.substring(firstTagEnd + 1))
+        }
     }
 
     private suspend fun getProjectContainingFile(virtualFile: VirtualFile): ProjectModelEntity?  =
@@ -254,7 +297,8 @@ class AvaloniaPreviewerSessionController(
 
                     lastKnownProjectRelativePath = effectivePath
                     inFlightUpdate.value = true
-                    sendXamlUpdate(text, effectivePath)
+                    val xamlText = injectThemeIfNeeded(text)
+                    sendXamlUpdate(xamlText, effectivePath)
                     break
                 }
             }
