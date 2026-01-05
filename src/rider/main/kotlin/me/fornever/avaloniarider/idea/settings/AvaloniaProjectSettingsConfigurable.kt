@@ -64,6 +64,12 @@ class AvaloniaProjectSettingsConfigurable(private val project: Project) : Config
                     }
                 )
             }
+            row(AvaloniaRiderBundle.message("settings.theme.defaultTheme")) {
+                comboBox(AvaloniaPreviewerTheme.entries).bindItem(
+                    { projectSettings.defaultTheme },
+                    { projectSettings.state.defaultTheme = it ?: AvaloniaPreviewerTheme.None },
+                )
+            }
             row(AvaloniaRiderBundle.message("settings.theme.darkTheme")) {
                 textArea()
                     .rows(4)
@@ -72,7 +78,6 @@ class AvaloniaProjectSettingsConfigurable(private val project: Project) : Config
                         { projectSettings.darkThemeStyle },
                         { projectSettings.state.darkThemeStyle = it }
                     )
-                    .comment(AvaloniaRiderBundle.message("settings.theme.comment"))
             }
             row(AvaloniaRiderBundle.message("settings.theme.lightTheme")) {
                 textArea()
@@ -82,7 +87,6 @@ class AvaloniaProjectSettingsConfigurable(private val project: Project) : Config
                         { projectSettings.lightThemeStyle },
                         { projectSettings.state.lightThemeStyle = it }
                     )
-                    .comment(AvaloniaRiderBundle.message("settings.theme.comment"))
             }
             group(AvaloniaRiderBundle.message("settings.application-wide.label")) {
                 row {

@@ -36,8 +36,8 @@ import me.fornever.avaloniarider.controlmessages.HtmlTransportStartedMessage
 import me.fornever.avaloniarider.controlmessages.UpdateXamlResultMessage
 import me.fornever.avaloniarider.exceptions.AvaloniaPreviewerInitializationException
 import me.fornever.avaloniarider.idea.concurrency.adviseOnUiThread
-import me.fornever.avaloniarider.idea.editor.AvaloniaPreviewEditorBase
 import me.fornever.avaloniarider.idea.settings.AvaloniaPreviewerMethod
+import me.fornever.avaloniarider.idea.settings.AvaloniaPreviewerTheme
 import me.fornever.avaloniarider.idea.settings.AvaloniaProjectSettings
 import me.fornever.avaloniarider.rd.compose
 import me.fornever.avaloniarider.rider.AvaloniaRiderProjectModelHost
@@ -58,7 +58,7 @@ class AvaloniaPreviewerSessionController(
     private val consoleView: ConsoleView?,
     private val xamlFile: VirtualFile,
     projectFilePathProperty: IOptPropertyView<Path>,
-    private val selectedTheme: IPropertyView<AvaloniaPreviewEditorBase.ThemeOption>
+    private val selectedTheme: IPropertyView<AvaloniaPreviewerTheme>
 ) {
     companion object {
         private val logger = Logger.getInstance(AvaloniaPreviewerSessionController::class.java)
@@ -184,8 +184,8 @@ class AvaloniaPreviewerSessionController(
         val theme = selectedTheme.value
         val settings = AvaloniaProjectSettings.getInstance(project)
         val themeStyle = when (theme) {
-            AvaloniaPreviewEditorBase.ThemeOption.LIGHT -> settings.lightThemeStyle
-            AvaloniaPreviewEditorBase.ThemeOption.DARK -> settings.darkThemeStyle
+            AvaloniaPreviewerTheme.Light -> settings.lightThemeStyle
+            AvaloniaPreviewerTheme.Dark -> settings.darkThemeStyle
             else -> return originalXaml
         }
 
