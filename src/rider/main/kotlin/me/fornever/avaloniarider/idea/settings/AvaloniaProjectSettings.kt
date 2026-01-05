@@ -11,6 +11,21 @@ enum class AvaloniaPreviewerMethod {
     Html
 }
 
+class DefaultTheme {
+    companion object {
+        var darkTheme = """<Design.DesignStyle>
+    <Style Selector="Window">
+        <Setter Property="RequestedThemeVariant" Value="Dark" />
+    </Style>
+</Design.DesignStyle>"""
+        var lightTheme = """<Design.DesignStyle>
+    <Style Selector="Window">
+        <Setter Property="RequestedThemeVariant" Value="Light" />
+    </Style>
+</Design.DesignStyle>"""
+    }
+}
+
 class AvaloniaProjectSettingsState : BaseState() {
     var previewerMethod by enum(AvaloniaPreviewerMethod.AvaloniaRemote)
 
@@ -20,6 +35,10 @@ class AvaloniaProjectSettingsState : BaseState() {
     var synchronizeWithRunConfiguration by property(false)
 
     var fpsLimit by property(0)
+
+    var darkThemeStyle by string(DefaultTheme.darkTheme)
+
+    var lightThemeStyle by string(DefaultTheme.lightTheme)
 }
 
 @State(name = "Avalonia") // TODO[#265]: Move to avalonia.xml
@@ -37,4 +56,10 @@ class AvaloniaProjectSettings : SimplePersistentStateComponent<AvaloniaProjectSe
 
     val fpsLimit: Int
         get() = state.fpsLimit
+
+    val darkThemeStyle: String
+        get() = state.darkThemeStyle ?: DefaultTheme.darkTheme
+
+    val lightThemeStyle: String
+        get() = state.lightThemeStyle ?: DefaultTheme.lightTheme
 }

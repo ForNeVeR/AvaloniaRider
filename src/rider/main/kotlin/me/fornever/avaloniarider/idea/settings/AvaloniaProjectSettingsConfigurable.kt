@@ -6,7 +6,10 @@ import com.intellij.ui.SimpleListCellRenderer
 import com.intellij.ui.dsl.builder.bindIntText
 import com.intellij.ui.dsl.builder.bindItem
 import com.intellij.ui.dsl.builder.bindSelected
+import com.intellij.ui.dsl.builder.bindText
+import com.intellij.ui.dsl.builder.columns
 import com.intellij.ui.dsl.builder.panel
+import com.intellij.ui.dsl.builder.rows
 import me.fornever.avaloniarider.AvaloniaRiderBundle
 import javax.swing.JList
 
@@ -60,6 +63,26 @@ class AvaloniaProjectSettingsConfigurable(private val project: Project) : Config
                             it ?: WorkingDirectorySpecification.DefinedByMsBuild
                     }
                 )
+            }
+            row(AvaloniaRiderBundle.message("settings.theme.darkTheme")) {
+                textArea()
+                    .rows(4)
+                    .columns(35)
+                    .bindText(
+                        { projectSettings.darkThemeStyle },
+                        { projectSettings.state.darkThemeStyle = it }
+                    )
+                    .comment(AvaloniaRiderBundle.message("settings.theme.comment"))
+            }
+            row(AvaloniaRiderBundle.message("settings.theme.lightTheme")) {
+                textArea()
+                    .rows(4)
+                    .columns(35)
+                    .bindText(
+                        { projectSettings.lightThemeStyle },
+                        { projectSettings.state.lightThemeStyle = it }
+                    )
+                    .comment(AvaloniaRiderBundle.message("settings.theme.comment"))
             }
             group(AvaloniaRiderBundle.message("settings.application-wide.label")) {
                 row {

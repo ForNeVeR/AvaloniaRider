@@ -143,7 +143,17 @@ abstract class AvaloniaPreviewEditorBase(
 
     private val assemblySelectorAction = RunnableAssemblySelectorAction(lifetime, project, currentFile)
     private val selectedProjectPath = assemblySelectorAction.selectedProjectPath
-    protected val sessionController = AvaloniaPreviewerSessionController(project, lifetime, consoleView, file, selectedProjectPath)
+
+    enum class ThemeOption {
+        NONE,
+        LIGHT,
+        DARK
+    }
+
+    private val selectedTheme = Property<ThemeOption>(ThemeOption.NONE)
+
+    protected val sessionController =
+        AvaloniaPreviewerSessionController(project, lifetime, consoleView, file, selectedProjectPath, selectedTheme)
     init {
         lifetime.launch(Dispatchers.EDT) {
             sessionController.status.nextValue { it == AvaloniaPreviewerSessionController.Status.Working }
@@ -307,6 +317,7 @@ abstract class AvaloniaPreviewEditorBase(
         actionGroup.apply {
             add(getShowErrorAction(toolbar))
             add(assemblySelectorAction)
+            add(ThemeSelectorAction(selectedTheme))
             add(RestartPreviewerAction(lifetime, sessionController, selectedProjectPath))
             add(ToggleDetachedPreviewAction(this@AvaloniaPreviewEditorBase))
             addAll(*actions)
