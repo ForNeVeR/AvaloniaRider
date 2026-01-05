@@ -11,6 +11,12 @@ enum class AvaloniaPreviewerMethod {
     Html
 }
 
+enum class AvaloniaPreviewerTheme {
+    None,
+    Light,
+    Dark
+}
+
 class DefaultTheme {
     companion object {
         var darkTheme = """<Design.DesignStyle>
@@ -36,6 +42,8 @@ class AvaloniaProjectSettingsState : BaseState() {
 
     var fpsLimit by property(0)
 
+    var defaultTheme by enum(AvaloniaPreviewerTheme.None)
+
     var darkThemeStyle by string(DefaultTheme.darkTheme)
 
     var lightThemeStyle by string(DefaultTheme.lightTheme)
@@ -56,6 +64,9 @@ class AvaloniaProjectSettings : SimplePersistentStateComponent<AvaloniaProjectSe
 
     val fpsLimit: Int
         get() = state.fpsLimit
+
+    val defaultTheme: AvaloniaPreviewerTheme
+        get() = state.defaultTheme
 
     val darkThemeStyle: String
         get() = state.darkThemeStyle ?: DefaultTheme.darkTheme
