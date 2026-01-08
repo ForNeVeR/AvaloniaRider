@@ -17,8 +17,9 @@ enum class AvaloniaPreviewerTheme {
     Dark
 }
 
-class DefaultTheme {
+class DefaultThemeProp {
     companion object {
+        var applicableTags = "Window,UserControl,Page"
         var darkTheme = """<Design.DesignStyle>
     <Style Selector="Window">
         <Setter Property="RequestedThemeVariant" Value="Dark" />
@@ -42,11 +43,13 @@ class AvaloniaProjectSettingsState : BaseState() {
 
     var fpsLimit by property(0)
 
+    var applicableTags by string(DefaultThemeProp.applicableTags)
+
     var defaultTheme by enum(AvaloniaPreviewerTheme.None)
 
-    var darkThemeStyle by string(DefaultTheme.darkTheme)
+    var darkThemeStyle by string(DefaultThemeProp.darkTheme)
 
-    var lightThemeStyle by string(DefaultTheme.lightTheme)
+    var lightThemeStyle by string(DefaultThemeProp.lightTheme)
 }
 
 @State(name = "Avalonia") // TODO[#265]: Move to avalonia.xml
@@ -65,12 +68,15 @@ class AvaloniaProjectSettings : SimplePersistentStateComponent<AvaloniaProjectSe
     val fpsLimit: Int
         get() = state.fpsLimit
 
+    val applicableTags: String
+        get() = state.applicableTags ?: DefaultThemeProp.applicableTags
+
     val defaultTheme: AvaloniaPreviewerTheme
         get() = state.defaultTheme
 
     val darkThemeStyle: String
-        get() = state.darkThemeStyle ?: DefaultTheme.darkTheme
+        get() = state.darkThemeStyle ?: DefaultThemeProp.darkTheme
 
     val lightThemeStyle: String
-        get() = state.lightThemeStyle ?: DefaultTheme.lightTheme
+        get() = state.lightThemeStyle ?: DefaultThemeProp.lightTheme
 }

@@ -189,6 +189,18 @@ class AvaloniaPreviewerSessionController(
             else -> return originalXaml
         }
 
+        val firstTagStart = originalXaml.indexOf('<')
+        if (firstTagStart == -1) return originalXaml
+
+        // <TagName props...> or <TagName><TagName/> or <TagName/>
+        val tagNameEnd = originalXaml.indexOfAny(charArrayOf(' ', '>', '/'), firstTagStart + 1)
+        if (tagNameEnd == -1) return originalXaml
+
+        val tagName = originalXaml.substring(firstTagStart + 1, tagNameEnd)
+
+        // Only inject if the file is a UserControl
+        if (tagName != "UserControl") return originalXaml
+
         val firstTagEnd = originalXaml.indexOf('>')
         if (firstTagEnd == -1) return originalXaml
 
