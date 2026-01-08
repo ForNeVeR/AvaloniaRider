@@ -19,7 +19,7 @@ enum class AvaloniaPreviewerTheme {
 
 class DefaultThemeProp {
     companion object {
-        var applicableTags = "Window,UserControl,Page"
+        var applicableTags = "Window,UserControl"
         var darkTheme = """<Design.DesignStyle>
     <Style Selector="Window">
         <Setter Property="RequestedThemeVariant" Value="Dark" />
