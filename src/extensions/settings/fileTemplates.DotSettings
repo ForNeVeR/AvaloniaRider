@@ -1,6 +1,5 @@
-<wpf:ResourceDictionary xml:space="preserve" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                        xmlns:s="clr-namespace:System;assembly=mscorlib"
-                        xmlns:wpf="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+﻿<wpf:ResourceDictionary xml:space="preserve" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:s="clr-namespace:System;assembly=mscorlib" xmlns:wpf="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+	<s:String x:Key="/Default/CustomTools/CustomToolsData/@EntryValue"></s:String>
     <!-- Avalonia User Control -->
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=2FBEA98F8AB8294B87A62E4CCD2CC3E3/Entry/=AA00FE2BDD2D35429C91F3F1C6A11BCF/@KeyIndexDefined">True</s:Boolean>
     <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=2FBEA98F8AB8294B87A62E4CCD2CC3E3/Entry/=AA00FE2BDD2D35429C91F3F1C6A11BCF/EntryName/@EntryValue">Avalonia User Control</s:String>
@@ -236,7 +235,9 @@ namespace $NAMESPACE$&#xD;
     <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=AA33FE2BDD2D35429C91F3F1C6A11BCF/Scope/=1F4DBD605BD33C409AE7328D8C5965C3/Type/@EntryValue">InAnyXamlProject</s:String>
 
     <!-- Avalonia Converter -->
-    	<s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=F0CA621CDF5AB24282D8CDC11C520997/Entry/=2CBD6971A7955044AD2624B84FB49E38/Position/@EntryValue">9</s:Int64>
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=70D36F46D895B342B0EF49647B88A455/Scope/=E7CFFE18D9B99549AE3902238EDA927F/@KeyIndexDefined">True</s:Boolean>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=70D36F46D895B342B0EF49647B88A455/Scope/=E7CFFE18D9B99549AE3902238EDA927F/Type/@EntryValue">InXamlCSharpProject</s:String>
+    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=F0CA621CDF5AB24282D8CDC11C520997/Entry/=2CBD6971A7955044AD2624B84FB49E38/Position/@EntryValue">9</s:Int64>
 	<s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=F0CA621CDF5AB24282D8CDC11C520997/Entry/=567DCF4B487C244A9F6BB46E4E9F3B84/Position/@EntryValue">6</s:Int64>
 	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=F0CA621CDF5AB24282D8CDC11C520997/Entry/=70D36F46D895B342B0EF49647B88A455/@KeyIndexDefined">True</s:Boolean>
 	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=F0CA621CDF5AB24282D8CDC11C520997/Entry/=70D36F46D895B342B0EF49647B88A455/EntryName/@EntryValue">&lt;No Name&gt;</s:String>
@@ -279,8 +280,8 @@ $HEADER$namespace $NAMESPACE$
 	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=70D36F46D895B342B0EF49647B88A455/Field/=NAMESPACE/@KeyIndexDefined">True</s:Boolean>
 	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=70D36F46D895B342B0EF49647B88A455/Field/=NAMESPACE/Expression/@EntryValue">fileDefaultNamespace()</s:String>
 	<s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=70D36F46D895B342B0EF49647B88A455/Field/=NAMESPACE/Order/@EntryValue">1</s:Int64>
-	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=70D36F46D895B342B0EF49647B88A455/Scope/=E8F0594528C33E45BBFEC6CFE851095D/@KeyIndexDefined">True</s:Boolean>
-	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=70D36F46D895B342B0EF49647B88A455/Scope/=E8F0594528C33E45BBFEC6CFE851095D/Type/@EntryValue">InCSharpProjectFile</s:String>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=70D36F46D895B342B0EF49647B88A455/Scope/=E8F0594528C33E45BBFEC6CFE851095D/@KeyIndexDefined">False</s:Boolean>
+
 
     <!-- Avalonia Multi Converter -->
     	<s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=F0CA621CDF5AB24282D8CDC11C520997/Entry/=2CBD6971A7955044AD2624B84FB49E38/Position/@EntryValue">9</s:Int64>
@@ -297,6 +298,8 @@ $HEADER$namespace $NAMESPACE$
 	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=BA2B72EE2086334DBCE6473F29F18C87/CustomProperties/=ValidateFileName/@EntryIndexedValue">True</s:String>
 	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=BA2B72EE2086334DBCE6473F29F18C87/Description/@EntryValue">Avalonia Multi Converter</s:String>
 	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=BA2B72EE2086334DBCE6473F29F18C87/Reformat/@EntryValue">True</s:Boolean>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=BA2B72EE2086334DBCE6473F29F18C87/Scope/=E7CFFE18D9B99549AE3902238EDA927F/@KeyIndexDefined">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=BA2B72EE2086334DBCE6473F29F18C87/Scope/=E7CFFE18D9B99549AE3902238EDA927F/Type/@EntryValue">InXamlCSharpProject</s:String>
 	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=BA2B72EE2086334DBCE6473F29F18C87/ShortenQualifiedReferences/@EntryValue">True</s:Boolean>
 	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=BA2B72EE2086334DBCE6473F29F18C87/Text/@EntryValue">using System;
 using System.Collections.Generic;
@@ -322,6 +325,6 @@ $HEADER$namespace $NAMESPACE$
 	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=BA2B72EE2086334DBCE6473F29F18C87/Field/=NAMESPACE/@KeyIndexDefined">True</s:Boolean>
 	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=BA2B72EE2086334DBCE6473F29F18C87/Field/=NAMESPACE/Expression/@EntryValue">fileDefaultNamespace()</s:String>
 	<s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=BA2B72EE2086334DBCE6473F29F18C87/Field/=NAMESPACE/Order/@EntryValue">1</s:Int64>
-	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=BA2B72EE2086334DBCE6473F29F18C87/Scope/=E8F0594528C33E45BBFEC6CFE851095D/@KeyIndexDefined">True</s:Boolean>
-	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=BA2B72EE2086334DBCE6473F29F18C87/Scope/=E8F0594528C33E45BBFEC6CFE851095D/Type/@EntryValue">InCSharpProjectFile</s:String>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=BA2B72EE2086334DBCE6473F29F18C87/Scope/=E8F0594528C33E45BBFEC6CFE851095D/@KeyIndexDefined">False</s:Boolean>
+
 </wpf:ResourceDictionary>
