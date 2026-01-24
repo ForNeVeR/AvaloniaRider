@@ -22,7 +22,8 @@ jobs:
         uses: ForNeVeR/intellij-updater@v1
         name: "Update the dependency versions"
 
-      - uses: actions/create-github-app-token@v2
+      - if: steps.update.outputs.has-changes == 'true' && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
+        uses: actions/create-github-app-token@v2
         id: generate-token
         with:
           app-id: ${{ secrets.IJ_UPDATER_APP_ID }}
