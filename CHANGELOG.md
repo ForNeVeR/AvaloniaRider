@@ -8,6 +8,7 @@ When considering version compatibility (and thus incrementing the major version)
 
 ## [Unreleased] (1.9.0)
 ### Added
+- Previewer will now restart automatically in case of execution errors. Thanks to @SuperJMN!
 - New C# file templates: **Avalonia Converter**, **Avalonia Multi Converter**. Thanks to @bugrakurnaz!
 
 ## [1.8.0] - 2025-11-16

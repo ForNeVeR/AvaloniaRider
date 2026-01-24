@@ -2,6 +2,7 @@ package me.fornever.avaloniarider.previewer
 
 import com.intellij.execution.ui.ConsoleView
 import com.intellij.openapi.application.EDT
+import com.intellij.openapi.application.readAction
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.debug
 import com.intellij.openapi.editor.Document
@@ -11,6 +12,7 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.ui.scale.JBUIScale
 import com.intellij.util.application
+import com.intellij.workspaceModel.ide.toPath
 import com.jetbrains.rd.util.lifetime.Lifetime
 import com.jetbrains.rd.util.lifetime.LifetimeDefinition
 import com.jetbrains.rd.util.lifetime.SequentialLifetimes
@@ -22,21 +24,15 @@ import com.jetbrains.rd.util.throttleLast
 import com.jetbrains.rider.build.BuildHost
 import com.jetbrains.rider.model.riderSolutionLifecycle
 import com.jetbrains.rider.projectView.solution
-import com.intellij.workspaceModel.ide.toPath
 import com.jetbrains.rider.projectView.workspace.ProjectModelEntity
 import com.jetbrains.rider.projectView.workspace.containingProjectEntity
 import com.jetbrains.rider.projectView.workspace.getProjectModelEntities
 import com.jetbrains.rider.ui.SwingScheduler
 import com.jetbrains.rider.ui.components.utils.documentChanged
-import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
+import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.BufferOverflow
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.withContext
 import me.fornever.avaloniarider.AvaloniaRiderBundle
 import me.fornever.avaloniarider.controlmessages.AvaloniaInputEventMessage
 import me.fornever.avaloniarider.controlmessages.FrameMessage
@@ -56,6 +52,8 @@ import java.net.SocketException
 import java.nio.file.Files
 import java.nio.file.Path
 import java.time.Duration
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 
 /**
  * The sources on this class are thread-free. Make sure to schedule them onto the proper threads if necessary.
@@ -182,37 +180,35 @@ class AvaloniaPreviewerSessionController(
             }
     }
 
-    private suspend fun getProjectContainingFile(virtualFile: VirtualFile): ProjectModelEntity? {
-        application.assertIsDispatchThread()
+    private suspend fun getProjectContainingFile(virtualFile: VirtualFile): ProjectModelEntity?  =
+        suspendCancellableCoroutine { cont ->
+            Lifetime.using { lt ->
+                application.assertIsDispatchThread()
 
-        val result = CompletableDeferred<ProjectModelEntity?>()
+                project.solution.riderSolutionLifecycle.isProjectModelReady.adviseUntil(lt) { isReady ->
+                    if (!isReady) return@adviseUntil false
+                    try {
+                        logger.debug { "Project model view synchronized" }
+                        val projectModelEntities = workspaceModel.getProjectModelEntities(virtualFile, project)
+                        logger.debug {
+                            "Project model nodes for file $xamlFile: " + projectModelEntities.joinToString(", ")
+                        }
+                        val containingProject =
+                            projectModelEntities.firstNotNullOfOrNull { it.containingProjectEntity() }
+                        if (containingProject != null) {
+                            cont.resume(containingProject)
+                        } else {
+                            logger.warn("Workspace model doesn't contain project entity for $virtualFile")
+                            cont.resume(null)
+                        }
+                    } catch (t: Throwable) {
+                        cont.resumeWithException(t)
+                    }
 
-        project.solution.riderSolutionLifecycle.isProjectModelReady.adviseUntil(controllerLifetime) { isReady ->
-            if (!isReady) return@adviseUntil false
-            try {
-                logger.debug { "Project model view synchronized" }
-                val projectModelEntities = workspaceModel.getProjectModelEntities(virtualFile, project)
-                logger.debug {
-                    "Project model nodes for file $xamlFile: " + projectModelEntities.joinToString(", ")
+                    return@adviseUntil true
                 }
-                val containingProject = projectModelEntities.asSequence()
-                    .mapNotNull { it.containingProjectEntity() }
-                    .firstOrNull()
-                if (containingProject != null) {
-                    result.complete(containingProject)
-                } else {
-                    logger.warn("Workspace model doesn't contain project entity for $virtualFile")
-                    result.complete(null)
-                }
-            } catch (t: Throwable) {
-                result.completeExceptionally(t)
             }
-
-            return@adviseUntil true
         }
-
-        return result.await()
-    }
 
     private fun createSession(
         lifetime: Lifetime,
@@ -240,7 +236,7 @@ class AvaloniaPreviewerSessionController(
 
             suspend fun dispatchXamlUpdate() {
                 while (lifetime.isAlive) {
-                    val (text, projectRelativePath) = application.runReadAction<Pair<String, String?>> {
+                    val (text, projectRelativePath) = readAction {
                         document.text to computeDocumentPathInProject(projectFilePathProperty.valueOrNull)
                     }
                     val effectivePath = projectRelativePath ?: lastKnownProjectRelativePath
@@ -249,7 +245,7 @@ class AvaloniaPreviewerSessionController(
                         if (lastKnownProjectRelativePath == null) {
                             logger.warn(message)
                         } else {
-                            logger.debug { message }
+                            logger.info(message)
                         }
                         inFlightUpdate.value = false
                         delay(projectPathRetryDelay.toMillis())
