@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 
 When considering version compatibility (and thus incrementing the major version), we only consider the configuration file major user experience changes. The host IDE version is not considered a version compatibility factor (since otherwise we'd have to increase the major version pretty often and that would make no sense).
 
+## [Unreleased] (1.9.0)
+### Added
+- Previewer will now restart automatically in case of execution errors. Thanks to @SuperJMN!
+- New C# file templates: **Avalonia Converter**, **Avalonia Multi Converter**. Thanks to @bugrakurnaz!
+
 ## [1.8.0] - 2025-11-16
 ### Changed
 - **(Requirement update!)** Update the minimal supported Rider version to 2025.3.0.1.

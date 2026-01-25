@@ -39,6 +39,11 @@ data class AvaloniaPreviewerParameters(
     val workingDirectory: Path
 )
 
+data class AvaloniaPreviewerProcessResult(
+    val exitCode: Int?,
+    val outputSnippet: String?
+)
+
 class AvaloniaPreviewerProcess(
     private val project: Project,
     private val lifetime: Lifetime,
@@ -79,16 +84,18 @@ class AvaloniaPreviewerProcess(
         executionMode: ProcessExecutionMode,
         commandLine: GeneralCommandLine,
         consoleView: ConsoleView?,
-        title: String
+        title: String,
+        outputListener: (String) -> Unit = {}
     ): ProcessHandler = when (executionMode) {
-        ProcessExecutionMode.Run -> runProcess(commandLine, consoleView, title)
+        ProcessExecutionMode.Run -> runProcess(commandLine, consoleView, title, outputListener)
         ProcessExecutionMode.Debug -> debugProcess(commandLine, consoleView)
     }
 
     private fun runProcess(
         commandLine: GeneralCommandLine,
         consoleView: ConsoleView?,
-        title: String
+        title: String,
+        outputListener: (String) -> Unit
     ): OSProcessHandler {
         val processHandler = lifetime.bracketOrThrowEx({
             object : OSProcessHandler(commandLine) {
@@ -97,6 +104,7 @@ class AvaloniaPreviewerProcess(
 
                 override fun notifyTextAvailable(text: String, outputType: Key<*>) {
                     logger.info("$title [$outputType]: $text")
+                    outputListener(text)
                     super.notifyTextAvailable(text, outputType)
                 }
 
@@ -158,13 +166,41 @@ class AvaloniaPreviewerProcess(
         transport: PreviewerTransport,
         method: PreviewerMethod,
         title: String
-    ) {
+    ): AvaloniaPreviewerProcessResult {
         logger.info("1/4: generating process command line")
         val commandLine = getCommandLine(transport, method)
         logger.info("2/3: starting a process")
-        val process = startProcess(executionMode, commandLine, consoleView, title)
+        val outputCollector = OutputCollector()
+        val process = startProcess(
+            executionMode,
+            commandLine,
+            consoleView,
+            title,
+            outputCollector::append
+        )
         logger.info("3/3: awaiting termination")
         waitForTermination(process, title)
+        val exitCode = process.exitCode
+        val outputSnippet = outputCollector.content()
+        return AvaloniaPreviewerProcessResult(exitCode, outputSnippet)
+    }
+
+    private class OutputCollector(private val maxChars: Int = 32 * 1024) {
+        private val buffer = StringBuilder()
+
+        fun append(text: String) {
+            synchronized(buffer) {
+                buffer.append(text)
+                if (buffer.length > maxChars) {
+                    val excess = buffer.length - maxChars
+                    buffer.delete(0, excess)
+                }
+            }
+        }
+
+        fun content(): String? = synchronized(buffer) {
+            if (buffer.isEmpty()) null else buffer.toString()
+        }
     }
 }
 

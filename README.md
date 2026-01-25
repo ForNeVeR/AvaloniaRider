@@ -32,11 +32,15 @@ There's a separate button to **debug** the previewer process for the current fil
 ### File templates
 
 Right-click a directory or an Avalonia-enabled project and choose among the available file templates:
-- Avalonia User Control
-- Avalonia Templated control
-- Avalonia Window
-- Avalonia Resource Dictionary
-- Avalonia Styles
+- XAML:
+  - **Avalonia User Control**,
+  - **Avalonia Templated Control**,
+  - **Avalonia Window**,
+  - **Avalonia Resource Dictionary**,
+  - **Avalonia Styles**;
+- C#:
+  - **Avalonia Converter**,
+  - **Avalonia Multi Converter**.
 
 ### Live templates
 

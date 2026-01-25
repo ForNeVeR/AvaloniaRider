@@ -2,14 +2,17 @@ package me.fornever.avaloniarider.previewer
 
 import com.intellij.execution.ui.ConsoleView
 import com.intellij.openapi.application.EDT
+import com.intellij.openapi.application.readAction
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.debug
-import com.intellij.openapi.fileEditor.FileDocumentManager
+import com.intellij.openapi.editor.Document
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.io.FileUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.ui.scale.JBUIScale
 import com.intellij.util.application
+import com.intellij.workspaceModel.ide.toPath
 import com.jetbrains.rd.util.lifetime.Lifetime
 import com.jetbrains.rd.util.lifetime.LifetimeDefinition
 import com.jetbrains.rd.util.lifetime.SequentialLifetimes
@@ -26,14 +29,16 @@ import com.jetbrains.rider.projectView.workspace.containingProjectEntity
 import com.jetbrains.rider.projectView.workspace.getProjectModelEntities
 import com.jetbrains.rider.ui.SwingScheduler
 import com.jetbrains.rider.ui.components.utils.documentChanged
-import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.collectLatest
+import me.fornever.avaloniarider.AvaloniaRiderBundle
 import me.fornever.avaloniarider.controlmessages.AvaloniaInputEventMessage
 import me.fornever.avaloniarider.controlmessages.FrameMessage
 import me.fornever.avaloniarider.controlmessages.HtmlTransportStartedMessage
 import me.fornever.avaloniarider.controlmessages.UpdateXamlResultMessage
+import me.fornever.avaloniarider.exceptions.AvaloniaPreviewerExecutionException
 import me.fornever.avaloniarider.exceptions.AvaloniaPreviewerInitializationException
 import me.fornever.avaloniarider.idea.concurrency.adviseOnUiThread
 import me.fornever.avaloniarider.idea.settings.AvaloniaPreviewerMethod
@@ -48,6 +53,8 @@ import java.net.SocketException
 import java.nio.file.Files
 import java.nio.file.Path
 import java.time.Duration
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 
 /**
  * The sources on this class are thread-free. Make sure to schedule them onto the proper threads if necessary.
@@ -57,13 +64,14 @@ class AvaloniaPreviewerSessionController(
     outerLifetime: Lifetime,
     private val consoleView: ConsoleView?,
     private val xamlFile: VirtualFile,
-    projectFilePathProperty: IOptPropertyView<Path>,
-    private val selectedTheme: IPropertyView<AvaloniaPreviewerTheme>
-) {
+    private val projectFilePathProperty: IOptPropertyView<Path>,
+    private val baseDocument: Document?,
+    private val selectedTheme: IPropertyView<AvaloniaPreviewerTheme>) {
     companion object {
         private val logger = Logger.getInstance(AvaloniaPreviewerSessionController::class.java)
 
         private val xamlEditThrottling = Duration.ofMillis(300L)
+        private val projectPathRetryDelay = Duration.ofMillis(200L)
     }
 
     open class Status {
@@ -127,9 +135,14 @@ class AvaloniaPreviewerSessionController(
 
     @Volatile
     private var session: AvaloniaPreviewerSession? = null
+    @Volatile
+    private var lastKnownProjectRelativePath: String? = null
+    @Volatile
+    private var pendingRestart = false
 
     private val sessionLifetimeSource = SequentialLifetimes(controllerLifetime)
     private var currentSessionLifetime: LifetimeDefinition? = null
+    private var restartJob: Job? = null
 
     init {
         val isBuildingProperty = BuildHost.getInstance(project).building
@@ -159,6 +172,14 @@ class AvaloniaPreviewerSessionController(
         status.advise(controllerLifetime) { status ->
             logger.info("${xamlFile.name}: $status")
         }
+
+        baseDocument?.documentChanged()
+            ?.throttleLast(xamlEditThrottling, SwingScheduler)
+            ?.advise(controllerLifetime) {
+                if (session != null) return@advise
+                if (!pendingRestart) return@advise
+                scheduleRestart()
+            }
 
         selectedTheme.advise(controllerLifetime) { _ ->
             val currentSession = session
@@ -216,33 +237,35 @@ class AvaloniaPreviewerSessionController(
         }
     }
 
-    private suspend fun getProjectContainingFile(virtualFile: VirtualFile): ProjectModelEntity {
-        application.assertIsDispatchThread()
+    private suspend fun getProjectContainingFile(virtualFile: VirtualFile): ProjectModelEntity?  =
+        suspendCancellableCoroutine { cont ->
+            Lifetime.using { lt ->
+                application.assertIsDispatchThread()
 
-        val result = CompletableDeferred<ProjectModelEntity>()
+                project.solution.riderSolutionLifecycle.isProjectModelReady.adviseUntil(lt) { isReady ->
+                    if (!isReady) return@adviseUntil false
+                    try {
+                        logger.debug { "Project model view synchronized" }
+                        val projectModelEntities = workspaceModel.getProjectModelEntities(virtualFile, project)
+                        logger.debug {
+                            "Project model nodes for file $xamlFile: " + projectModelEntities.joinToString(", ")
+                        }
+                        val containingProject =
+                            projectModelEntities.firstNotNullOfOrNull { it.containingProjectEntity() }
+                        if (containingProject != null) {
+                            cont.resume(containingProject)
+                        } else {
+                            logger.warn("Workspace model doesn't contain project entity for $virtualFile")
+                            cont.resume(null)
+                        }
+                    } catch (t: Throwable) {
+                        cont.resumeWithException(t)
+                    }
 
-        project.solution.riderSolutionLifecycle.isProjectModelReady.adviseUntil(controllerLifetime) { isReady ->
-            if (!isReady) return@adviseUntil false
-            try {
-                logger.debug { "Project model view synchronized" }
-                val projectModelEntities = workspaceModel.getProjectModelEntities(virtualFile, project)
-                logger.debug {
-                    "Project model nodes for file $xamlFile: " + projectModelEntities.joinToString(", ")
+                    return@adviseUntil true
                 }
-                val containingProject = projectModelEntities.asSequence()
-                    .map { it.containingProjectEntity() }
-                    .filterNotNull()
-                    .first()
-                result.complete(containingProject)
-            } catch (t: Throwable) {
-                result.completeExceptionally(t)
             }
-
-            return@adviseUntil true
         }
-
-        return result.await()
-    }
 
     private fun createSession(
         lifetime: Lifetime,
@@ -256,31 +279,56 @@ class AvaloniaPreviewerSessionController(
     ).apply {
         sessionStarted.advise(lifetime) {
             statusProperty.value = Status.Working
+            pendingRestart = false
+            updateXamlResultProperty.set(UpdateXamlResultMessage())
 
             sendClientSupportedPixelFormat()
 
-            application.runReadAction {
-                val document = FileDocumentManager.getInstance().getDocument(xamlFile)!!
-
-                fun getDocumentPathInProject(): String {
-                    val projectModelItems = workspaceModel.getProjectModelEntities(xamlFile, project)
-                    val item = projectModelItems.firstOrNull()
-                    return item?.projectRelativeVirtualPath?.let { "/$it" } ?: ""
-                }
-
-                fun sendXamlUpdate() {
-                    inFlightUpdate.value = true
-                    val xamlText = injectThemeIfNeeded(document.text)
-                    sendXamlUpdate(xamlText, getDocumentPathInProject())
-                }
-
-                document.documentChanged()
-                    .throttleLast(xamlEditThrottling, SwingScheduler)
-                    .advise(lifetime) {
-                        sendXamlUpdate()
-                    }
-                sendXamlUpdate()
+            val document = baseDocument
+            if (document == null) {
+                logger.warn("Unable to obtain document for $xamlFile")
+                return@advise
             }
+            val documentUpdates = MutableSharedFlow<Unit>(replay = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
+
+            suspend fun dispatchXamlUpdate() {
+                while (lifetime.isAlive) {
+                    val (text, projectRelativePath) = readAction {
+                        document.text to computeDocumentPathInProject(projectFilePathProperty.valueOrNull)
+                    }
+                    val effectivePath = projectRelativePath ?: lastKnownProjectRelativePath
+                    if (effectivePath == null) {
+                        val message = "Skipping XAML update for ${xamlFile.name}: project path is unknown"
+                        if (lastKnownProjectRelativePath == null) {
+                            logger.warn(message)
+                        } else {
+                            logger.info(message)
+                        }
+                        inFlightUpdate.value = false
+                        delay(projectPathRetryDelay.toMillis())
+                        continue
+                    }
+
+                    lastKnownProjectRelativePath = effectivePath
+                    inFlightUpdate.value = true
+                    val xamlText = injectThemeIfNeeded(text)
+                    sendXamlUpdate(xamlText, effectivePath)
+                    break
+                }
+            }
+
+            lifetime.launch {
+                documentUpdates.collectLatest {
+                    dispatchXamlUpdate()
+                }
+            }
+
+            document.documentChanged()
+                .throttleLast(xamlEditThrottling, SwingScheduler)
+                .advise(lifetime) {
+                    documentUpdates.tryEmit(Unit)
+                }
+            documentUpdates.tryEmit(Unit)
         }
 
         htmlTransportStarted.flowInto(lifetime, htmlTransportStartedSignal)
@@ -309,6 +357,9 @@ class AvaloniaPreviewerSessionController(
 
         logger.info("Receiving the containing project for the file $xamlFile")
         val xamlContainingProject = withContext(Dispatchers.EDT) { getProjectContainingFile(xamlFile) }
+            ?: throw AvaloniaPreviewerInitializationException(
+                AvaloniaRiderBundle.message("previewer.error.project-not-found", xamlFile.presentableUrl)
+            )
 
         logger.info("Calculating a project output for the project $projectFilePath")
         val riderProjectOutputHost = AvaloniaRiderProjectModelHost.getInstance(project)
@@ -355,7 +406,7 @@ class AvaloniaPreviewerSessionController(
                     is SocketException, is EOFException -> {
                         // Log socket errors only if the session is still alive.
                         if (lifetime.isAlive) {
-                            logger.error("Socket error while session is still alive", ex)
+                            logger.info("Socket closed while session is still alive", ex)
                         }
                     }
                     else -> throw ex
@@ -367,8 +418,13 @@ class AvaloniaPreviewerSessionController(
             process.run(executionMode, consoleView, transport, method, processTitle)
         }
 
-        processJob.await()
+        val processResult = processJob.await()
         sessionJob.await()
+        val exitCode = processResult.exitCode
+        // Only treat as error if lifetime is still alive; otherwise process was intentionally terminated
+        if (lifetime.isAlive && exitCode != null && exitCode != 0) {
+            throw AvaloniaPreviewerExecutionException(exitCode, processResult.outputSnippet)
+        }
     }
 
     fun start(
@@ -378,11 +434,23 @@ class AvaloniaPreviewerSessionController(
     ) {
         if (status.value == Status.Suspended && !force) return
 
+        lastKnownProjectRelativePath = null
+        pendingRestart = false
+
         val lt = sessionLifetimeSource.next()
         currentSessionLifetime = lt
         lt.launch {
             try {
                 executePreviewerAsync(currentSessionLifetime!!, executionMode, projectFilePath)
+            } catch (ex: AvaloniaPreviewerExecutionException) {
+                val errorText = ex.processOutput?.ifBlank { null } ?: ex.message
+                if (errorText != null) {
+                    updateXamlResultProperty.set(UpdateXamlResultMessage(error = errorText))
+                }
+                statusProperty.value = Status.XamlError
+                inFlightUpdate.value = false
+                pendingRestart = true
+                logger.warn(ex)
             } catch (ex: AvaloniaPreviewerInitializationException) {
                 criticalErrorSignal.fire(ex)
                 logger.warn(ex)
@@ -397,7 +465,9 @@ class AvaloniaPreviewerSessionController(
 
                 logger.info("Previewer session is terminated.")
                 when (statusProperty.value) {
-                    Status.Suspended, is Status.NoOutputAssembly -> {}
+                    Status.Suspended,
+                    Status.XamlError,
+                    is Status.NoOutputAssembly -> {}
                     else -> statusProperty.set(Status.Terminated)
                 }
             }
@@ -417,5 +487,29 @@ class AvaloniaPreviewerSessionController(
 
     fun sendInputEventMessage(event: AvaloniaInputEventMessage) {
         session?.sendInputEventMessage(event)
+    }
+
+    private fun scheduleRestart() {
+        val projectFilePath = projectFilePathProperty.valueOrNull ?: return
+        restartJob?.cancel()
+        restartJob = controllerLifetime.launch {
+            delay(projectPathRetryDelay.toMillis())
+            if (session != null) return@launch
+            logger.info("Restarting previewer for $xamlFile after document change")
+            start(projectFilePath, force = true)
+        }
+    }
+
+    private fun computeDocumentPathInProject(projectFilePath: Path?): String? {
+        val projectModelItems = workspaceModel.getProjectModelEntities(xamlFile, project)
+        val candidate = projectFilePath?.let { desiredPath ->
+            projectModelItems.firstOrNull { entity ->
+                val containingProject = entity.containingProjectEntity() ?: return@firstOrNull false
+                val containingPath = containingProject.url?.toPath() ?: return@firstOrNull false
+                FileUtil.pathsEqual(containingPath.toString(), desiredPath.toString())
+            }
+        } ?: projectModelItems.firstOrNull()
+
+        return candidate?.projectRelativeVirtualPath?.let { "/$it" }
     }
 }

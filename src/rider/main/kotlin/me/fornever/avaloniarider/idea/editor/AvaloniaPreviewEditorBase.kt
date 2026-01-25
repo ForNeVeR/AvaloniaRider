@@ -4,6 +4,8 @@ import com.intellij.codeHighlighting.BackgroundEditorHighlighter
 import com.intellij.execution.filters.TextConsoleBuilderFactory
 import com.intellij.openapi.actionSystem.*
 import com.intellij.openapi.application.EDT
+import com.intellij.openapi.editor.Document
+import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.fileEditor.FileEditorLocation
 import com.intellij.openapi.fileEditor.FileEditorState
 import com.intellij.openapi.observable.properties.AtomicProperty
@@ -16,6 +18,7 @@ import com.intellij.openapi.wm.WindowManager
 import com.intellij.ui.dsl.builder.Align
 import com.intellij.ui.dsl.builder.bindText
 import com.intellij.ui.dsl.builder.panel
+import com.intellij.util.application
 import com.intellij.util.ui.UIUtil
 import com.jetbrains.rd.util.lifetime.Lifetime
 import com.jetbrains.rd.util.lifetime.LifetimeDefinition
@@ -144,11 +147,19 @@ abstract class AvaloniaPreviewEditorBase(
 
     private val assemblySelectorAction = RunnableAssemblySelectorAction(lifetime, project, currentFile)
     private val selectedProjectPath = assemblySelectorAction.selectedProjectPath
-
+    private val baseDocument: Document? =
+        application.runReadAction<Document?> { FileDocumentManager.getInstance().getDocument(file) }
     private val selectedTheme = Property(AvaloniaProjectSettings.getInstance(project).defaultTheme)
+    protected val sessionController = AvaloniaPreviewerSessionController(
+        project,
+        lifetime,
+        consoleView,
+        file,
+        selectedProjectPath,
+        baseDocument,
+        selectedTheme
+    )
 
-    protected val sessionController =
-        AvaloniaPreviewerSessionController(project, lifetime, consoleView, file, selectedProjectPath, selectedTheme)
     init {
         lifetime.launch(Dispatchers.EDT) {
             sessionController.status.nextValue { it == AvaloniaPreviewerSessionController.Status.Working }

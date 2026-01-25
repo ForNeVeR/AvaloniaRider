@@ -68,4 +68,12 @@ $ ./gradlew prepare
 
 This will download the initial set of dependencies necessary for the plugin development and set up Rider SDK for .NET part of the project. After that, open either the frontend part of the plugin (the directory containing `build.gradle.kts`) using IntelliJ IDEA, or the `AvaloniaRider.sln` using Rider.
 
+## Editing the Templates
+The easiest way to edit the plugin's file templates is to mount them to a particular solution in the IDE and then edit them. For example:
+1. Create a new solution, open in Rider.
+2. Go to the IDE **Settings** window, press **Manage Layers** button.
+3. Navigate to `<AvaloniaRider>/src/extensions/settings/fileTemplates.DotSettings`.
+4. Go to the IDE **Settings** window, **Editor → File Templates** page.
+5. Make changes to the template, save to the custom **fileTemplates** layer — it will be preserved in `fileTemplates.DotSettings` in the repository.
+
 [gradle-jvm-wrapper]: https://github.com/mfilippov/gradle-jvm-wrapper
