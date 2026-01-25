@@ -6,10 +6,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 
 When considering version compatibility (and thus incrementing the major version), we only consider the configuration file major user experience changes. The host IDE version is not considered a version compatibility factor (since otherwise we'd have to increase the major version pretty often and that would make no sense).
 
-## [Unreleased] (1.9.0)
+## [1.9.0] - 2026-01-25
 ### Added
 - Previewer will now restart automatically in case of execution errors. Thanks to @SuperJMN!
+- [#166](https://github.com/ForNeVeR/AvaloniaRider/issues/166): the project model-related code is now more robust and able to find the related files even if the project model is not built at the time of the initial query. Thanks to @SuperJMN!
 - New C# file templates: **Avalonia Converter**, **Avalonia Multi Converter**. Thanks to @bugrakurnaz!
+
+### Changed
+- _(Requirement relaxed.)_ Update the minimal supported Rider version to 2025.3.
 
 ## [1.8.0] - 2025-11-16
 ### Changed
@@ -165,4 +169,5 @@ The initial plugin release. The plugin provides the following features for JetBr
 [1.6.0]: https://github.com/ForNeVeR/AvaloniaRider/compare/v1.5.4...v1.6.0
 [1.7.0]: https://github.com/ForNeVeR/AvaloniaRider/compare/v1.6.0...v1.7.0
 [1.8.0]: https://github.com/ForNeVeR/AvaloniaRider/compare/v1.7.0...v1.8.0
-[Unreleased]: https://github.com/ForNeVeR/AvaloniaRider/compare/v1.8.0...HEAD
+[1.9.0]: https://github.com/ForNeVeR/AvaloniaRider/compare/v1.8.0...v1.9.0
+[Unreleased]: https://github.com/ForNeVeR/AvaloniaRider/compare/v1.9.0...HEAD
