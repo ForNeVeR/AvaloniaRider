@@ -25,7 +25,7 @@ class ThemeSelectorAction(
         return popupActionGroup
     }
 
-    override fun getActionUpdateThread() = ActionUpdateThread.BGT
+    override fun getActionUpdateThread() = ActionUpdateThread.EDT
 
     override fun update(e: AnActionEvent) {
         e.presentation.text = when (selectedTheme.value) {
@@ -43,7 +43,7 @@ class ThemeSelectorAction(
             selectedTheme.value = option
         }
 
-        override fun getActionUpdateThread() = ActionUpdateThread.BGT
+        override fun getActionUpdateThread() = ActionUpdateThread.EDT
     }
 }
 
