@@ -199,7 +199,7 @@ class AvaloniaPreviewerSessionController(
         val tagName = originalXaml.substring(firstTagStart + 1, tagNameEnd)
 
         // Only inject if the file is a UserControl
-        val tagList = settings.applicableTags.split(',').map { it.trim() }
+        val tagList = settings.themeApplicableTags.split(',').map { it.trim() }
         if (tagName !in tagList) {
             return originalXaml
         }

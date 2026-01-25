@@ -66,8 +66,8 @@ class AvaloniaProjectSettingsConfigurable(private val project: Project) : Config
             }
             row(AvaloniaRiderBundle.message("settings.theme.applicableTags")) {
                 textField().bindText(
-                    { projectSettings.applicableTags },
-                    { projectSettings.state.applicableTags = it }
+                    { projectSettings.themeApplicableTags },
+                    { projectSettings.state.themeApplicableTags = it }
                 ).comment(AvaloniaRiderBundle.message("settings.theme.applicableTags.comment"))
             }
             row(AvaloniaRiderBundle.message("settings.theme.defaultTheme")) {
