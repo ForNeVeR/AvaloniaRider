@@ -7,6 +7,7 @@ import com.intellij.util.application
 import com.jetbrains.rd.platform.diagnostics.RdLogTraceScenarios
 import com.jetbrains.rd.util.lifetime.Lifetime
 import com.jetbrains.rd.util.reactive.OptProperty
+import com.jetbrains.rd.util.reactive.Property
 import com.jetbrains.rdclient.util.idea.pumpMessages
 import com.jetbrains.rider.model.BuildResultKind
 import com.jetbrains.rider.model.PreviewPlatformKind
@@ -23,6 +24,7 @@ import com.jetbrains.rider.test.scriptingApi.getVirtualFileFromPath
 import com.jetbrains.rider.xaml.core.XamlPreviewEditorExtension
 import me.fornever.avaloniarider.controlmessages.FrameMessage
 import me.fornever.avaloniarider.idea.editor.AvaloniaPreviewerXamlEditorExtension
+import me.fornever.avaloniarider.idea.settings.AvaloniaPreviewerTheme
 import me.fornever.avaloniarider.previewer.AvaloniaPreviewerSessionController
 import me.fornever.avaloniarider.test.framework.correctTestSolutionDirectory
 import org.testng.annotations.AfterMethod
@@ -80,13 +82,16 @@ class PreviewTests : PerTestSolutionTestBase() {
             val document = application.runReadAction<Document?> {
                 FileDocumentManager.getInstance().getDocument(mainWindowFile)
             }
+            val selectedTheme = Property(AvaloniaPreviewerTheme.None)
+
             AvaloniaPreviewerSessionController(
                 project,
                 lt,
                 consoleView = null,
                 mainWindowFile,
                 projectFilePathProperty,
-                document
+                document,
+                selectedTheme
             ).apply {
                 frame.advise(lt) {
                     frameMsg = it
