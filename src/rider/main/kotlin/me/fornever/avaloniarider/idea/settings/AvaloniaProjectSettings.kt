@@ -19,7 +19,7 @@ enum class AvaloniaPreviewerTheme {
 
 class DefaultThemeProp {
     companion object {
-        var applicableTags = "Window,UserControl"
+        var themeApplicableTags = "Window,UserControl"
         var darkTheme = """<Design.DesignStyle>
     <Style Selector="Window">
         <Setter Property="RequestedThemeVariant" Value="Dark" />
@@ -43,7 +43,10 @@ class AvaloniaProjectSettingsState : BaseState() {
 
     var fpsLimit by property(0)
 
-    var applicableTags by string(DefaultThemeProp.applicableTags)
+    /**
+     * The theme will apply only when these root tags are found in the file.
+     */
+    var themeApplicableTags by string(DefaultThemeProp.themeApplicableTags)
 
     var defaultTheme by enum(AvaloniaPreviewerTheme.None)
 
@@ -68,8 +71,8 @@ class AvaloniaProjectSettings : SimplePersistentStateComponent<AvaloniaProjectSe
     val fpsLimit: Int
         get() = state.fpsLimit
 
-    val applicableTags: String
-        get() = state.applicableTags ?: DefaultThemeProp.applicableTags
+    val themeApplicableTags: String
+        get() = state.themeApplicableTags ?: DefaultThemeProp.themeApplicableTags
 
     val defaultTheme: AvaloniaPreviewerTheme
         get() = state.defaultTheme
