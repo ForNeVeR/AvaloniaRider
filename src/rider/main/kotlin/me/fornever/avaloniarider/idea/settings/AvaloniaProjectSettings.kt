@@ -19,6 +19,12 @@ class AvaloniaProjectSettingsState : BaseState() {
      */
     var synchronizeWithRunConfiguration by property(false)
 
+    /**
+     * Use a shadow copy of the output assemblies to run the previewer.
+     * This prevents the previewer from locking the output files, allowing the build to proceed.
+     */
+    var useShadowCopy by property(false)
+
     var fpsLimit by property(0)
 }
 
@@ -34,6 +40,9 @@ class AvaloniaProjectSettings : SimplePersistentStateComponent<AvaloniaProjectSe
 
     val synchronizeWithRunConfiguration: Boolean
         get() = state.synchronizeWithRunConfiguration
+
+    val useShadowCopy: Boolean
+        get() = state.useShadowCopy
 
     val fpsLimit: Int
         get() = state.fpsLimit

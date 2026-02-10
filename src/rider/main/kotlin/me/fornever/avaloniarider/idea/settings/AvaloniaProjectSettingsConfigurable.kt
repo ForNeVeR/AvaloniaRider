@@ -32,6 +32,12 @@ class AvaloniaProjectSettingsConfigurable(private val project: Project) : Config
                     { projectSettings.state.synchronizeWithRunConfiguration = it }
                 )
             }
+            row {
+                checkBox(AvaloniaRiderBundle.message("settings.useShadowCopy")).bindSelected(
+                    { projectSettings.useShadowCopy },
+                    { projectSettings.state.useShadowCopy = it }
+                )
+            }
             row(AvaloniaRiderBundle.message("settings.fpsLimit")) {
                 intTextField(IntRange(0, 1000)).bindIntText(
                     { projectSettings.fpsLimit },
