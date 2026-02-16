@@ -7,8 +7,12 @@ import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.debug
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.rd.createNestedDisposable
 import com.intellij.openapi.util.io.FileUtil
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.openapi.vfs.VirtualFileManager
+import com.intellij.openapi.vfs.newvfs.BulkFileListener
+import com.intellij.openapi.vfs.newvfs.events.VFileEvent
 import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.ui.scale.JBUIScale
 import com.intellij.util.application
@@ -51,6 +55,7 @@ import java.net.ServerSocket
 import java.net.SocketException
 import java.nio.file.Files
 import java.nio.file.Path
+import java.nio.file.StandardCopyOption
 import java.time.Duration
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
@@ -317,55 +322,84 @@ class AvaloniaPreviewerSessionController(
 
         logger.info("Calculating previewer start parameters for the project $projectFilePath, output $projectOutput")
         val msBuild = MsBuildParameterCollector.getInstance(project)
-        val parameters = msBuild.getAvaloniaPreviewerParameters(
+        var parameters = msBuild.getAvaloniaPreviewerParameters(
             projectFilePath,
             projectOutput,
             xamlContainingProject
         )
 
-        val socket = withContext(Dispatchers.IO) {
-            ServerSocket(0).apply {
-                lifetime.onTermination { close() }
-            }
-        }
-        val transport = PreviewerBsonTransport(socket.localPort)
-        val method = when (settings.previewerMethod) {
-            AvaloniaPreviewerMethod.AvaloniaRemote -> AvaloniaRemoteMethod
-            AvaloniaPreviewerMethod.Html -> HtmlMethod
-        }
+        var shadowDirToDelete: Path? = null
         val sessionNestedLifetime = lifetime.createNested() // to terminate later than the process
-        val newSession = createSession(sessionNestedLifetime, socket, parameters, xamlFile)
-        val processTitle = "${xamlFile.name} (port ${socket.localPort})"
-        val process = AvaloniaPreviewerProcess(project, lifetime, parameters)
-        session = newSession
 
-        val sessionJob = lifetime.async(Dispatchers.IO) {
-            logger.info("Starting socket listener")
-            try {
-                newSession.processSocketMessages()
-            } catch (ex: Exception) {
-                when (ex) {
-                    is SocketException, is EOFException -> {
-                        // Log socket errors only if the session is still alive.
-                        if (lifetime.isAlive) {
-                            logger.info("Socket closed while session is still alive", ex)
-                        }
+        try {
+            if (settings.useShadowCopy) {
+                // When using shadow copy, we need to watch the original file for changes
+                // because the previewer will be running from a copy.
+                // If the original file changes (e.g. from an external build), we need to restart the session
+                // to pick up the new changes.
+                setupFileSystemWatcher(sessionNestedLifetime, parameters.targetPath)
+
+                parameters = withContext(Dispatchers.IO) {
+                    createShadowCopy(parameters).also {
+                        shadowDirToDelete = it.targetDir
                     }
-                    else -> throw ex
                 }
             }
-        }
-        val processJob = lifetime.async {
-            logger.info("Starting previewer process")
-            process.run(executionMode, consoleView, transport, method, processTitle)
-        }
 
-        val processResult = processJob.await()
-        sessionJob.await()
-        val exitCode = processResult.exitCode
-        // Only treat as error if lifetime is still alive; otherwise process was intentionally terminated
-        if (lifetime.isAlive && exitCode != null && exitCode != 0) {
-            throw AvaloniaPreviewerExecutionException(exitCode, processResult.outputSnippet)
+            val socket = withContext(Dispatchers.IO) {
+                ServerSocket(0).apply {
+                    lifetime.onTermination { close() }
+                }
+            }
+            val transport = PreviewerBsonTransport(socket.localPort)
+            val method = when (settings.previewerMethod) {
+                AvaloniaPreviewerMethod.AvaloniaRemote -> AvaloniaRemoteMethod
+                AvaloniaPreviewerMethod.Html -> HtmlMethod
+            }
+
+            val newSession = createSession(sessionNestedLifetime, socket, parameters, xamlFile)
+            val processTitle = "${xamlFile.name} (port ${socket.localPort})"
+            val process = AvaloniaPreviewerProcess(project, lifetime, parameters)
+            session = newSession
+
+            val sessionJob = lifetime.async(Dispatchers.IO) {
+                logger.info("Starting socket listener")
+                try {
+                    newSession.processSocketMessages()
+                } catch (ex: Exception) {
+                    when (ex) {
+                        is SocketException, is EOFException -> {
+                            // Log socket errors only if the session is still alive.
+                            if (lifetime.isAlive) {
+                                logger.info("Socket closed while session is still alive", ex)
+                            }
+                        }
+                        else -> throw ex
+                    }
+                }
+            }
+            val processJob = lifetime.async {
+                logger.info("Starting previewer process")
+                process.run(executionMode, consoleView, transport, method, processTitle)
+            }
+
+            val processResult = processJob.await()
+            sessionJob.await()
+            val exitCode = processResult.exitCode
+            // Only treat as error if lifetime is still alive; otherwise process was intentionally terminated
+            if (lifetime.isAlive && exitCode != null && exitCode != 0) {
+                throw AvaloniaPreviewerExecutionException(exitCode, processResult.outputSnippet)
+            }
+        } finally {
+            shadowDirToDelete?.let { dir ->
+                withContext(Dispatchers.IO) {
+                    try {
+                        FileUtil.delete(dir.toFile())
+                    } catch (e: Exception) {
+                        logger.warn("Failed to delete shadow directory $dir", e)
+                    }
+                }
+            }
         }
     }
 
@@ -453,5 +487,84 @@ class AvaloniaPreviewerSessionController(
         } ?: projectModelItems.firstOrNull()
 
         return candidate?.projectRelativeVirtualPath?.let { "/$it" }
+    }
+
+    private fun createShadowCopy(parameters: AvaloniaPreviewerParameters): AvaloniaPreviewerParameters {
+        val shadowDir = FileUtil.createTempDirectory("avalonia-previewer-shadow", null).toPath()
+        val originalDir = parameters.targetDir
+
+        logger.info("Creating shadow copy of $originalDir to $shadowDir")
+
+        if (Files.exists(originalDir)) {
+            Files.walk(originalDir).use { stream ->
+                stream.forEach { source ->
+                    try {
+                        val relative = originalDir.relativize(source)
+                        val destination = shadowDir.resolve(relative)
+                        if (Files.isDirectory(source)) {
+                            Files.createDirectories(destination)
+                        } else {
+                            Files.copy(source, destination, StandardCopyOption.REPLACE_EXISTING)
+                        }
+                    } catch (e: Exception) {
+                        logger.warn("Failed to copy $source", e)
+                    }
+                }
+            }
+        }
+
+        val newTargetPath = shadowDir.resolve(parameters.targetPath.fileName)
+        if (!Files.exists(newTargetPath) && Files.exists(parameters.targetPath)) {
+            Files.copy(parameters.targetPath, newTargetPath, StandardCopyOption.REPLACE_EXISTING)
+        }
+
+        val newXamlContainingAssemblyPath = shadowDir.resolve(parameters.xamlContainingAssemblyPath.fileName)
+        if (!Files.exists(newXamlContainingAssemblyPath) && Files.exists(parameters.xamlContainingAssemblyPath)) {
+            Files.copy(parameters.xamlContainingAssemblyPath, newXamlContainingAssemblyPath, StandardCopyOption.REPLACE_EXISTING)
+        }
+
+        // We do NOT change the working directory to the shadow directory.
+        // This is important to preserve the behavior of relative paths in the user application.
+        // For example, if the app uses "../../src/Assets/image.png", it should still work relative to the original output directory.
+        // The executables and assemblies will be loaded from the shadow directory, which prevents locking,
+        // but the process context (CWD) will remain in the original location.
+
+        var newPreviewerBinary = parameters.previewerBinary
+        if (parameters.previewerBinary.startsWith(originalDir)) {
+            val relativePath = originalDir.relativize(parameters.previewerBinary)
+            newPreviewerBinary = shadowDir.resolve(relativePath)
+        }
+
+        return parameters.copy(
+            targetDir = shadowDir,
+            targetPath = newTargetPath,
+            xamlContainingAssemblyPath = newXamlContainingAssemblyPath,
+            previewerBinary = newPreviewerBinary
+        )
+    }
+
+    private fun setupFileSystemWatcher(lifetime: Lifetime, fileToWatch: Path) {
+        val disposable = lifetime.createNestedDisposable()
+        val connection = application.messageBus.connect(disposable)
+        connection.subscribe(VirtualFileManager.VFS_CHANGES, object : BulkFileListener {
+            override fun after(events: List<VFileEvent>) {
+                val watchedPath = FileUtil.toSystemIndependentName(fileToWatch.toString())
+                val relevantChange = events.any { event ->
+                    event.path == watchedPath
+                }
+
+                if (relevantChange) {
+                    logger.info("Output assembly modified: $fileToWatch. Restarting previewer.")
+                    val projectFilePath = projectFilePathProperty.valueOrNull
+                    if (projectFilePath != null) {
+                        // We use a small delay to ensure the write is completely finished and to debounce
+                        controllerLifetime.launch {
+                            delay(500)
+                            start(projectFilePath, force = true)
+                        }
+                    }
+                }
+            }
+        })
     }
 }
