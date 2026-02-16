@@ -19,4 +19,10 @@
 
         <rider.xaml.preview.editor implementation="me.fornever.avaloniarider.idea.editor.AvaloniaPreviewerXamlEditorExtension"/>
     </extensions>
+
+    <actions resource-bundle="messages.AvaloniaRiderBundle">
+        <action id="xaml.splitEditor.editorActions.SwapPreviewAndTextEditor"
+                class="me.fornever.avaloniarider.idea.editor.actions.SwapPreviewAndDetachGroup"
+                overrides="true" />
+    </actions>
 </idea-plugin>
