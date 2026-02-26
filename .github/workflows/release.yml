@@ -60,13 +60,13 @@ jobs:
         run: scripts/Unpack-Distribution.ps1
 
       - name: Upload the artifact
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: avaloniarider-${{ steps.version.outputs.version }}.zip
           path: build/distributions/unpacked
 
       - name: Upload the changelog
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: changelog-section.md
           path: ./changelog-section.md
