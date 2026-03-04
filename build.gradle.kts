@@ -36,7 +36,7 @@ val intellijPluginId = "avalonia-rider"
 val pluginVersionBase: String by project
 val buildRelease: String by project
 
-val requiredPlugins = listOf("com.jetbrains.xaml.previewer", "tanvd.grazi" /* test only */)
+val requiredPlugins = listOf("com.jetbrains.xaml.previewer")
 
 dependencies {
     intellijPlatform {
@@ -46,6 +46,7 @@ dependencies {
         jetbrainsRuntime()
 
         bundledModule("intellij.rider")
+        bundledModule("intellij.rider.debugger.shared")
         bundledPlugins(requiredPlugins)
 
         pluginVerifier(libs.intellij.plugin.verifier.cli.map { it.version })
@@ -55,8 +56,10 @@ dependencies {
 
     implementation(libs.bson4Jackson)
 
-    testImplementation(libs.openTest4J)
     testImplementation(libs.junit)
+    testImplementation(libs.kotlin.test)
+    testImplementation(libs.openTest4J)
+    testImplementation(libs.testng)
 }
 
 val buildConfiguration = ext.properties["buildConfiguration"] as String? ?: "Debug"

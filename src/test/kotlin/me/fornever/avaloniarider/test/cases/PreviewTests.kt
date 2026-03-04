@@ -2,7 +2,6 @@ package me.fornever.avaloniarider.test.cases
 
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.fileEditor.FileDocumentManager
-import com.intellij.openapi.util.registry.Registry
 import com.intellij.util.application
 import com.jetbrains.rd.platform.diagnostics.RdLogTraceScenarios
 import com.jetbrains.rd.util.lifetime.Lifetime
@@ -25,8 +24,6 @@ import me.fornever.avaloniarider.controlmessages.FrameMessage
 import me.fornever.avaloniarider.idea.editor.AvaloniaPreviewerXamlEditorExtension
 import me.fornever.avaloniarider.previewer.AvaloniaPreviewerSessionController
 import me.fornever.avaloniarider.test.framework.correctTestSolutionDirectory
-import org.testng.annotations.AfterMethod
-import org.testng.annotations.BeforeMethod
 import org.testng.annotations.Test
 import java.nio.file.Path
 import java.time.Duration
@@ -36,14 +33,6 @@ import kotlin.test.assertTrue
 @TestSettings(sdkVersion = SdkVersion.AUTODETECT, buildTool = BuildTool.AUTODETECT)
 @Solution("AvaloniaMvvm")
 class PreviewTests : PerTestSolutionTestBase() {
-
-    // TODO[#524]: The manipulation of disable.winp here is a workaround for the following situation:
-    //             during the project termination, OSProcessUtil.killProcess might be triggered. If disable.winp is
-    //             false (default), Rider will try using winp, and winp is not available during project termination.
-    //             So, it will work, but will log an error. Let's disable this by suppressing the whole winp
-    //             mechanism.
-    @BeforeMethod fun registrySetUp() { Registry.get("disable.winp").setValue(true) }
-    @AfterMethod fun registryTearDown() { Registry.get("disable.winp").resetToDefault() }
 
     override fun modifyOpenSolutionParams(params: OpenSolutionParams) {
         params.restoreNuGetPackages = true

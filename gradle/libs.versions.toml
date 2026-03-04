@@ -1,16 +1,18 @@
 [versions]
-kotlin = "2.1.10"
+kotlin = "2.3.0"
 rdGen = "2025.3.1"
-riderSdk = "2025.3"
+riderSdk = "2026.1-EAP6-SNAPSHOT"
 riderSdkPreview = "2026.1-EAP6-SNAPSHOT"
 
 [libraries]
 bson4Jackson = "de.undercouch:bson4jackson:2.18.0"
 intellij-plugin-verifier-cli = "org.jetbrains.intellij.plugins:verifier-cli:1.400"
 junit = "junit:junit:4.13.2"
+kotlin-test = { group = "org.jetbrains.kotlin", name = "kotlin-test", version.ref = "kotlin" }
 kotlinStdLib = { group = "org.jetbrains.kotlin", name = "kotlin-stdlib", version.ref = "kotlin" }
 openTest4J = "org.opentest4j:opentest4j:1.3.0"
 rdGen = { group = "com.jetbrains.rd", name = "rd-gen", version.ref = "rdGen" }
+testng = "org.testng:testng:7.12.0"
 
 [plugins]
 changelog = "org.jetbrains.changelog:2.5.0"
