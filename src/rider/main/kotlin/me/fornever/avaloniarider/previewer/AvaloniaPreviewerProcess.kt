@@ -119,12 +119,6 @@ class AvaloniaPreviewerProcess(
             }
         }) { handler ->
             handler.destroyProcess()
-            if (!handler.waitFor(100)) {
-                // TODO[#524]: This is a workaround for https://youtrack.jetbrains.com/issue/IJPL-193111
-                // handler.destroyProcess() won't destroy the process if LocalProcessService wasn't instantiated in this
-                // IDE session.
-                OSProcessUtil.killProcess(handler.process)
-            }
             handler.waitFor()
         }
 
