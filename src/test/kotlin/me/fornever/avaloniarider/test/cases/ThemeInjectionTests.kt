@@ -31,8 +31,30 @@ class ThemeInjectionTests {
     }
 
     @Test
-    fun injectThemeIfNeededBrokenXmlReturnsOriginalMarkup() {
+    fun injectThemeIfNeededBrokenXmlAfterMetadataCanStillInject() {
         val original = "<UserControl><TextBlock></UserControl>"
+        val style = "<Design.DesignStyle>Dark</Design.DesignStyle>"
+
+        val result = runCatching {
+            injectThemeIfNeeded(
+                originalXaml = original,
+                settings = ThemeInjectionSettings(
+                    isThemeSelectorAvailable = true,
+                    selectedTheme = AvaloniaPreviewerTheme.Dark,
+                    themeApplicableTags = listOf("Window", "UserControl"),
+                    darkThemeStyle = style,
+                    lightThemeStyle = "<Design.DesignStyle>Light</Design.DesignStyle>"
+                )
+            )
+        }
+
+        assertTrue(result.isSuccess, "Expected broken XML input to be handled without throwing")
+        assertEquals("<UserControl>\n$style\n<TextBlock></UserControl>", result.getOrThrow())
+    }
+
+    @Test
+    fun injectThemeIfNeededBrokenXmlBeforeMetadataReturnsOriginalMarkup() {
+        val original = "<UserControl"
 
         val result = runCatching {
             injectThemeIfNeeded(
@@ -85,5 +107,85 @@ class ThemeInjectionTests {
         )
 
         assertEquals(original, actual)
+    }
+
+    @Test
+    fun injectThemeIfNeededPreservesDocumentFormatting() {
+        val original = """
+            <?xml version="1.0" encoding="utf-8"?>
+            <UserControl   xmlns="https://github.com/avaloniaui"
+                           xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+                <Grid Margin=" 10 , 20 ">
+                    <TextBlock Text="Hi" />
+                </Grid>
+            </UserControl>
+        """.trimIndent()
+        val style = "<Design.DesignStyle>Light</Design.DesignStyle>"
+
+        val actual = injectThemeIfNeeded(
+            originalXaml = original,
+            settings = ThemeInjectionSettings(
+                isThemeSelectorAvailable = true,
+                selectedTheme = AvaloniaPreviewerTheme.Light,
+                themeApplicableTags = listOf("Window", "UserControl"),
+                darkThemeStyle = "<Design.DesignStyle>Dark</Design.DesignStyle>",
+                lightThemeStyle = style
+            )
+        )
+
+        val rootTagStart = original.indexOf("<UserControl")
+        val firstTagEnd = original.indexOf('>', rootTagStart)
+        val expected = buildString {
+            append(original.substring(0, firstTagEnd + 1))
+            append("\n")
+            append(style)
+            append("\n")
+            append(original.substring(firstTagEnd + 1))
+        }
+
+        assertEquals(expected, actual)
+    }
+
+    @Test
+    fun injectThemeIfNeededSpacedTagReturnsOriginalMarkup() {
+        val original = "< UserControl ><TextBlock /></ UserControl >"
+
+        val result = runCatching {
+            injectThemeIfNeeded(
+                originalXaml = original,
+                settings = ThemeInjectionSettings(
+                    isThemeSelectorAvailable = true,
+                    selectedTheme = AvaloniaPreviewerTheme.Dark,
+                    themeApplicableTags = listOf("Window", "UserControl"),
+                    darkThemeStyle = "<Design.DesignStyle>Dark</Design.DesignStyle>",
+                    lightThemeStyle = "<Design.DesignStyle>Light</Design.DesignStyle>"
+                )
+            )
+        }
+
+        assertTrue(result.isSuccess, "Expected spaced-tag input to be handled without throwing")
+        assertEquals(original, result.getOrThrow())
+    }
+
+    @Test
+    fun injectThemeIfNeededAttributeWithEscapedAnglesInjects() {
+        val original = "<UserControl attr=\"foo bar &lt;&gt;\"><TextBlock /></UserControl>"
+        val style = "<Design.DesignStyle>Light</Design.DesignStyle>"
+
+        val actual = injectThemeIfNeeded(
+            originalXaml = original,
+            settings = ThemeInjectionSettings(
+                isThemeSelectorAvailable = true,
+                selectedTheme = AvaloniaPreviewerTheme.Light,
+                themeApplicableTags = listOf("Window", "UserControl"),
+                darkThemeStyle = "<Design.DesignStyle>Dark</Design.DesignStyle>",
+                lightThemeStyle = style
+            )
+        )
+
+        assertEquals(
+            "<UserControl attr=\"foo bar &lt;&gt;\">\n$style\n<TextBlock /></UserControl>",
+            actual
+        )
     }
 }
