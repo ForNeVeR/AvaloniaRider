@@ -33,6 +33,7 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.time.delay
 import me.fornever.avaloniarider.AvaloniaRiderBundle
 import me.fornever.avaloniarider.controlmessages.AvaloniaInputEventMessage
 import me.fornever.avaloniarider.controlmessages.FrameMessage
@@ -265,7 +266,7 @@ class AvaloniaPreviewerSessionController(
                             logger.info(message)
                         }
                         inFlightUpdate.value = false
-                        delay(projectPathRetryDelay.toMillis())
+                        delay(projectPathRetryDelay)
                         continue
                     }
 
@@ -458,7 +459,7 @@ class AvaloniaPreviewerSessionController(
         val projectFilePath = projectFilePathProperty.valueOrNull ?: return
         restartJob?.cancel()
         restartJob = controllerLifetime.launch {
-            delay(projectPathRetryDelay.toMillis())
+            delay(projectPathRetryDelay)
             if (session != null) return@launch
             logger.info("Restarting previewer for $xamlFile after document change")
             start(projectFilePath, force = true)
