@@ -6,7 +6,6 @@ import com.intellij.openapi.application.readAction
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.debug
 import com.intellij.openapi.editor.Document
-import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.io.FileUtil
 import com.intellij.openapi.vfs.VirtualFile
@@ -182,24 +181,6 @@ class AvaloniaPreviewerSessionController(
                 if (!pendingRestart) return@advise
                 scheduleRestart()
             }
-
-        selectedTheme.advise(controllerLifetime) { _ ->
-            val currentSession = session
-
-            if (currentSession != null && status.value == Status.Working) {
-                application.runReadAction {
-                    val document = FileDocumentManager.getInstance().getDocument(xamlFile)
-                    if (document != null) {
-                        val projectModelItems = workspaceModel.getProjectModelEntities(xamlFile, project)
-                        val item = projectModelItems.firstOrNull()
-                        val documentPath = item?.projectRelativeVirtualPath?.let { "/$it" } ?: ""
-
-                        val xamlText = injectThemeIfNeeded(document.text)
-                        currentSession.sendXamlUpdate(xamlText, documentPath)
-                    }
-                }
-            }
-        }
     }
 
     private fun injectThemeIfNeeded(originalXaml: String): String {
@@ -303,6 +284,11 @@ class AvaloniaPreviewerSessionController(
             }
 
             document.documentChanged()
+                .throttleLast(xamlEditThrottling, SwingScheduler)
+                .advise(lifetime) {
+                    documentUpdates.tryEmit(Unit)
+                }
+            selectedTheme
                 .throttleLast(xamlEditThrottling, SwingScheduler)
                 .advise(lifetime) {
                     documentUpdates.tryEmit(Unit)
