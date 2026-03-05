@@ -202,45 +202,18 @@ class AvaloniaPreviewerSessionController(
         }
     }
 
-    // Inject theme code after first > tag and send to previewer
     private fun injectThemeIfNeeded(originalXaml: String): String {
         val settings = AvaloniaProjectSettings.getInstance(project)
-        if (!settings.showThemeSelector) {
-            return originalXaml
-        }
-
-        val theme = selectedTheme.value
-        val themeStyle = when (theme) {
-            AvaloniaPreviewerTheme.Light -> settings.lightThemeStyle
-            AvaloniaPreviewerTheme.Dark -> settings.darkThemeStyle
-            else -> return originalXaml
-        }
-
-        val firstTagStart = originalXaml.indexOf('<')
-        if (firstTagStart == -1) return originalXaml
-
-        // <TagName props...> or <TagName><TagName/> or <TagName/>
-        val tagNameEnd = originalXaml.indexOfAny(charArrayOf(' ', '>', '/'), firstTagStart + 1)
-        if (tagNameEnd == -1) return originalXaml
-
-        val tagName = originalXaml.substring(firstTagStart + 1, tagNameEnd)
-
-        // Only inject if the file is a UserControl
-        val tagList = settings.themeApplicableTags.split(',').map { it.trim() }
-        if (tagName !in tagList) {
-            return originalXaml
-        }
-
-        val firstTagEnd = originalXaml.indexOf('>')
-        if (firstTagEnd == -1) return originalXaml
-
-        return buildString {
-            append(originalXaml.substring(0, firstTagEnd + 1))
-            append("\n")
-            append(themeStyle)
-            append("\n")
-            append(originalXaml.substring(firstTagEnd + 1))
-        }
+        return injectThemeIfNeeded(
+            originalXaml = originalXaml,
+            settings = ThemeInjectionSettings(
+                isThemeSelectorAvailable = settings.showThemeSelector,
+                selectedTheme = selectedTheme.value,
+                themeApplicableTags = settings.themeApplicableTags.split(','),
+                darkThemeStyle = settings.darkThemeStyle,
+                lightThemeStyle = settings.lightThemeStyle
+            )
+        )
     }
 
     private suspend fun getProjectContainingFile(virtualFile: VirtualFile): ProjectModelEntity?  =
