@@ -204,8 +204,12 @@ class AvaloniaPreviewerSessionController(
 
     // Inject theme code after first > tag and send to previewer
     private fun injectThemeIfNeeded(originalXaml: String): String {
-        val theme = selectedTheme.value
         val settings = AvaloniaProjectSettings.getInstance(project)
+        if (!settings.showThemeSelector) {
+            return originalXaml
+        }
+
+        val theme = selectedTheme.value
         val themeStyle = when (theme) {
             AvaloniaPreviewerTheme.Light -> settings.lightThemeStyle
             AvaloniaPreviewerTheme.Dark -> settings.darkThemeStyle
