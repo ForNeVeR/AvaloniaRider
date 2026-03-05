@@ -3,13 +3,7 @@ package me.fornever.avaloniarider.idea.settings
 import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.project.Project
 import com.intellij.ui.SimpleListCellRenderer
-import com.intellij.ui.dsl.builder.bindIntText
-import com.intellij.ui.dsl.builder.bindItem
-import com.intellij.ui.dsl.builder.bindSelected
-import com.intellij.ui.dsl.builder.bindText
-import com.intellij.ui.dsl.builder.columns
-import com.intellij.ui.dsl.builder.panel
-import com.intellij.ui.dsl.builder.rows
+import com.intellij.ui.dsl.builder.*
 import me.fornever.avaloniarider.AvaloniaRiderBundle
 import javax.swing.JList
 
@@ -76,9 +70,15 @@ class AvaloniaProjectSettingsConfigurable(private val project: Project) : Config
                     { projectSettings.state.defaultTheme = it ?: AvaloniaPreviewerTheme.None },
                 )
             }
+            row {
+                checkBox(AvaloniaRiderBundle.message("settings.theme.showThemeSelector")).bindSelected(
+                    { projectSettings.showThemeSelector },
+                    { projectSettings.state.showThemeSelector = it }
+                )
+            }
             row(AvaloniaRiderBundle.message("settings.theme.darkTheme")) {
                 textArea()
-                    .rows(4)
+                    .rows(5)
                     .columns(35)
                     .bindText(
                         { projectSettings.darkThemeStyle },
@@ -87,7 +87,7 @@ class AvaloniaProjectSettingsConfigurable(private val project: Project) : Config
             }
             row(AvaloniaRiderBundle.message("settings.theme.lightTheme")) {
                 textArea()
-                    .rows(4)
+                    .rows(5)
                     .columns(35)
                     .bindText(
                         { projectSettings.lightThemeStyle },

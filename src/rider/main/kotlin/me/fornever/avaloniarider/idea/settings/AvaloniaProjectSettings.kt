@@ -50,6 +50,8 @@ class AvaloniaProjectSettingsState : BaseState() {
 
     var defaultTheme by enum(AvaloniaPreviewerTheme.None)
 
+    var showThemeSelector by property(true)
+
     var darkThemeStyle by string(DefaultThemeProp.darkTheme)
 
     var lightThemeStyle by string(DefaultThemeProp.lightTheme)
@@ -76,6 +78,9 @@ class AvaloniaProjectSettings : SimplePersistentStateComponent<AvaloniaProjectSe
 
     val defaultTheme: AvaloniaPreviewerTheme
         get() = state.defaultTheme
+
+    val showThemeSelector: Boolean
+        get() = state.showThemeSelector
 
     val darkThemeStyle: String
         get() = state.darkThemeStyle ?: DefaultThemeProp.darkTheme
