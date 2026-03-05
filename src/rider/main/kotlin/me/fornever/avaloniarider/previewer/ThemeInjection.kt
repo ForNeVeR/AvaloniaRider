@@ -1,7 +1,9 @@
 package me.fornever.avaloniarider.previewer
 
+import com.intellij.openapi.diagnostic.Logger
 import me.fornever.avaloniarider.idea.settings.AvaloniaPreviewerTheme
 import java.io.StringReader
+import java.util.concurrent.CancellationException
 import javax.xml.stream.XMLInputFactory
 import javax.xml.stream.XMLStreamConstants
 import javax.xml.stream.XMLStreamReader
@@ -83,7 +85,10 @@ private fun readInjectionMetadata(xaml: String): InjectionMetadata? {
         }
 
         null
-    } catch (_: Exception) {
+    } catch (e: CancellationException) {
+        throw e
+    } catch (e: Exception) {
+        logger.warn(e)
         null
     }
 }
@@ -92,7 +97,10 @@ private fun createXmlStreamReader(xaml: String): XMLStreamReader {
     val factory = XMLInputFactory.newFactory().apply {
         setProperty(XMLInputFactory.IS_NAMESPACE_AWARE, true)
         setProperty(XMLInputFactory.SUPPORT_DTD, false)
-        runCatching { setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false) }
+        setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false)
     }
     return factory.createXMLStreamReader(StringReader(xaml))
 }
+
+private val logger: Logger
+    get() = Logger.getInstance("me.fornever.avaloniarider.previewer")
