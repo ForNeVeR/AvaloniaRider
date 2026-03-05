@@ -5,7 +5,6 @@ import me.fornever.avaloniarider.previewer.ThemeInjectionSettings
 import me.fornever.avaloniarider.previewer.injectThemeIfNeeded
 import org.testng.annotations.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 
 class ThemeInjectionTests {
     @Test
@@ -35,42 +34,36 @@ class ThemeInjectionTests {
         val original = "<UserControl><TextBlock></UserControl>"
         val style = "<Design.DesignStyle>Dark</Design.DesignStyle>"
 
-        val result = runCatching {
-            injectThemeIfNeeded(
-                originalXaml = original,
-                settings = ThemeInjectionSettings(
-                    isThemeSelectorAvailable = true,
-                    selectedTheme = AvaloniaPreviewerTheme.Dark,
-                    themeApplicableTags = listOf("Window", "UserControl"),
-                    darkThemeStyle = style,
-                    lightThemeStyle = "<Design.DesignStyle>Light</Design.DesignStyle>"
-                )
+        val result = injectThemeIfNeeded(
+            originalXaml = original,
+            settings = ThemeInjectionSettings(
+                isThemeSelectorAvailable = true,
+                selectedTheme = AvaloniaPreviewerTheme.Dark,
+                themeApplicableTags = listOf("Window", "UserControl"),
+                darkThemeStyle = style,
+                lightThemeStyle = "<Design.DesignStyle>Light</Design.DesignStyle>"
             )
-        }
+        )
 
-        assertTrue(result.isSuccess, "Expected broken XML input to be handled without throwing")
-        assertEquals("<UserControl>\n$style\n<TextBlock></UserControl>", result.getOrThrow())
+        assertEquals("<UserControl>\n$style\n<TextBlock></UserControl>", result)
     }
 
     @Test
     fun injectThemeIfNeededBrokenXmlBeforeMetadataReturnsOriginalMarkup() {
         val original = "<UserControl"
 
-        val result = runCatching {
-            injectThemeIfNeeded(
-                originalXaml = original,
-                settings = ThemeInjectionSettings(
-                    isThemeSelectorAvailable = true,
-                    selectedTheme = AvaloniaPreviewerTheme.Dark,
-                    themeApplicableTags = listOf("Window", "UserControl"),
-                    darkThemeStyle = "<Design.DesignStyle>Dark</Design.DesignStyle>",
-                    lightThemeStyle = "<Design.DesignStyle>Light</Design.DesignStyle>"
-                )
+        val result = injectThemeIfNeeded(
+            originalXaml = original,
+            settings = ThemeInjectionSettings(
+                isThemeSelectorAvailable = true,
+                selectedTheme = AvaloniaPreviewerTheme.Dark,
+                themeApplicableTags = listOf("Window", "UserControl"),
+                darkThemeStyle = "<Design.DesignStyle>Dark</Design.DesignStyle>",
+                lightThemeStyle = "<Design.DesignStyle>Light</Design.DesignStyle>"
             )
-        }
+        )
 
-        assertTrue(result.isSuccess, "Expected broken XML input to be handled without throwing")
-        assertEquals(original, result.getOrThrow())
+        assertEquals(original, result)
     }
 
     @Test
@@ -150,21 +143,18 @@ class ThemeInjectionTests {
     fun injectThemeIfNeededSpacedTagReturnsOriginalMarkup() {
         val original = "< UserControl ><TextBlock /></ UserControl >"
 
-        val result = runCatching {
-            injectThemeIfNeeded(
-                originalXaml = original,
-                settings = ThemeInjectionSettings(
-                    isThemeSelectorAvailable = true,
-                    selectedTheme = AvaloniaPreviewerTheme.Dark,
-                    themeApplicableTags = listOf("Window", "UserControl"),
-                    darkThemeStyle = "<Design.DesignStyle>Dark</Design.DesignStyle>",
-                    lightThemeStyle = "<Design.DesignStyle>Light</Design.DesignStyle>"
-                )
+        val result = injectThemeIfNeeded(
+            originalXaml = original,
+            settings = ThemeInjectionSettings(
+                isThemeSelectorAvailable = true,
+                selectedTheme = AvaloniaPreviewerTheme.Dark,
+                themeApplicableTags = listOf("Window", "UserControl"),
+                darkThemeStyle = "<Design.DesignStyle>Dark</Design.DesignStyle>",
+                lightThemeStyle = "<Design.DesignStyle>Light</Design.DesignStyle>"
             )
-        }
+        )
 
-        assertTrue(result.isSuccess, "Expected spaced-tag input to be handled without throwing")
-        assertEquals(original, result.getOrThrow())
+        assertEquals(original, result)
     }
 
     @Test
