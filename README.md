@@ -73,6 +73,11 @@ Navigate to **Settings → Languages & Frameworks → Avalonia** to see more sol
        <!-- … -->
    </Project>
    ```
+5. **Applicable elements** for theme injnection (by default `<Window>` and `<UserControl>`).
+6. **Default theme** for theme injection.
+7. **Dark theme** and **light theme** markup for injection. These XML snippets will be injected directly after the first tag in the XAML markup.
+
+   By default, these control the `RequestedThemeVariant` style property.
 
 There are also some IDE-wide settings (not tied to a particular solution):
 1. **Developer mode**: if enabled, then the plugin will show the **Debug** button in the previewer, allowing to run the previewer process under debugger (in cases when you want to debug preview-specific issues, e.g., blocks under `Design.IsDesignTime`).

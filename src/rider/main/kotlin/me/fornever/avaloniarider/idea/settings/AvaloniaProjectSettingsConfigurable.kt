@@ -58,11 +58,11 @@ class AvaloniaProjectSettingsConfigurable(private val project: Project) : Config
                     }
                 )
             }
-            row(AvaloniaRiderBundle.message("settings.theme.applicableTags")) {
+            row(AvaloniaRiderBundle.message("settings.theme.applicableElements")) {
                 textField().bindText(
                     { projectSettings.themeApplicableTags },
                     { projectSettings.state.themeApplicableTags = it }
-                ).comment(AvaloniaRiderBundle.message("settings.theme.applicableTags.comment"))
+                ).comment(AvaloniaRiderBundle.message("settings.theme.applicableElements.comment"))
             }
             row(AvaloniaRiderBundle.message("settings.theme.defaultTheme")) {
                 comboBox(AvaloniaPreviewerTheme.entries).bindItem(
