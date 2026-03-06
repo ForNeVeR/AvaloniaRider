@@ -9,9 +9,10 @@ import com.intellij.openapi.editor.Document
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.rd.createNestedDisposable
 import com.intellij.openapi.util.io.FileUtil
+import com.intellij.openapi.vfs.AsyncFileListener
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
-import com.intellij.openapi.vfs.newvfs.BulkFileListener
+import com.intellij.openapi.vfs.newvfs.events.VFileContentChangeEvent
 import com.intellij.openapi.vfs.newvfs.events.VFileEvent
 import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.ui.scale.JBUIScale
@@ -568,27 +569,22 @@ class AvaloniaPreviewerSessionController(
     }
 
     private fun setupFileSystemWatcher(lifetime: Lifetime, fileToWatch: Path) {
-        val disposable = lifetime.createNestedDisposable()
-        val connection = application.messageBus.connect(disposable)
-        connection.subscribe(VirtualFileManager.VFS_CHANGES, object : BulkFileListener {
-            override fun after(events: List<VFileEvent>) {
-                val watchedPath = FileUtil.toSystemIndependentName(fileToWatch.toString())
+        val watchedPath = FileUtil.toSystemIndependentName(fileToWatch.toString())
+        VirtualFileManager.getInstance().addAsyncFileListener(object : AsyncFileListener {
+            override fun prepareChange(events: List<VFileEvent>): AsyncFileListener.ChangeApplier? {
                 val relevantChange = events.any { event ->
-                    event.path == watchedPath
+                    event.path == watchedPath && event is VFileContentChangeEvent
                 }
 
-                if (relevantChange) {
-                    logger.info("Output assembly modified: $fileToWatch. Restarting previewer.")
-                    val projectFilePath = projectFilePathProperty.valueOrNull
-                    if (projectFilePath != null) {
-                        // We use a small delay to ensure the write is completely finished and to debounce
-                        controllerLifetime.launch {
-                            delay(500)
-                            start(projectFilePath, force = true)
-                        }
+                if (!relevantChange) return null
+
+                return object : AsyncFileListener.ChangeApplier {
+                    override fun afterVfsChange() {
+                        logger.info("Output assembly modified: $fileToWatch. Restarting previewer.")
+                        scheduleRestart()
                     }
                 }
             }
-        })
+        }, lifetime.createNestedDisposable())
     }
 }
