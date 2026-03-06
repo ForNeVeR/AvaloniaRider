@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 
 When considering version compatibility (and thus incrementing the major version), we only consider the configuration file major user experience changes. The host IDE version is not considered a version compatibility factor (since otherwise we'd have to increase the major version pretty often and that would make no sense).
 
+## [1.10.0] - 2026-03-06
+### Changed
+- **(Requirement update!)** Update the minimal supported Rider version to 2026.1 EAP 6.
+- [#524](https://github.com/ForNeVeR/AvaloniaRider/issues/524): drop the hacks in previewer process termination.
+
+### Added
+- [#396](https://github.com/ForNeVeR/AvaloniaRider/issues/396): add support for the in-previewer Dark/Light theme switching. Thanks to @Zarpyk!
+
 ## [1.9.0] - 2026-01-25
 ### Added
 - Previewer will now restart automatically in case of execution errors. Thanks to @SuperJMN!
@@ -170,4 +178,5 @@ The initial plugin release. The plugin provides the following features for JetBr
 [1.7.0]: https://github.com/ForNeVeR/AvaloniaRider/compare/v1.6.0...v1.7.0
 [1.8.0]: https://github.com/ForNeVeR/AvaloniaRider/compare/v1.7.0...v1.8.0
 [1.9.0]: https://github.com/ForNeVeR/AvaloniaRider/compare/v1.8.0...v1.9.0
-[Unreleased]: https://github.com/ForNeVeR/AvaloniaRider/compare/v1.9.0...HEAD
+[1.10.0]: https://github.com/ForNeVeR/AvaloniaRider/compare/v1.9.0...v1.10.0
+[Unreleased]: https://github.com/ForNeVeR/AvaloniaRider/compare/v1.10.0...HEAD
