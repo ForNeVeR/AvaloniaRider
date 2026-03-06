@@ -417,12 +417,8 @@ class AvaloniaPreviewerSessionController(
             }
         } finally {
             shadowDirToDelete?.let { dir ->
-                withContext(Dispatchers.IO) {
-                    try {
-                        FileUtil.delete(dir.toFile())
-                    } catch (e: Exception) {
-                        logger.warn("Failed to delete shadow directory $dir", e)
-                    }
+                lifetime.launch(Dispatchers.IO) {
+                    FileUtil.delete(dir.toFile())
                 }
             }
         }
