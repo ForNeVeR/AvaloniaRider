@@ -24,12 +24,17 @@ import com.jetbrains.rider.xaml.core.XamlPreviewEditorExtension
 import me.fornever.avaloniarider.controlmessages.FrameMessage
 import me.fornever.avaloniarider.idea.editor.AvaloniaPreviewerXamlEditorExtension
 import me.fornever.avaloniarider.idea.settings.AvaloniaPreviewerTheme
+import me.fornever.avaloniarider.idea.settings.AvaloniaProjectSettings
 import me.fornever.avaloniarider.previewer.AvaloniaPreviewerSessionController
+import me.fornever.avaloniarider.rider.AvaloniaRiderProjectModelHost
 import me.fornever.avaloniarider.test.framework.correctTestSolutionDirectory
+import me.fornever.avaloniarider.test.framework.runPumping
 import org.testng.annotations.Test
+import java.nio.file.Files
 import java.nio.file.Path
 import java.time.Duration
 import kotlin.io.path.div
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 @TestSettings(sdkVersion = SdkVersion.AUTODETECT, buildTool = BuildTool.AUTODETECT)
@@ -94,6 +99,60 @@ class PreviewTests : PerTestSolutionTestBase() {
             }.shouldBeTrue()
 
             frameworkLogger.info("We are done!")
+        }
+    }
+
+    @Test
+    fun shadowCopyShouldNotLockOriginalAssembly() {
+        val buildResult = buildSolutionWithConsoleBuild(timeout = Duration.ofMinutes(1L))
+        assertTrue(
+            buildResult.buildResultKind == BuildResultKind.Successful
+                || buildResult.buildResultKind == BuildResultKind.HasWarnings,
+            "Build should be successful."
+        )
+
+        val settings = AvaloniaProjectSettings.getInstance(project)
+        settings.state.useShadowCopy = true
+
+        try {
+            val projectFilePath = correctTestSolutionDirectory / "AvaloniaMvvm.csproj"
+            val outputAssemblyPath = runPumping {
+                val host = AvaloniaRiderProjectModelHost.getInstance(project)
+                Lifetime.using { tempLt ->
+                    Path.of(host.getProjectOutput(tempLt, projectFilePath).outputPath)
+                }
+            }
+            assertTrue(Files.exists(outputAssemblyPath), "Output assembly should exist after build")
+
+            var frameMsg: FrameMessage? = null
+            Lifetime.using { lt ->
+                val projectFilePathProperty = OptProperty<Path>()
+                val document = application.runReadAction<Document?> {
+                    FileDocumentManager.getInstance().getDocument(mainWindowFile)
+                }
+                AvaloniaPreviewerSessionController(
+                    project,
+                    lt,
+                    null,
+                    mainWindowFile,
+                    projectFilePathProperty,
+                    document,
+                    Property(AvaloniaPreviewerTheme.None)
+                ).apply {
+                    frame.advise(lt) { frameMsg = it }
+                }
+                projectFilePathProperty.set(projectFilePath)
+
+                pumpMessages(Duration.ofMinutes(1L)) {
+                    frameMsg != null
+                }.shouldBeTrue()
+
+                assertTrue(Files.exists(outputAssemblyPath), "Output assembly should still exist")
+                Files.delete(outputAssemblyPath)
+                assertFalse(Files.exists(outputAssemblyPath), "Output assembly should have been deleted")
+            }
+        } finally {
+            settings.state.useShadowCopy = false
         }
     }
 }
