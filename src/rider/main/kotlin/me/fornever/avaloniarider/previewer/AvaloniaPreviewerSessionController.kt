@@ -15,6 +15,8 @@ import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.openapi.vfs.newvfs.events.VFileContentChangeEvent
 import com.intellij.openapi.vfs.newvfs.events.VFileEvent
 import com.intellij.platform.backend.workspace.WorkspaceModel
+import com.intellij.platform.ide.progress.withBackgroundProgress
+import com.intellij.platform.util.progress.reportProgressScope
 import com.intellij.ui.scale.JBUIScale
 import com.intellij.util.application
 import com.intellij.workspaceModel.ide.toPath
@@ -364,10 +366,8 @@ class AvaloniaPreviewerSessionController(
                 // to pick up the new changes.
                 setupFileSystemWatcher(sessionNestedLifetime, parameters.targetPath)
 
-                parameters = withContext(Dispatchers.IO) {
-                    createShadowCopy(parameters).also {
-                        shadowDirToDelete = it.targetDir
-                    }
+                parameters = createShadowCopy(parameters).also {
+                    shadowDirToDelete = it.targetDir
                 }
             }
 
@@ -513,58 +513,72 @@ class AvaloniaPreviewerSessionController(
         return candidate?.projectRelativeVirtualPath?.let { "/$it" }
     }
 
-    private fun createShadowCopy(parameters: AvaloniaPreviewerParameters): AvaloniaPreviewerParameters {
-        val shadowDir = FileUtil.createTempDirectory("avalonia-previewer-shadow", null).toPath()
-        val originalDir = parameters.targetDir
+    private suspend fun createShadowCopy(parameters: AvaloniaPreviewerParameters): AvaloniaPreviewerParameters = withBackgroundProgress(
+        project,
+        AvaloniaRiderBundle.message("previewer.progress.creating-shadow-copy")
+    ) {
+        withContext(Dispatchers.IO) {
+            val shadowDir = FileUtil.createTempDirectory("avalonia-previewer-shadow", null).toPath()
+            val originalDir = parameters.targetDir
 
-        logger.info("Creating shadow copy of $originalDir to $shadowDir")
+            logger.info("Creating shadow copy of $originalDir to $shadowDir")
 
-        if (Files.exists(originalDir)) {
-            Files.walk(originalDir).use { stream ->
-                stream.forEach { source ->
-                    try {
-                        val relative = originalDir.relativize(source)
-                        val destination = shadowDir.resolve(relative)
-                        if (Files.isDirectory(source)) {
-                            Files.createDirectories(destination)
-                        } else {
-                            Files.copy(source, destination, StandardCopyOption.REPLACE_EXISTING)
+            if (Files.exists(originalDir)) {
+                val count = Files.walk(originalDir).use { it.count() }
+                reportProgressScope(count.toInt()) { reporter ->
+                    Files.walk(originalDir).use { stream ->
+                        for (source in stream) {
+                            reporter.itemStep {
+                                try {
+                                    val relative = originalDir.relativize(source)
+                                    val destination = shadowDir.resolve(relative)
+                                    if (Files.isDirectory(source)) {
+                                        Files.createDirectories(destination)
+                                    } else {
+                                        Files.copy(source, destination, StandardCopyOption.REPLACE_EXISTING)
+                                    }
+                                } catch (e: Exception) {
+                                    logger.warn("Failed to copy $source", e)
+                                }
+                            }
                         }
-                    } catch (e: Exception) {
-                        logger.warn("Failed to copy $source", e)
                     }
                 }
             }
+
+            val newTargetPath = shadowDir.resolve(parameters.targetPath.fileName)
+            if (!Files.exists(newTargetPath) && Files.exists(parameters.targetPath)) {
+                Files.copy(parameters.targetPath, newTargetPath, StandardCopyOption.REPLACE_EXISTING)
+            }
+
+            val newXamlContainingAssemblyPath = shadowDir.resolve(parameters.xamlContainingAssemblyPath.fileName)
+            if (!Files.exists(newXamlContainingAssemblyPath) && Files.exists(parameters.xamlContainingAssemblyPath)) {
+                Files.copy(
+                    parameters.xamlContainingAssemblyPath,
+                    newXamlContainingAssemblyPath,
+                    StandardCopyOption.REPLACE_EXISTING
+                )
+            }
+
+            // We do NOT change the working directory to the shadow directory.
+            // This is important to preserve the behavior of relative paths in the user application.
+            // For example, if the app uses "../../src/Assets/image.png", it should still work relative to the original output directory.
+            // The executables and assemblies will be loaded from the shadow directory, which prevents locking,
+            // but the process context (CWD) will remain in the original location.
+
+            var newPreviewerBinary = parameters.previewerBinary
+            if (parameters.previewerBinary.startsWith(originalDir)) {
+                val relativePath = originalDir.relativize(parameters.previewerBinary)
+                newPreviewerBinary = shadowDir.resolve(relativePath)
+            }
+
+            parameters.copy(
+                targetDir = shadowDir,
+                targetPath = newTargetPath,
+                xamlContainingAssemblyPath = newXamlContainingAssemblyPath,
+                previewerBinary = newPreviewerBinary
+            )
         }
-
-        val newTargetPath = shadowDir.resolve(parameters.targetPath.fileName)
-        if (!Files.exists(newTargetPath) && Files.exists(parameters.targetPath)) {
-            Files.copy(parameters.targetPath, newTargetPath, StandardCopyOption.REPLACE_EXISTING)
-        }
-
-        val newXamlContainingAssemblyPath = shadowDir.resolve(parameters.xamlContainingAssemblyPath.fileName)
-        if (!Files.exists(newXamlContainingAssemblyPath) && Files.exists(parameters.xamlContainingAssemblyPath)) {
-            Files.copy(parameters.xamlContainingAssemblyPath, newXamlContainingAssemblyPath, StandardCopyOption.REPLACE_EXISTING)
-        }
-
-        // We do NOT change the working directory to the shadow directory.
-        // This is important to preserve the behavior of relative paths in the user application.
-        // For example, if the app uses "../../src/Assets/image.png", it should still work relative to the original output directory.
-        // The executables and assemblies will be loaded from the shadow directory, which prevents locking,
-        // but the process context (CWD) will remain in the original location.
-
-        var newPreviewerBinary = parameters.previewerBinary
-        if (parameters.previewerBinary.startsWith(originalDir)) {
-            val relativePath = originalDir.relativize(parameters.previewerBinary)
-            newPreviewerBinary = shadowDir.resolve(relativePath)
-        }
-
-        return parameters.copy(
-            targetDir = shadowDir,
-            targetPath = newTargetPath,
-            xamlContainingAssemblyPath = newXamlContainingAssemblyPath,
-            previewerBinary = newPreviewerBinary
-        )
     }
 
     private fun setupFileSystemWatcher(lifetime: Lifetime, fileToWatch: Path) {
