@@ -57,8 +57,11 @@ Navigate to **Settings → Languages & Frameworks → Avalonia** to see more sol
 
 1. **Previewer method**: either the bitmap-based **AvaloniaRemote** (default) or the browser-based **Html**.
 2. **Synchronize the current run configuration and selected project, when possible**: if enabled, then the plugin will try to switch the current project when you switch the active run configuration, if the plugin is able to figure out which project is used by the configuration.
-3. **FPS limit** allows limiting the FPS (and thus the CPU usage) of the **AvaloniaRemote** previewer. By default, the previewer tries to provide smooth animation support, which might be unwanted at times.
-4. **Previewer working directory** allows you to choose under which directory the previewer should execute:
+3. **Use a shadow copy of the output assemblies to run the previewer**: when starting the previewer, will copy all the files from the `bin` directory to a separate place and use them to work with the previewer.
+
+   This will prevent the previewer from locking the assemblies from the original place.
+4. **FPS limit** allows limiting the FPS (and thus the CPU usage) of the **AvaloniaRemote** previewer. By default, the previewer tries to provide smooth animation support, which might be unwanted at times.
+5. **Previewer working directory** allows you to choose under which directory the previewer should execute:
    - **Defined by MSBuild** will use the `$(RunWorkingDirectory)` MSBuild property (or, generally, what Rider considers the default for the selected project);
    - **Solution directory** will use the directory containing the solution file.
 
