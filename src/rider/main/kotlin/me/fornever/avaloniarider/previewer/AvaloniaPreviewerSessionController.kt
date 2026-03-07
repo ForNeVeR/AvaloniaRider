@@ -417,8 +417,11 @@ class AvaloniaPreviewerSessionController(
             }
         } finally {
             shadowDirToDelete?.let { dir ->
-                lifetime.launch(Dispatchers.IO) {
+                @OptIn(DelicateCoroutinesApi::class)
+                GlobalScope.launch(Dispatchers.IO) {
+                    logger.info("Deleting shadow directory: \"${dir.toAbsolutePath()}\".")
                     FileUtil.delete(dir.toFile())
+                    logger.info("Shadow copy directory delete successful.")
                 }
             }
         }
