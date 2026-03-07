@@ -7,13 +7,8 @@ import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.debug
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.rd.createNestedDisposable
 import com.intellij.openapi.util.io.FileUtil
-import com.intellij.openapi.vfs.AsyncFileListener
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.openapi.vfs.VirtualFileManager
-import com.intellij.openapi.vfs.newvfs.events.VFileContentChangeEvent
-import com.intellij.openapi.vfs.newvfs.events.VFileEvent
 import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.ide.progress.withBackgroundProgress
 import com.intellij.platform.util.progress.reportProgressScope
@@ -58,9 +53,7 @@ import me.fornever.avaloniarider.rider.projectRelativeVirtualPath
 import java.io.EOFException
 import java.net.ServerSocket
 import java.net.SocketException
-import java.nio.file.Files
-import java.nio.file.Path
-import java.nio.file.StandardCopyOption
+import java.nio.file.*
 import java.time.Duration
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
@@ -582,22 +575,34 @@ class AvaloniaPreviewerSessionController(
     }
 
     private fun setupFileSystemWatcher(lifetime: Lifetime, fileToWatch: Path) {
-        val watchedPath = FileUtil.toSystemIndependentName(fileToWatch.toString())
-        VirtualFileManager.getInstance().addAsyncFileListener(object : AsyncFileListener {
-            override fun prepareChange(events: List<VFileEvent>): AsyncFileListener.ChangeApplier? {
-                val relevantChange = events.any { event ->
-                    event.path == watchedPath && event is VFileContentChangeEvent
+        val watchService = fileToWatch.fileSystem.newWatchService()
+        lifetime.onTermination { watchService.close() }
+
+        val dir = fileToWatch.parent
+        val fileName = fileToWatch.fileName
+        dir.register(
+            watchService,
+            StandardWatchEventKinds.ENTRY_MODIFY,
+            StandardWatchEventKinds.ENTRY_DELETE,
+            StandardWatchEventKinds.OVERFLOW
+        )
+
+        lifetime.launch(Dispatchers.IO) {
+            while (lifetime.isAlive) {
+                val key = try {
+                    watchService.take()
+                } catch (_: ClosedWatchServiceException) {
+                    break
                 }
 
-                if (!relevantChange) return null
+                val relevant = key.pollEvents().any { it.context() == fileName }
+                key.reset()
 
-                return object : AsyncFileListener.ChangeApplier {
-                    override fun afterVfsChange() {
-                        logger.info("Output assembly modified: $fileToWatch. Restarting previewer.")
-                        scheduleRestart()
-                    }
+                if (relevant) {
+                    logger.info("Output assembly modified: $fileToWatch. Restarting previewer.")
+                    scheduleRestart()
                 }
             }
-        }, lifetime.createNestedDisposable())
+        }
     }
 }
