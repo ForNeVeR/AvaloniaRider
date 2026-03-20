@@ -19,7 +19,7 @@ class AvaloniaPreviewerXamlEditorExtension : XamlPreviewEditorExtension {
         parent: XamlSplitEditor,
         platform: PreviewPlatformKind
     ): XamlPreviewEditor = when (AvaloniaProjectSettings.getInstance(project).previewerTransportType) {
-        AvaloniaPreviewerMethod.AvaloniaRemote -> AvaloniaRemotePreviewEditor(project, file)
-        AvaloniaPreviewerMethod.Html -> AvaloniaHtmlPreviewEditor(project, file)
+        AvaloniaPreviewerMethod.AvaloniaRemote -> AvaloniaRemotePreviewEditor(project, file, parent)
+        AvaloniaPreviewerMethod.Html -> AvaloniaHtmlPreviewEditor(project, file, parent)
     }
 }
