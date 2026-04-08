@@ -23,7 +23,7 @@ class AvaloniaHtmlPreviewEditor(
     override fun getExtraActions(): Array<AnAction> = arrayOf(openBrowserAction)
     override fun createToolbar(targetComponent: JComponent) = createToolbarComponent(
         targetComponent,
-        false,
+        true,
         openBrowserAction
     )
 }

@@ -252,18 +252,11 @@ abstract class AvaloniaPreviewEditorBase(
             // Switch to "Editor only" mode to maximize useful space
             parentEditor?.triggerLayoutChange(XamlSplitEditorSplitLayout.EDITOR_ONLY, requestFocus = false)
 
-            wrapper.show()
-
             val window = wrapper.window
             window.minimumSize = Dimension(320, 240)
-            
-            // Ensure the window has decorations (title bar) - fixes regression on Linux
-            if (window is javax.swing.JFrame) {
-                window.isUndecorated = false
-                window.type = Window.Type.NORMAL
-            }
-            
             restoreDetachedWindowState(window)
+
+            wrapper.show()
             window.toFront()
         }
     }
@@ -340,9 +333,6 @@ abstract class AvaloniaPreviewEditorBase(
 
         return toolbar.component
     }
-
-    protected fun createToolbarComponent(targetComponent: JComponent, vararg actions: AnAction): JComponent =
-        createToolbarComponent(targetComponent, true, *actions)
 
     private fun createDetachedWindowToolbar(targetComponent: JComponent): JComponent =
         createToolbarComponent(targetComponent, false, *getExtraActions())
