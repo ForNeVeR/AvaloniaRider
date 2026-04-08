@@ -216,6 +216,8 @@ abstract class AvaloniaPreviewEditorBase(
         if (isPreviewDetached.value) return
 
         UIUtil.invokeLaterIfNeeded {
+            if (isPreviewDetached.value) return@invokeLaterIfNeeded
+
             val windowTitle = AvaloniaRiderBundle.message("previewer.detached.window-title", currentFile.name)
 
             // Remove editor component from current parent
@@ -234,18 +236,16 @@ abstract class AvaloniaPreviewEditorBase(
                 add(editorComponent, BorderLayout.CENTER)
             }
 
-            var windowWrapper: WindowWrapper? = null
             val wrapper = WindowWrapperBuilder(WindowWrapper.Mode.FRAME, contentPanel)
                 .setProject(project)
                 .setTitle(windowTitle)
                 .setPreferredFocusedComponent(editorComponent)
                 .setOnCloseHandler(BooleanGetter {
-                    saveDetachedWindowState(windowWrapper?.window)
+                    saveDetachedWindowState(detachedWindow?.window)
                     attachPreviewToEditor(closeWindow = false)
                     true
                 })
                 .build()
-            windowWrapper = wrapper
             detachedWindow = wrapper
             isPreviewDetached.value = true
 
@@ -265,6 +265,8 @@ abstract class AvaloniaPreviewEditorBase(
         if (!isPreviewDetached.value) return
 
         UIUtil.invokeLaterIfNeeded {
+            if (!isPreviewDetached.value) return@invokeLaterIfNeeded
+
             val wrapper = detachedWindow
             saveDetachedWindowState(wrapper?.window)
             detachedWindow = null
@@ -346,9 +348,11 @@ abstract class AvaloniaPreviewEditorBase(
     override fun getCurrentLocation(): FileEditorLocation? = null
     override fun getBackgroundHighlighter(): BackgroundEditorHighlighter? = null
     override fun dispose() {
-        saveDetachedWindowState(detachedWindow?.window)
-        detachedWindow?.dispose()
-        detachedWindow = null
+        UIUtil.invokeLaterIfNeeded {
+            saveDetachedWindowState(detachedWindow?.window)
+            detachedWindow?.dispose()
+            detachedWindow = null
+        }
         lifetimeDefinition.terminate()
     }
 
