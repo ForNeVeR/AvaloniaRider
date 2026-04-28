@@ -5,7 +5,7 @@ riderSdk = "2026.1.1"
 riderSdkPreview = "2026.1.1"
 
 [libraries]
-bson4Jackson = "de.undercouch:bson4jackson:2.18.0"
+bson4Jackson = "de.undercouch:bson4jackson:3.1.0"
 intellij-plugin-verifier-cli = "org.jetbrains.intellij.plugins:verifier-cli:1.402"
 junit = "junit:junit:4.13.2"
 kotlin-test = { group = "org.jetbrains.kotlin", name = "kotlin-test", version.ref = "kotlin" }
