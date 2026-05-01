@@ -57,7 +57,7 @@
 #       Darwin, MinGW, and NonStop.
 #
 #   (3) This script is generated from the Groovy template
-#       https://github.com/gradle/gradle/blob/2d6327017519d23b96af35865dc997fcb544fb40/platforms/jvm/plugins-application/src/main/resources/org/gradle/api/internal/plugins/unixStartScript.txt
+#       https://github.com/gradle/gradle/blob/3d91ce3b8caaf77ad09f381f43615b715b53f72c/platforms/jvm/plugins-application/src/main/resources/org/gradle/api/internal/plugins/unixStartScript.txt
 #       within the Gradle project.
 #
 #       You can find Gradle at https://github.com/gradle/gradle/.
@@ -123,30 +123,30 @@ JVM_TEMP_FILE=$BUILD_DIR/gradle-jvm-temp.tar.gz
 if [ "$darwin" = "true" ]; then
     case $JVM_ARCH in
     x86_64)
-        JVM_URL=https://download.oracle.com/java/21/archive/jdk-21.0.5_macos-x64_bin.tar.gz
-        JVM_TARGET_DIR=$BUILD_DIR/jdk-21.0.5_macos-x64_bin-2fbf6d
+        JVM_URL=https://download.oracle.com/java/25/archive/jdk-25.0.2_macos-x64_bin.tar.gz
+        JVM_TARGET_DIR=$BUILD_DIR/jdk-25.0.2_macos-x64_bin-99fbca
         ;;
     arm64)
-        JVM_URL=https://download.oracle.com/java/21/archive/jdk-21.0.5_macos-aarch64_bin.tar.gz
-        JVM_TARGET_DIR=$BUILD_DIR/jdk-21.0.5_macos-aarch64_bin-d1143e
+        JVM_URL=https://download.oracle.com/java/25/archive/jdk-25.0.2_macos-aarch64_bin.tar.gz
+        JVM_TARGET_DIR=$BUILD_DIR/jdk-25.0.2_macos-aarch64_bin-d7817e
         ;;
     *) 
         die "Unknown architecture $JVM_ARCH"
         ;;
     esac
 elif [ "$cygwin" = "true" ] || [ "$msys" = "true" ]; then
-    JVM_URL=https://download.oracle.com/java/21/archive/jdk-21.0.5_windows-x64_bin.zip
-    JVM_TARGET_DIR=$BUILD_DIR/jdk-21.0.5_windows-x64_bin-020647
+    JVM_URL=https://download.oracle.com/java/25/archive/jdk-25.0.2_windows-x64_bin.zip
+    JVM_TARGET_DIR=$BUILD_DIR/jdk-25.0.2_windows-x64_bin-96701c
 else
     JVM_ARCH=$(linux$(getconf LONG_BIT) uname -m)
      case $JVM_ARCH in
         x86_64)
-            JVM_URL=https://download.oracle.com/java/21/archive/jdk-21.0.5_linux-x64_bin.tar.gz
-            JVM_TARGET_DIR=$BUILD_DIR/jdk-21.0.5_linux-x64_bin-aef79a
+            JVM_URL=https://download.oracle.com/java/25/archive/jdk-25.0.2_linux-x64_bin.tar.gz
+            JVM_TARGET_DIR=$BUILD_DIR/jdk-25.0.2_linux-x64_bin-3c4431
             ;;
         aarch64)
-            JVM_URL=https://download.oracle.com/java/21/archive/jdk-21.0.5_linux-aarch64_bin.tar.gz
-            JVM_TARGET_DIR=$BUILD_DIR/jdk-21.0.5_linux-aarch64_bin-8db84d
+            JVM_URL=https://download.oracle.com/java/25/archive/jdk-25.0.2_linux-aarch64_bin.tar.gz
+            JVM_TARGET_DIR=$BUILD_DIR/jdk-25.0.2_linux-aarch64_bin-a88282
             ;;
         *) 
             die "Unknown architecture $JVM_ARCH"
