@@ -7,26 +7,28 @@
   "automergeType": "branch",
   "packageRules": [
     {
-      "matchPackagePatterns": [
-        "org.jetbrains.kotlin.jvm",
-        "org.jetbrains.kotlin:kotlin-stdlib",
-        "org.jetbrains.kotlin:kotlin-test"
-      ],
       "enabled": false,
-      "description": "Kotlin is managed by intellij-updater."
+      "description": "Kotlin is managed by intellij-updater.",
+      "matchPackageNames": [
+        "/org.jetbrains.kotlin.jvm/",
+        "/org.jetbrains.kotlin:kotlin-stdlib/",
+        "/org.jetbrains.kotlin:kotlin-test/"
+      ]
     },
     {
-      "matchPackagePatterns": [
-        "com.jetbrains.rd:rd-gen"
-      ],
       "enabled": false,
-      "description": ["rd-gen is managed by intellij-updater."]
+      "description": ["rd-gen is managed by intellij-updater."],
+      "matchPackageNames": [
+        "/com.jetbrains.rd:rd-gen/"
+      ]
     }
   ],
   "customManagers": [
     {
       "customType": "regex",
-      "fileMatch": ["^\\.github/workflows/.+\\.yml$"],
+      "managerFilePatterns": [
+        "/^\\.github/workflows/.+\\.yml$/"
+      ],
       "matchStrings": [
         "# renovate:\\s*\\n\\s*- (?<depName>\\S+?)-(?<currentValue>\\S+)"
       ],
