@@ -15,9 +15,11 @@ import com.intellij.openapi.util.Key
 import com.intellij.util.io.BaseOutputReader
 import com.jetbrains.rd.framework.util.NetUtils
 import com.jetbrains.rd.util.lifetime.Lifetime
+import com.jetbrains.rd.util.threading.coroutines.launch
 import com.jetbrains.rider.runtime.DotNetRuntime
 import com.jetbrains.rider.runtime.dotNetCore.DotNetCoreRuntime
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.Dispatchers
 import me.fornever.avaloniarider.AvaloniaRiderBundle
 import me.fornever.avaloniarider.rider.createExeConfiguration
 import me.fornever.avaloniarider.rider.launchDebugger
@@ -119,7 +121,9 @@ class AvaloniaPreviewerProcess(
             }
         }) { handler ->
             handler.destroyProcess()
-            handler.waitFor()
+            lifetime.launch(Dispatchers.IO) {
+                handler.waitFor()
+            }
         }
 
         consoleView?.attachToProcess(processHandler)
