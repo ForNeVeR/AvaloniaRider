@@ -12,14 +12,13 @@ import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.rd.createNestedDisposable
 import com.intellij.openapi.util.Key
+import com.intellij.util.application
 import com.intellij.util.io.BaseOutputReader
 import com.jetbrains.rd.framework.util.NetUtils
 import com.jetbrains.rd.util.lifetime.Lifetime
-import com.jetbrains.rd.util.threading.coroutines.launch
 import com.jetbrains.rider.runtime.DotNetRuntime
 import com.jetbrains.rider.runtime.dotNetCore.DotNetCoreRuntime
 import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.Dispatchers
 import me.fornever.avaloniarider.AvaloniaRiderBundle
 import me.fornever.avaloniarider.rider.createExeConfiguration
 import me.fornever.avaloniarider.rider.launchDebugger
@@ -121,8 +120,13 @@ class AvaloniaPreviewerProcess(
             }
         }) { handler ->
             handler.destroyProcess()
-            lifetime.launch(Dispatchers.IO) {
-                handler.waitFor()
+            if (!handler.waitFor(0)) {
+                val message = "Previewer process was not terminated immediately: $title"
+                if (application.isUnitTestMode) {
+                    logger.error(message)
+                } else {
+                    logger.warn(message)
+                }
             }
         }
 
