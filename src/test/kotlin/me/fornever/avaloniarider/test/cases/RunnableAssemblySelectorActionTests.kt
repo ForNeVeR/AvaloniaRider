@@ -40,7 +40,7 @@ import kotlin.test.assertTrue
 class RunnableAssemblySelectorActionTests : AvaloniaIntegrationTest() {
 
     private val testXamlFile
-        get() = getVirtualFileFromPath("ClassLibrary1/MyControl.axaml", correctTestSolutionDirectory.toFile())
+        get() = getVirtualFileFromPath("ClassLibrary1/MyControl.axaml", correctTestSolutionDirectory)
 
     private fun createMockSelector(
         isSolutionLoading: IOptPropertyView<Boolean> = OptProperty(),
@@ -139,7 +139,7 @@ class RunnableMvvmAssemblySelectorActionTests : AvaloniaIntegrationTest() {
         val action = RunnableAssemblySelectorAction(
             testLifetime,
             project,
-            getVirtualFileFromPath("Views/MainWindow.axaml", correctTestSolutionDirectory.toFile())
+            getVirtualFileFromPath("Views/MainWindow.axaml", correctTestSolutionDirectory)
         )
         pumpMessages(Duration.ofSeconds(5L)) { !action.isLoading.value }.shouldBeTrue()
 

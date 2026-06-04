@@ -47,7 +47,9 @@ dependencies {
 
         bundledModule("intellij.rider")
         bundledModule("intellij.rider.debugger.shared")
+        bundledModule("intellij.rider.rdclient.dotnet")
         bundledPlugins(requiredPlugins)
+        testBundledPlugin("com.intellij.moduleSet.structureView")
 
         pluginVerifier(libs.intellij.plugin.verifier.cli.map { it.version })
 
