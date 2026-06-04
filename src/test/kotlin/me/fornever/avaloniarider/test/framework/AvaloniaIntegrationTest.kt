@@ -40,6 +40,6 @@ abstract class AvaloniaIntegrationTest : PerClassSolutionTestBase() {
 val SolutionApiFacade.correctTestSolutionDirectory: Path
     get() =
         if (SystemInfo.isWindows)
-            activeSolutionDirectory.canonicalFile.toPath()
+            activeSolutionDirectory.toRealPath()
         else
-            activeSolutionDirectory.toPath()
+            activeSolutionDirectory

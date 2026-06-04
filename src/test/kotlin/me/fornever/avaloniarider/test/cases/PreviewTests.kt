@@ -50,7 +50,7 @@ class PreviewTests : PerTestSolutionTestBase() {
     override val traceScenarios = setOf(RdLogTraceScenarios.Commands)
 
     private val mainWindowFile
-        get() = getVirtualFileFromPath("Views/MainWindow.axaml", correctTestSolutionDirectory.toFile())
+        get() = getVirtualFileFromPath("Views/MainWindow.axaml", correctTestSolutionDirectory)
 
     @Test
     fun previewEditorProviderShouldHandleTheXamlFile() {
