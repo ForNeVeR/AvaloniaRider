@@ -17,15 +17,6 @@ plugins {
     alias(libs.plugins.kotlinJvm)
 }
 
-jvmWrapper {
-    linuxAarch64JvmUrl = "https://download.oracle.com/java/21/archive/jdk-21.0.5_linux-aarch64_bin.tar.gz"
-    linuxX64JvmUrl = "https://download.oracle.com/java/21/archive/jdk-21.0.5_linux-x64_bin.tar.gz"
-    macAarch64JvmUrl = "https://download.oracle.com/java/21/archive/jdk-21.0.5_macos-aarch64_bin.tar.gz"
-    macX64JvmUrl = "https://download.oracle.com/java/21/archive/jdk-21.0.5_macos-x64_bin.tar.gz"
-    windowsAarch64JvmUrl = "https://aka.ms/download-jdk/microsoft-jdk-21.0.6-windows-aarch64.zip"
-    windowsX64JvmUrl = "https://download.oracle.com/java/21/archive/jdk-21.0.5_windows-x64_bin.zip"
-}
-
 allprojects {
     repositories {
         mavenCentral()
