@@ -2,27 +2,31 @@ package me.fornever.avaloniarider.previewer
 
 import com.intellij.execution.configurations.GeneralCommandLine
 import com.intellij.execution.process.OSProcessHandler
-import com.intellij.execution.process.OSProcessUtil
 import com.intellij.execution.process.ProcessEvent
 import com.intellij.execution.process.ProcessHandler
 import com.intellij.execution.process.ProcessListener
 import com.intellij.execution.ui.ConsoleView
 import com.intellij.execution.ui.ConsoleViewContentType
-import com.intellij.openapi.diagnostic.Logger
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.rd.createNestedDisposable
 import com.intellij.openapi.util.Key
+import com.intellij.platform.ide.progress.runWithModalProgressBlocking
 import com.intellij.util.application
 import com.intellij.util.io.BaseOutputReader
 import com.jetbrains.rd.framework.util.NetUtils
 import com.jetbrains.rd.util.lifetime.Lifetime
+import com.jetbrains.rider.run.pid
 import com.jetbrains.rider.runtime.DotNetRuntime
 import com.jetbrains.rider.runtime.dotNetCore.DotNetCoreRuntime
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.runInterruptible
 import me.fornever.avaloniarider.AvaloniaRiderBundle
 import me.fornever.avaloniarider.rider.createExeConfiguration
 import me.fornever.avaloniarider.rider.launchDebugger
 import java.nio.file.Path
+import kotlin.time.Duration.Companion.milliseconds
 
 data class AvaloniaPreviewerParameters(
     val runtime: DotNetRuntime,
@@ -50,9 +54,6 @@ class AvaloniaPreviewerProcess(
     private val lifetime: Lifetime,
     private val parameters: AvaloniaPreviewerParameters
 ) {
-    companion object {
-        private val logger = Logger.getInstance(AvaloniaPreviewerProcess::class.java)
-    }
 
     private fun getCommandLine(transport: PreviewerTransport, method: PreviewerMethod): GeneralCommandLine {
         val runtimeConfig = parameters.targetDir.resolve("${parameters.targetName}.runtimeconfig.json")
@@ -118,17 +119,7 @@ class AvaloniaPreviewerProcess(
                     super.notifyProcessTerminated(exitCode)
                 }
             }
-        }) { handler ->
-            handler.destroyProcess()
-            if (!handler.waitFor(0)) {
-                val message = "Previewer process was not terminated immediately: $title"
-                if (application.isUnitTestMode) {
-                    logger.error(message)
-                } else {
-                    logger.warn(message)
-                }
-            }
-        }
+        }) { handler -> terminateProcessBlocking(project, handler) }
 
         consoleView?.attachToProcess(processHandler)
 
@@ -205,6 +196,46 @@ class AvaloniaPreviewerProcess(
         }
     }
 }
+
+private fun terminateProcessBlocking(project: Project, handler: ProcessHandler) {
+    // destroyProcess() is not an immediate operation: it might signal the process that it should terminate.
+    //
+    // We want to provide the caller a guarantee that the process will be terminated, though — since this might be
+    // terminated by the build action or a new previewer session, so we want the executable files to be free of any
+    // file locks after we terminate the process.
+    //
+    // So, we want to call waitFor() after calling destroyProcess().
+    //
+    // In case this function is called on EDT, since it's an IO operation, we should use a progress bar here. Otherwise,
+    // we may cause a UI freeze, and IntelliJ will report IO on EDT (#640).
+    handler.destroyProcess()
+
+    if (application.isDispatchThread) {
+        // We expect this operation to be quick normally, thus it should be mostly okay to show a modal progress bar
+        // here: the user won't see it, since modal progresses in IntelliJ have a small timeout before actually getting
+        // shown.
+        try {
+            runWithModalProgressBlocking(project, AvaloniaRiderBundle.message("previewer.progress.terminating")) {
+                runInterruptible {
+                    handler.waitFor()
+                }
+            }
+        } catch (_: CancellationException) {
+            // Ignore the exception, don't allow it to hit the boundary of lifetime termination.
+            logger.warn("Process ${handler.pid()} was not terminated, termination cancelled.")
+        }
+    } else { // non-EDT
+        // Note that we cannot do this cancellable since this function is often called during cancellation of some
+        // external scope, e.g., closing an editor — and thus runBlocking(Maybe)Cancellable would not work.
+        val warningTimeout = 100.milliseconds
+        if (!handler.waitFor(warningTimeout.inWholeMilliseconds)) {
+            logger.error("Previewer process ${handler.pid()} was not terminated during ${warningTimeout}.")
+            handler.waitFor() // we still do our best to ensure correctness
+        }
+    }
+}
+
+private val logger = logger<AvaloniaPreviewerProcess>()
 
 enum class ProcessExecutionMode {
     Run,
