@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 
 When considering version compatibility (and thus incrementing the major version), we only consider the configuration file major user experience changes. The host IDE version is not considered a version compatibility factor (since otherwise we'd have to increase the major version pretty often and that would make no sense).
 
+## [1.12.0] - 2026-06-06
+### Changed
+- **(Requirement update!)** Update the minimal supported Rider version to 2026.2 EAP 4.
+
+### Fixed
+- [#640](https://github.com/ForNeVeR/AvaloniaRider/issues/640): error report triggered on previewer process termination. Thanks to @gestiran for helping with implementation!
+
 ## [1.11.0] - 2026-03-07
 ### Added
 - [#618](https://github.com/ForNeVeR/AvaloniaRider/pull/618): a new option to enable shadow-copying of the whole application for previewer.
@@ -191,4 +198,5 @@ The initial plugin release. The plugin provides the following features for JetBr
 [1.9.0]: https://github.com/ForNeVeR/AvaloniaRider/compare/v1.8.0...v1.9.0
 [1.10.0]: https://github.com/ForNeVeR/AvaloniaRider/compare/v1.9.0...v1.10.0
 [1.11.0]: https://github.com/ForNeVeR/AvaloniaRider/compare/v1.10.0...v1.11.0
-[Unreleased]: https://github.com/ForNeVeR/AvaloniaRider/compare/v1.11.0...HEAD
+[1.12.0]: https://github.com/ForNeVeR/AvaloniaRider/compare/v1.11.0...v1.12.0
+[Unreleased]: https://github.com/ForNeVeR/AvaloniaRider/compare/v1.12.0...HEAD
