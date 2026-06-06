@@ -1,6 +1,6 @@
 [versions]
 kotlin = "2.3.21-RC2"
-rdGen = "2026.2.1"
+rdGen = "2026.2.2"
 riderSdk = "2026.2-EAP4-SNAPSHOT"
 riderSdkPreview = "2026.2-EAP4-SNAPSHOT"
 
