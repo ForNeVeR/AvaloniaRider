@@ -49,7 +49,12 @@ dependencies {
         bundledModule("intellij.rider.debugger.shared")
         bundledModule("intellij.rider.rdclient.dotnet")
         bundledPlugins(requiredPlugins)
-        testBundledPlugin("com.intellij.moduleSet.structureView")
+
+        testBundledPlugin("com.intellij.modules.jcef")
+        testBundledPlugin("intellij.bookmarks.plugin")
+        testBundledPlugin("intellij.libraries.misc.plugin")
+        testBundledPlugin("intellij.ssh.plugin")
+        testBundledPlugin("intellij.structureView.plugin")
 
         pluginVerifier(libs.intellij.plugin.verifier.cli.map { it.version })
 
