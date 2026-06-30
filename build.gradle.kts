@@ -106,11 +106,11 @@ intellijPlatform {
     }
 }
 
-tasks {
-    withType<Test> {
-        classpath -= classpath.filter { it.name.startsWith("localization-") && it.name.endsWith(".jar") }
-    }
-}
+//tasks {
+//    withType<Test> {
+//        classpath -= classpath.filter { it.name.startsWith("localization-") && it.name.endsWith(".jar") }
+//    }
+//}
 
 tasks {
     val riderDotNetSdk = run {
