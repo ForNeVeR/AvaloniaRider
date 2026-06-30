@@ -50,11 +50,11 @@ dependencies {
         bundledModule("intellij.rider.rdclient.dotnet")
         bundledPlugins(requiredPlugins)
 
-        testBundledPlugin("com.intellij.modules.jcef")
-        testBundledPlugin("intellij.bookmarks.plugin")
-        testBundledPlugin("intellij.libraries.misc.plugin")
-        testBundledPlugin("intellij.ssh.plugin")
-        testBundledPlugin("intellij.structureView.plugin")
+//        testBundledPlugin("com.intellij.modules.jcef")
+//        testBundledPlugin("intellij.bookmarks.plugin")
+//        testBundledPlugin("intellij.libraries.misc.plugin")
+//        testBundledPlugin("intellij.ssh.plugin")
+//        testBundledPlugin("intellij.structureView.plugin")
 
         pluginVerifier(libs.intellij.plugin.verifier.cli.map { it.version })
 
@@ -103,6 +103,12 @@ intellijPlatform {
         }
         freeArgs.addAll("-mute", "TemplateWordInPluginName")
         failureLevel.add(VerifyPluginTask.FailureLevel.DEPRECATED_API_USAGES)
+    }
+}
+
+tasks {
+    withType<Test> {
+        classpath -= classpath.filter { it.name.startsWith("localization-") && it.name.endsWith(".jar") }
     }
 }
 
@@ -245,7 +251,7 @@ tasks {
         useInstaller = false
         task {
             plugins {
-                bundledPlugins(requiredPlugins)
+//                bundledPlugins(requiredPlugins)
             }
             enabled = libs.versions.riderSdk.get() != libs.versions.riderSdkPreview.get()
         }
