@@ -36,7 +36,10 @@ val intellijPluginId = "avalonia-rider"
 val pluginVersionBase: String by project
 val buildRelease: String by project
 
-val requiredPlugins = listOf("com.jetbrains.xaml.previewer")
+val requiredPlugins = listOf(
+    "com.intellij.modules.jcef",
+    "com.jetbrains.xaml.previewer"
+)
 
 dependencies {
     intellijPlatform {
@@ -50,7 +53,6 @@ dependencies {
         bundledModule("intellij.rider.rdclient.dotnet")
         bundledPlugins(requiredPlugins)
 
-        testBundledPlugin("com.intellij.modules.jcef")
         testBundledPlugin("intellij.bookmarks.plugin")
         testBundledPlugin("intellij.libraries.misc.plugin")
         testBundledPlugin("intellij.ssh.plugin")
