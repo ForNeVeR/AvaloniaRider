@@ -60,9 +60,8 @@ dependencies {
 
         pluginVerifier(libs.intellij.plugin.verifier.cli.map { it.version })
 
-        val testFrameworkVersion = libs.versions.riderSdk.map { "RIDER-$it" }
         fun riderTestPlatformDependency(artifact: String) {
-            testPlatformDependency(Coordinates("com.jetbrains.intellij.rider", artifact), testFrameworkVersion)
+            testPlatformDependency(Coordinates("com.jetbrains.intellij.rider", artifact))
         }
         riderTestPlatformDependency("rider-test-framework")
         riderTestPlatformDependency("rider-test-framework-core")
@@ -75,12 +74,6 @@ dependencies {
     testImplementation(libs.kotlin.test)
     testImplementation(libs.openTest4J)
     testImplementation(libs.testng)
-}
-
-configurations {
-    intellijPlatformTestDependencies {
-        exclude("org.jetbrains.intellij.deps", "org.eclipse.jgit")
-    }
 }
 
 val buildConfiguration = ext.properties["buildConfiguration"] as String? ?: "Debug"
