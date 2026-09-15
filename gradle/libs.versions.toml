@@ -6,7 +6,7 @@ riderSdkPreview = "2026.2.0.1"
 
 [libraries]
 bson4Jackson = "de.undercouch:bson4jackson:2.18.0"
-intellij-plugin-verifier-cli = "org.jetbrains.intellij.plugins:verifier-cli:1.408"
+intellij-plugin-verifier-cli = "org.jetbrains.intellij.plugins:verifier-cli:1.410"
 junit = "junit:junit:4.13.2"
 junit-jupiter = "org.junit.jupiter:junit-jupiter-api:5.14.4"
 junit-params = "org.junit.jupiter:junit-jupiter-params:5.14.4"
