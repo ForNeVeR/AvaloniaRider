@@ -9,7 +9,7 @@ import com.jetbrains.rider.test.enums.BuildTool
 import com.jetbrains.rider.test.enums.sdk.SdkVersion
 import me.fornever.avaloniarider.rider.createExeConfiguration
 import me.fornever.avaloniarider.test.framework.AvaloniaIntegrationTest
-import org.testng.annotations.Test
+import org.junit.jupiter.api.Test
 
 @TestSettings(sdkVersion = SdkVersion.AUTODETECT, buildTool = BuildTool.AUTODETECT)
 @Solution("MSBuildParameters")

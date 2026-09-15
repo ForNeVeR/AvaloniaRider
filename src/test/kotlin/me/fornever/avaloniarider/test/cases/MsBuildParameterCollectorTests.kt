@@ -17,7 +17,7 @@ import me.fornever.avaloniarider.previewer.MsBuildParameterCollector
 import me.fornever.avaloniarider.test.framework.AvaloniaIntegrationTest
 import me.fornever.avaloniarider.test.framework.correctTestSolutionDirectory
 import me.fornever.avaloniarider.test.framework.runPumping
-import org.testng.annotations.Test
+import org.junit.jupiter.api.Test
 
 @TestSettings(sdkVersion = SdkVersion.AUTODETECT, buildTool = BuildTool.AUTODETECT)
 @Solution("MSBuildParameters")

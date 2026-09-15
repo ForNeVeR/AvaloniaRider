@@ -29,10 +29,10 @@ import me.fornever.avaloniarider.idea.settings.AvaloniaWorkspaceSettings
 import me.fornever.avaloniarider.model.avaloniaRiderProjectModel
 import me.fornever.avaloniarider.test.framework.AvaloniaIntegrationTest
 import me.fornever.avaloniarider.test.framework.correctTestSolutionDirectory
-import org.testng.Assert.assertFalse
-import org.testng.annotations.Test
+import org.junit.jupiter.api.Test
 import java.nio.file.Paths
 import java.time.Duration
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 @TestSettings(sdkVersion = SdkVersion.AUTODETECT, buildTool = BuildTool.AUTODETECT)

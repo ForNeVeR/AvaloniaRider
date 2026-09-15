@@ -2,7 +2,7 @@ package me.fornever.avaloniarider.test.bson
 
 import com.jetbrains.rider.test.asserts.shouldBe
 import me.fornever.avaloniarider.bson.MessageHeader
-import org.testng.annotations.Test
+import org.junit.jupiter.api.Test
 import java.util.*
 
 class MessageHeaderTests {
