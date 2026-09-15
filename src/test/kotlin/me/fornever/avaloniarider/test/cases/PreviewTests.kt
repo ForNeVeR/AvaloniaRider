@@ -14,7 +14,7 @@ import com.jetbrains.rider.test.OpenSolutionParams
 import com.jetbrains.rider.test.annotations.Solution
 import com.jetbrains.rider.test.annotations.TestSettings
 import com.jetbrains.rider.test.asserts.shouldBeTrue
-import com.jetbrains.rider.test.base.PerTestSolutionTestBase
+import com.jetbrains.rider.test.junit5.base.PerTestSolutionTestBase
 import com.jetbrains.rider.test.enums.BuildTool
 import com.jetbrains.rider.test.enums.sdk.SdkVersion
 import com.jetbrains.rider.test.framework.frameworkLogger
@@ -29,7 +29,8 @@ import me.fornever.avaloniarider.previewer.AvaloniaPreviewerSessionController
 import me.fornever.avaloniarider.rider.AvaloniaRiderProjectModelHost
 import me.fornever.avaloniarider.test.framework.correctTestSolutionDirectory
 import me.fornever.avaloniarider.test.framework.runPumping
-import org.testng.annotations.Test
+import org.junit.jupiter.api.Tag
+import org.junit.jupiter.api.Test
 import java.nio.file.Files
 import java.nio.file.Path
 import java.time.Duration
@@ -39,6 +40,7 @@ import kotlin.test.assertTrue
 
 @TestSettings(sdkVersion = SdkVersion.AUTODETECT, buildTool = BuildTool.AUTODETECT)
 @Solution("AvaloniaMvvm")
+@Tag("episode/Plugins/AvaloniaRider")
 class PreviewTests : PerTestSolutionTestBase() {
 
     override fun modifyOpenSolutionParams(params: OpenSolutionParams) {

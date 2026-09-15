@@ -66,9 +66,13 @@ dependencies {
     implementation(libs.bson4Jackson)
 
     testImplementation(libs.junit)
+    testImplementation(libs.junit.jupiter)
+    testImplementation(libs.junit.params)
+    testRuntimeOnly(libs.junit.vintage)
+    testRuntimeOnly(libs.junit.launcher)
+    testRuntimeOnly(libs.junit.engine)
     testImplementation(libs.kotlin.test)
     testImplementation(libs.openTest4J)
-    testImplementation(libs.testng)
 }
 
 val buildConfiguration = ext.properties["buildConfiguration"] as String? ?: "Debug"
@@ -217,7 +221,9 @@ tasks {
     }
 
     withType<Test> {
-        useTestNG()
+        useJUnitPlatform()
+        // Ignore IJ Platform JUnit5 framework set up and tear down
+        systemProperty("intellij.build.test.ignoreFirstAndLastTests", "true")
         testLogging {
             showStandardStreams = true
             exceptionFormat = TestExceptionFormat.FULL

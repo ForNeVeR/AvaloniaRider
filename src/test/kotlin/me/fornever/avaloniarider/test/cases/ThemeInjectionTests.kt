@@ -3,7 +3,7 @@ package me.fornever.avaloniarider.test.cases
 import me.fornever.avaloniarider.idea.settings.AvaloniaPreviewerTheme
 import me.fornever.avaloniarider.previewer.ThemeInjectionSettings
 import me.fornever.avaloniarider.previewer.injectThemeIfNeeded
-import org.testng.annotations.Test
+import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
 class ThemeInjectionTests {
