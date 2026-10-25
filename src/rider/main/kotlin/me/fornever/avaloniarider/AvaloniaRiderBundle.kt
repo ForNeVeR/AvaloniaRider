@@ -4,12 +4,15 @@ import com.intellij.DynamicBundle
 import org.jetbrains.annotations.PropertyKey
 import java.util.function.Supplier
 
-private const val BUNDLE = "messages.AvaloniaRiderBundle"
+object AvaloniaRiderBundle {
 
-object AvaloniaRiderBundle : DynamicBundle(BUNDLE) {
+    private const val BUNDLE = "messages.AvaloniaRiderBundle"
+
+    private val bundle = DynamicBundle(AvaloniaRiderBundle::class.java, BUNDLE)
+
     fun message(@PropertyKey(resourceBundle = BUNDLE) key: String, vararg params: Any): String =
-        getMessage(key, *params)
+        bundle.getMessage(key, *params)
 
     fun messagePointer(@PropertyKey(resourceBundle = BUNDLE) key: String, vararg params: Any): Supplier<String> =
-        getLazyMessage(key, *params)
+        bundle.getLazyMessage(key, *params)
 }
