@@ -228,6 +228,12 @@ tasks {
             exceptionFormat = TestExceptionFormat.FULL
         }
         environment["LOCAL_ENV_RUN"] = "true"
+
+        inputs.files(
+            fileTree("testData") {
+                exclude("**/bin/**", "**/obj/**", "**/.idea/**", "**/.vs/**", "**/*.user")
+            }
+        ).withPropertyName("testData").withPathSensitivity(PathSensitivity.RELATIVE)
     }
 
     withType<PrepareSandboxTask> {
