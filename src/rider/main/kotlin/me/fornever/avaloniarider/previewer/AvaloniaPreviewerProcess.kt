@@ -27,6 +27,7 @@ import me.fornever.avaloniarider.rider.createExeConfiguration
 import me.fornever.avaloniarider.rider.launchDebugger
 import java.nio.file.Path
 import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 
 data class AvaloniaPreviewerParameters(
     val runtime: DotNetRuntime,
@@ -227,10 +228,19 @@ private fun terminateProcessBlocking(project: Project, handler: ProcessHandler) 
     } else { // non-EDT
         // Note that we cannot do this cancellable since this function is often called during cancellation of some
         // external scope, e.g., closing an editor — and thus runBlocking(Maybe)Cancellable would not work.
+        //
+        // Process termination might take a few hundred milliseconds on a loaded machine (#666), so we only report an
+        // error if it takes unreasonably long.
         val warningTimeout = 100.milliseconds
+        val errorTimeout = 5.seconds
         if (!handler.waitFor(warningTimeout.inWholeMilliseconds)) {
-            logger.error("Previewer process ${handler.pid()} was not terminated during ${warningTimeout}.")
-            handler.waitFor() // we still do our best to ensure correctness
+            logger.warn("Previewer process ${handler.pid()} was not terminated during ${warningTimeout}.")
+            if (!handler.waitFor(errorTimeout.inWholeMilliseconds)) {
+                logger.error(
+                    "Previewer process ${handler.pid()} was not terminated during ${warningTimeout + errorTimeout}."
+                )
+                handler.waitFor() // we still do our best to ensure correctness
+            }
         }
     }
 }
