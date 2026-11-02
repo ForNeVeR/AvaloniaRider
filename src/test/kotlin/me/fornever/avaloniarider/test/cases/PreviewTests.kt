@@ -142,15 +142,23 @@ class PreviewTests : PerTestSolutionTestBase() {
                 frameMsg != null
             }.shouldBeTrue()
 
-            // The text block is the only element of the window, and it is centered.
+            // The text block is the only element of the window, and it is centered in the size declared by the XAML. The
+            // frames don't tell the window size here: without a view, they may stay empty.
             val expectedOffset = document.text.indexOf("<TextBlock")
-            val frame = frameMsg!!
-            controller.navigateToElementAt(frame.width / 2.0, frame.height / 2.0) {
-                isNavigationUnavailable = true
-            }
+            val windowCenterX = 400.0
+            val windowCenterY = 225.0
 
             fun caretOffset() = FileEditorManager.getInstance(project).selectedTextEditor?.caretModel?.offset
+
+            // The first frame doesn't guarantee that the window is already open, so repeat the click.
+            var nextClickNanos = 0L
             pumpMessages(Duration.ofSeconds(30L)) {
+                if (System.nanoTime() >= nextClickNanos) {
+                    nextClickNanos = System.nanoTime() + Duration.ofSeconds(1L).toNanos()
+                    controller.navigateToElementAt(windowCenterX, windowCenterY) {
+                        isNavigationUnavailable = true
+                    }
+                }
                 isNavigationUnavailable || caretOffset() == expectedOffset
             }
             assertFalse(isNavigationUnavailable, "Navigation should be available.")
