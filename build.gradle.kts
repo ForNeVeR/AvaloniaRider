@@ -168,6 +168,10 @@ tasks {
         )
     }
 
+    val designHookId = "AvaloniaRider.DesignHook"
+    val designHookFile =
+        dotNetSrcDir.resolve("$designHookId/bin/$designHookId/$buildConfiguration/$designHookId.dll")
+
     val compileDotNet by registering(Exec::class) {
         dependsOn(rdGen, generateDotNetSdkProperties, generateNuGetConfig)
 
@@ -181,7 +185,7 @@ tasks {
             }
         )
         inputs.property("buildConfiguration", buildConfiguration)
-        outputs.files(dotNetPluginFiles)
+        outputs.files(dotNetPluginFiles, designHookFile)
 
         executable("dotnet")
         args("build", "-consoleLoggerParameters:ErrorsOnly", "--configuration", buildConfiguration)
@@ -246,8 +250,11 @@ tasks {
             from(f) { into("${rootProject.name}/dotnet") }
         }
 
+        // Not in the dotnet directory: it's not a part of the backend, and references assemblies absent from there.
+        from(designHookFile) { into("${rootProject.name}/design-hook") }
+
         doFirst {
-            for (file in dotNetPluginFiles) {
+            for (file in dotNetPluginFiles + designHookFile) {
                 if (!file.exists()) throw RuntimeException("File \"$file\" does not exist")
             }
         }

@@ -6,25 +6,48 @@ import com.jetbrains.rd.util.reactive.Signal
 import me.fornever.avaloniarider.controlmessages.*
 import me.fornever.avaloniarider.idea.editor.PreviewImageView
 import me.fornever.avaloniarider.idea.editor.actions.ZoomLevelSelectorAction
+import java.awt.Point
 import java.awt.event.MouseEvent
 import java.awt.event.MouseWheelEvent
 import javax.swing.event.MouseInputAdapter
+
+/**
+ * @param x the horizontal position in the preview coordinates.
+ * @param y the vertical position in the preview coordinates.
+ * @param location the position in the coordinates of the preview component.
+ */
+internal data class DesignClick(val x: Double, val y: Double, val location: Point)
 
 /**
  * Pass the PreviewImageView instance in order to find out the position of the pointer to the image.
  */
 internal class AvaloniaMessageMouseListener(
     private val frameView: PreviewImageView,
-    private val zoom: Property<Double>
+    private val zoom: Property<Double>,
+    private val isDesignMode: () -> Boolean
 ) : MouseInputAdapter() {
 
     private val avaloniaInputEventSignal = Signal<AvaloniaInputEventMessage>()
 
     val avaloniaInputEvent: ISource<AvaloniaInputEventMessage> = avaloniaInputEventSignal
 
+    private val designClickSignal = Signal<DesignClick>()
+
+    /**
+     * In the design mode, the pointer input doesn't reach the preview, and a left click gets reported here instead. The
+     * wheel keeps working, because otherwise there would be no way to reach the contents of a long view.
+     */
+    val designClick: ISource<DesignClick> = designClickSignal
+
     override fun mousePressed(e: MouseEvent?) {
         e ?: return
         val coordinates = e.pointerPositionOrNull() ?: return
+        if (isDesignMode()) {
+            if (e.button == MouseEvent.BUTTON1)
+                designClickSignal.fire(DesignClick(coordinates.first, coordinates.second, e.point))
+            return
+        }
+
         val message = PointerPressedEventMessage(
             e.avaloniaModifiers(),
             coordinates.first,
@@ -35,6 +58,7 @@ internal class AvaloniaMessageMouseListener(
 
     override fun mouseReleased(e: MouseEvent?) {
         e ?: return
+        if (isDesignMode()) return
         val coordinates = e.pointerPositionOrNull()?: return
         val message = PointerReleasedEventMessage(
             e.avaloniaModifiers(),
@@ -80,6 +104,7 @@ internal class AvaloniaMessageMouseListener(
 
     private fun sendPointerMovedEventMessage(e: MouseEvent?) {
         e ?: return
+        if (isDesignMode()) return
         val coordinates = e.pointerPositionOrNull()?: return
         val message = PointerMovedEventMessage(
             e.avaloniaModifiers(),

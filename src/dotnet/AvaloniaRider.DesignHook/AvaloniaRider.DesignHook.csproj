@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <Nullable>enable</Nullable>
+    <RootNamespace>AvaloniaRider.DesignHook</RootNamespace>
+    <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Compiled against the lowest supported version. The previewer process supplies the real assemblies. -->
+    <PackageReference Include="Avalonia" Version="12.0.0" ExcludeAssets="runtime;build;buildTransitive;analyzers" PrivateAssets="all" />
+  </ItemGroup>
+</Project>

@@ -23,6 +23,12 @@ class AvaloniaProjectSettingsConfigurable(private val project: Project) : Config
                     { projectSettings.state.previewerMethod = it ?: AvaloniaPreviewerMethod.AvaloniaRemote },
                 )
             }
+            row(AvaloniaRiderBundle.message("settings.interactionMode")) {
+                comboBox(AvaloniaPreviewerInteractionMode.entries).bindItem(
+                    { projectSettings.interactionMode },
+                    { projectSettings.state.interactionMode = it ?: AvaloniaPreviewerInteractionMode.Interactive },
+                ).comment(AvaloniaRiderBundle.message("settings.interactionMode.comment"))
+            }
             row {
                 checkBox(AvaloniaRiderBundle.message("settings.synchronizeWithRunConfiguration")).bindSelected(
                     { projectSettings.synchronizeWithRunConfiguration },

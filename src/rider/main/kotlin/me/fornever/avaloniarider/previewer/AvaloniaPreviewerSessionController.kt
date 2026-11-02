@@ -6,6 +6,8 @@ import com.intellij.openapi.application.readAction
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.debug
 import com.intellij.openapi.editor.Document
+import com.intellij.openapi.editor.ScrollType
+import com.intellij.openapi.fileEditor.OpenFileDescriptor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.io.FileUtil
 import com.intellij.openapi.vfs.VirtualFile
@@ -29,6 +31,7 @@ import com.jetbrains.rider.projectView.solution
 import com.jetbrains.rider.projectView.workspace.ProjectModelEntity
 import com.jetbrains.rider.projectView.workspace.containingProjectEntity
 import com.jetbrains.rider.projectView.workspace.getProjectModelEntities
+import com.jetbrains.rider.runtime.dotNetCore.DotNetCoreRuntime
 import com.jetbrains.rider.ui.SwingScheduler
 import com.jetbrains.rider.ui.components.utils.documentChanged
 import kotlinx.coroutines.*
@@ -44,6 +47,7 @@ import me.fornever.avaloniarider.controlmessages.UpdateXamlResultMessage
 import me.fornever.avaloniarider.exceptions.AvaloniaPreviewerExecutionException
 import me.fornever.avaloniarider.exceptions.AvaloniaPreviewerInitializationException
 import me.fornever.avaloniarider.idea.concurrency.adviseOnUiThread
+import me.fornever.avaloniarider.idea.settings.AvaloniaPreviewerInteractionMode
 import me.fornever.avaloniarider.idea.settings.AvaloniaPreviewerMethod
 import me.fornever.avaloniarider.idea.settings.AvaloniaPreviewerTheme
 import me.fornever.avaloniarider.idea.settings.AvaloniaProjectSettings
@@ -51,6 +55,7 @@ import me.fornever.avaloniarider.rd.compose
 import me.fornever.avaloniarider.rider.AvaloniaRiderProjectModelHost
 import me.fornever.avaloniarider.rider.projectRelativeVirtualPath
 import java.io.EOFException
+import java.io.IOException
 import java.net.ServerSocket
 import java.net.SocketException
 import java.nio.file.*
@@ -68,7 +73,8 @@ class AvaloniaPreviewerSessionController(
     private val xamlFile: VirtualFile,
     private val projectFilePathProperty: IOptPropertyView<Path>,
     private val baseDocument: Document?,
-    private val selectedTheme: IPropertyView<AvaloniaPreviewerTheme>
+    private val selectedTheme: IPropertyView<AvaloniaPreviewerTheme>,
+    val interactionMode: IPropertyView<AvaloniaPreviewerInteractionMode>
 ) {
     companion object {
         private val logger = Logger.getInstance(AvaloniaPreviewerSessionController::class.java)
@@ -142,6 +148,15 @@ class AvaloniaPreviewerSessionController(
     private var lastKnownProjectRelativePath: String? = null
     @Volatile
     private var pendingRestart = false
+    @Volatile
+    private var designHook: DesignHookConnection? = null
+    @Volatile
+    private var lastXamlUpdate: XamlUpdate? = null
+
+    /**
+     * The XAML sent to the previewer: the source positions it reports belong to [sent], rather than to [original].
+     */
+    private data class XamlUpdate(val original: String, val sent: String)
 
     private val sessionLifetimeSource = SequentialLifetimes(controllerLifetime)
     private var currentSessionLifetime: LifetimeDefinition? = null
@@ -274,6 +289,7 @@ class AvaloniaPreviewerSessionController(
                     lastKnownProjectRelativePath = effectivePath
                     inFlightUpdate.value = true
                     val xamlText = injectThemeIfNeeded(text)
+                    lastXamlUpdate = XamlUpdate(text, xamlText)
                     sendXamlUpdate(xamlText, effectivePath)
                     break
                 }
@@ -375,10 +391,21 @@ class AvaloniaPreviewerSessionController(
                 AvaloniaPreviewerMethod.Html -> HtmlMethod
             }
 
+            val hookAssembly = DesignHookConnection.findHookAssembly()
+            val isDesignHookApplicable = interactionMode.value == AvaloniaPreviewerInteractionMode.Design
+                && settings.previewerMethod == AvaloniaPreviewerMethod.AvaloniaRemote
+                && parameters.runtime is DotNetCoreRuntime
+                && hookAssembly != null
+            val newDesignHook = if (isDesignHookApplicable) {
+                withContext(Dispatchers.IO) { DesignHookConnection(sessionNestedLifetime) }
+            } else null
+            val environment = newDesignHook?.getEnvironment(hookAssembly!!).orEmpty()
+
             val newSession = createSession(sessionNestedLifetime, socket, parameters, xamlFile)
             val processTitle = "${xamlFile.name} (port ${socket.localPort})"
-            val process = AvaloniaPreviewerProcess(project, lifetime, parameters)
+            val process = AvaloniaPreviewerProcess(project, lifetime, parameters, environment)
             session = newSession
+            designHook = newDesignHook
 
             val sessionJob = lifetime.async(Dispatchers.IO) {
                 logger.info("Starting socket listener")
@@ -454,6 +481,7 @@ class AvaloniaPreviewerSessionController(
                 logger.error(t)
             } finally {
                 session = null
+                designHook = null
                 lt.terminate()
 
                 logger.info("Previewer session is terminated.")
@@ -480,6 +508,47 @@ class AvaloniaPreviewerSessionController(
 
     fun sendInputEventMessage(event: AvaloniaInputEventMessage) {
         session?.sendInputEventMessage(event)
+    }
+
+    /**
+     * Moves the caret of the XAML editor to the element at the point of the preview.
+     *
+     * @param onUnavailable gets called on the UI thread if this session cannot resolve the elements.
+     */
+    fun navigateToElementAt(x: Double, y: Double, onUnavailable: () -> Unit) {
+        val hook = designHook
+        if (hook == null) {
+            onUnavailable()
+            return
+        }
+
+        controllerLifetime.launch(Dispatchers.IO) {
+            val position = try {
+                hook.click(x, y)
+            } catch (e: IOException) {
+                logger.info("Design hook is not available for $xamlFile", e)
+                withContext(Dispatchers.EDT) { onUnavailable() }
+                return@launch
+            }
+
+            if (position != null) withContext(Dispatchers.EDT) { navigateTo(position) }
+        }
+    }
+
+    private fun navigateTo(position: DesignElementPosition) {
+        val document = baseDocument ?: return
+        val line = lastXamlUpdate?.let { mapInjectedLine(it.original, it.sent, position.line) } ?: position.line
+        val lineIndex = (line - 1).coerceIn(0, maxOf(document.lineCount - 1, 0))
+        val lineStart = document.getLineStartOffset(lineIndex)
+        val lineEnd = document.getLineEndOffset(lineIndex)
+
+        // The compiler reports the position of the element name, and the tag starts right before it.
+        val namePosition = (lineStart + position.column - 1).coerceIn(lineStart, lineEnd)
+        val tagPosition = (namePosition downTo lineStart).firstOrNull { document.charsSequence.getOrNull(it) == '<' }
+
+        OpenFileDescriptor(project, xamlFile, tagPosition ?: namePosition).apply {
+            setScrollType(ScrollType.CENTER)
+        }.navigate(true)
     }
 
     private fun scheduleRestart() {
