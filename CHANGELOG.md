@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 
 When considering version compatibility (and thus incrementing the major version), we only consider the configuration file major user experience changes. The host IDE version is not considered a version compatibility factor (since otherwise we'd have to increase the major version pretty often and that would make no sense).
 
+## [Unreleased]
+### Added
+- Design mode for the previewer: it draws the UI without interaction, and a click on an element navigates to this element in the XAML file. Navigation requires Avalonia 12 or newer on .NET.
+
 ## [1.14.0] - 2026-10-25
 ### Changed
 - **(Requirement update!)** Update the minimal supported Rider version to 2026.3 EAP 7.

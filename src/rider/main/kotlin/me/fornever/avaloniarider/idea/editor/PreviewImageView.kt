@@ -1,14 +1,20 @@
 package me.fornever.avaloniarider.idea.editor
 
 import com.intellij.openapi.rd.createNestedDisposable
+import com.intellij.openapi.ui.MessageType
+import com.intellij.openapi.ui.popup.Balloon
+import com.intellij.openapi.ui.popup.JBPopupFactory
 import com.intellij.openapi.rd.paint2DLine
 import com.intellij.ui.JBColor
+import com.intellij.ui.awt.RelativePoint
 import com.intellij.ui.paint.LinePainter2D
 import com.intellij.ui.scale.JBUIScale
 import com.intellij.util.Alarm
 import com.intellij.util.application
 import com.jetbrains.rd.util.lifetime.Lifetime
+import me.fornever.avaloniarider.AvaloniaRiderBundle
 import me.fornever.avaloniarider.controlmessages.FrameMessage
+import me.fornever.avaloniarider.idea.settings.AvaloniaPreviewerInteractionMode
 import me.fornever.avaloniarider.idea.settings.AvaloniaProjectSettings
 import me.fornever.avaloniarider.previewer.AvaloniaMessageMouseListener
 import me.fornever.avaloniarider.previewer.AvaloniaPreviewerSessionController
@@ -17,6 +23,7 @@ import java.awt.Color
 import java.awt.Dimension
 import java.awt.Graphics
 import java.awt.Graphics2D
+import java.awt.Point
 import java.awt.image.BufferedImage
 import javax.swing.JComponent
 
@@ -37,13 +44,30 @@ class PreviewImageView(
     }
 
     init {
-        val listener = AvaloniaMessageMouseListener(this, controller.zoomFactor)
+        val listener = AvaloniaMessageMouseListener(this, controller.zoomFactor) {
+            controller.interactionMode.value == AvaloniaPreviewerInteractionMode.Design
+        }
         listener.avaloniaInputEvent.advise(lifetime) { message ->
             controller.sendInputEventMessage(message)
+        }
+        listener.designClick.advise(lifetime) { click ->
+            controller.navigateToElementAt(click.x, click.y) { showNavigationUnavailable(click.location) }
         }
         addMouseListener(listener)
         addMouseMotionListener(listener)
         addMouseWheelListener(listener)
+    }
+
+    private fun showNavigationUnavailable(location: Point) {
+        JBPopupFactory.getInstance()
+            .createHtmlTextBalloonBuilder(
+                AvaloniaRiderBundle.message("previewer.design-mode.navigation-unavailable"),
+                MessageType.WARNING,
+                null
+            )
+            .setFadeoutTime(5000L)
+            .createBalloon()
+            .show(RelativePoint(this, location), Balloon.Position.above)
     }
 
     var buffer: BufferedImage? = null

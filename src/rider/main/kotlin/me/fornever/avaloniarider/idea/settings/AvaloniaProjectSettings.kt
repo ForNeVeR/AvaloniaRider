@@ -11,6 +11,18 @@ enum class AvaloniaPreviewerMethod {
     Html
 }
 
+enum class AvaloniaPreviewerInteractionMode {
+    /**
+     * The preview works like the running application: it receives all the mouse input.
+     */
+    Interactive,
+
+    /**
+     * The preview only draws the UI, and a click on an element navigates to this element in the XAML file.
+     */
+    Design
+}
+
 enum class AvaloniaPreviewerTheme {
     None,
     Light,
@@ -35,6 +47,8 @@ class DefaultThemeProp {
 
 class AvaloniaProjectSettingsState : BaseState() {
     var previewerMethod by enum(AvaloniaPreviewerMethod.AvaloniaRemote)
+
+    var interactionMode by enum(AvaloniaPreviewerInteractionMode.Interactive)
 
     /**
      * Synchronize current run configuration and selected project, when possible.
@@ -72,6 +86,9 @@ class AvaloniaProjectSettings : SimplePersistentStateComponent<AvaloniaProjectSe
 
     val previewerTransportType: AvaloniaPreviewerMethod
         get() = state.previewerMethod
+
+    val interactionMode: AvaloniaPreviewerInteractionMode
+        get() = state.interactionMode
 
     val synchronizeWithRunConfiguration: Boolean
         get() = state.synchronizeWithRunConfiguration
