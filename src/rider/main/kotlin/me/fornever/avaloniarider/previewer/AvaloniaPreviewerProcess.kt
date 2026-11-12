@@ -105,6 +105,18 @@ class AvaloniaPreviewerProcess(
                 override fun readerOptions() =
                     BaseOutputReader.Options.forMostlySilentProcess()
 
+                override fun killProcessTree(process: Process) {
+                    // The platform implementation on Windows depends on a lazily-initialized application service.
+                    // Its initialization fails if the current coroutine job is cancelled or the application is being
+                    // disposed — and we are often called in exactly these circumstances (termination of a cancelled
+                    // session, editor or IDE closing). In that case, the platform skips the process termination
+                    // altogether, leaving the previewer process running and locking the user's assemblies.
+                    //
+                    // So, kill the process tree using only the JDK API, which doesn't depend on any of that.
+                    process.toHandle().descendants().forEach { it.destroyForcibly() }
+                    process.destroyForcibly()
+                }
+
                 override fun notifyTextAvailable(text: String, outputType: Key<*>) {
                     logger.info("$title [$outputType]: $text")
                     outputListener(text)
@@ -209,6 +221,10 @@ private fun terminateProcessBlocking(project: Project, handler: ProcessHandler) 
     //
     // In case this function is called on EDT, since it's an IO operation, we should use a progress bar here. Otherwise,
     // we may cause a UI freeze, and IntelliJ will report IO on EDT (#640).
+    //
+    // Note that this function is often called while the caller's context is already being cancelled (e.g., from a
+    // finally block of a cancelled coroutine), so destroyProcess() must not depend on the caller's cancellation state.
+    // See the killProcessTree override in runProcess.
     handler.destroyProcess()
 
     if (application.isDispatchThread) {
