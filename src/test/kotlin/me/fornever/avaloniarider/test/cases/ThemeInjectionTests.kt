@@ -3,10 +3,46 @@ package me.fornever.avaloniarider.test.cases
 import me.fornever.avaloniarider.idea.settings.AvaloniaPreviewerTheme
 import me.fornever.avaloniarider.previewer.ThemeInjectionSettings
 import me.fornever.avaloniarider.previewer.injectThemeIfNeeded
+import me.fornever.avaloniarider.previewer.mapInjectedLine
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
 class ThemeInjectionTests {
+    private val multilineOriginal = "<UserControl>\n  <TextBlock />\n  <Button />\n</UserControl>"
+    private val multilineInjected = injectThemeIfNeeded(
+        originalXaml = multilineOriginal,
+        settings = ThemeInjectionSettings(
+            isThemeSelectorAvailable = true,
+            selectedTheme = AvaloniaPreviewerTheme.Light,
+            themeApplicableTags = listOf("UserControl"),
+            darkThemeStyle = "",
+            lightThemeStyle = "<Design.DesignStyle>\n  Light\n</Design.DesignStyle>"
+        )
+    )
+
+    private fun lineOf(text: String, xaml: String) =
+        xaml.lines().indexOfFirst { it.contains(text) } + 1
+
+    @Test
+    fun mapInjectedLineKeepsLinesBeforeInjection() {
+        assertEquals(1, mapInjectedLine(multilineOriginal, multilineInjected, 1))
+    }
+
+    @Test
+    fun mapInjectedLineShiftsLinesAfterInjection() {
+        for (element in listOf("<TextBlock", "<Button", "</UserControl")) {
+            assertEquals(
+                lineOf(element, multilineOriginal),
+                mapInjectedLine(multilineOriginal, multilineInjected, lineOf(element, multilineInjected))
+            )
+        }
+    }
+
+    @Test
+    fun mapInjectedLineDoesNotChangeLinesWithoutInjection() {
+        assertEquals(3, mapInjectedLine(multilineOriginal, multilineOriginal, 3))
+    }
+
     @Test
     fun injectThemeIfNeededHappyPath() {
         val original = "<UserControl><TextBlock /></UserControl>"

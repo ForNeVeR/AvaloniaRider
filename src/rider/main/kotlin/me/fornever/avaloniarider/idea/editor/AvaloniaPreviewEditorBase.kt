@@ -152,6 +152,7 @@ abstract class AvaloniaPreviewEditorBase(
 
     private val projectSettings = AvaloniaProjectSettings.getInstance(project)
     private val selectedTheme = Property(projectSettings.defaultTheme)
+    private val interactionMode = Property(projectSettings.interactionMode)
     protected val sessionController = AvaloniaPreviewerSessionController(
         project,
         lifetime,
@@ -159,9 +160,15 @@ abstract class AvaloniaPreviewEditorBase(
         file,
         selectedProjectPath,
         baseDocument,
-        selectedTheme
+        selectedTheme,
+        interactionMode
     )
     init {
+        // The design hook has to be loaded when the previewer process starts.
+        interactionMode.change.advise(lifetime) {
+            selectedProjectPath.valueOrNull?.let { sessionController.start(it) }
+        }
+
         lifetime.launch(Dispatchers.EDT) {
             sessionController.status.nextValue { it == AvaloniaPreviewerSessionController.Status.Working }
             parentEditor?.triggerLayoutChange(XamlSplitEditorSplitLayout.SPLIT, requestFocus = false)
@@ -327,6 +334,7 @@ abstract class AvaloniaPreviewEditorBase(
             if (projectSettings.showThemeSelector) {
                 add(ThemeSelectorAction(selectedTheme))
             }
+            add(ToggleDesignModeAction(interactionMode, projectSettings))
             add(RestartPreviewerAction(lifetime, sessionController, selectedProjectPath))
             add(ToggleDetachedPreviewAction(this@AvaloniaPreviewEditorBase))
             addAll(*actions)

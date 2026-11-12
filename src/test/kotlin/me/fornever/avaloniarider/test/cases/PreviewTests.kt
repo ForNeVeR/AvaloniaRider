@@ -2,6 +2,7 @@ package me.fornever.avaloniarider.test.cases
 
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.fileEditor.FileDocumentManager
+import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.util.application
 import com.jetbrains.rd.platform.diagnostics.RdLogTraceScenarios
 import com.jetbrains.rd.util.lifetime.Lifetime
@@ -23,6 +24,7 @@ import com.jetbrains.rider.test.scriptingApi.getVirtualFileFromPath
 import com.jetbrains.rider.xaml.core.XamlPreviewEditorExtension
 import me.fornever.avaloniarider.controlmessages.FrameMessage
 import me.fornever.avaloniarider.idea.editor.AvaloniaPreviewerXamlEditorExtension
+import me.fornever.avaloniarider.idea.settings.AvaloniaPreviewerInteractionMode
 import me.fornever.avaloniarider.idea.settings.AvaloniaPreviewerTheme
 import me.fornever.avaloniarider.idea.settings.AvaloniaProjectSettings
 import me.fornever.avaloniarider.previewer.AvaloniaPreviewerSessionController
@@ -35,6 +37,7 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.time.Duration
 import kotlin.io.path.div
+import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
@@ -87,7 +90,8 @@ class PreviewTests : PerTestSolutionTestBase() {
                 mainWindowFile,
                 projectFilePathProperty,
                 document,
-                selectedTheme
+                selectedTheme,
+                Property(AvaloniaPreviewerInteractionMode.Interactive)
             ).apply {
                 frame.advise(lt) {
                     frameMsg = it
@@ -101,6 +105,64 @@ class PreviewTests : PerTestSolutionTestBase() {
             }.shouldBeTrue()
 
             frameworkLogger.info("We are done!")
+        }
+    }
+
+    @Test
+    fun designModeClickShouldNavigateToTheElement() {
+        val buildResult = buildSolutionWithConsoleBuild(timeout = Duration.ofMinutes(1L))
+        assertTrue(
+            buildResult.buildResultKind == BuildResultKind.Successful
+                || buildResult.buildResultKind == BuildResultKind.HasWarnings,
+            "Build should be successful."
+        )
+
+        var frameMsg: FrameMessage? = null
+        var isNavigationUnavailable = false
+        Lifetime.using { lt ->
+            val projectFilePathProperty = OptProperty<Path>()
+            val document = application.runReadAction<Document?> {
+                FileDocumentManager.getInstance().getDocument(mainWindowFile)
+            }!!
+            val controller = AvaloniaPreviewerSessionController(
+                project,
+                lt,
+                null,
+                mainWindowFile,
+                projectFilePathProperty,
+                document,
+                Property(AvaloniaPreviewerTheme.None),
+                Property(AvaloniaPreviewerInteractionMode.Design)
+            ).apply {
+                frame.advise(lt) { frameMsg = it }
+            }
+            projectFilePathProperty.set(correctTestSolutionDirectory / "AvaloniaMvvm.csproj")
+
+            pumpMessages(Duration.ofMinutes(1L)) {
+                frameMsg != null
+            }.shouldBeTrue()
+
+            // The text block is the only element of the window, and it is centered in the size declared by the XAML. The
+            // frames don't tell the window size here: without a view, they may stay empty.
+            val expectedOffset = document.text.indexOf("<TextBlock")
+            val windowCenterX = 400.0
+            val windowCenterY = 225.0
+
+            fun caretOffset() = FileEditorManager.getInstance(project).selectedTextEditor?.caretModel?.offset
+
+            // The first frame doesn't guarantee that the window is already open, so repeat the click.
+            var nextClickNanos = 0L
+            pumpMessages(Duration.ofSeconds(30L)) {
+                if (System.nanoTime() >= nextClickNanos) {
+                    nextClickNanos = System.nanoTime() + Duration.ofSeconds(1L).toNanos()
+                    controller.navigateToElementAt(windowCenterX, windowCenterY) {
+                        isNavigationUnavailable = true
+                    }
+                }
+                isNavigationUnavailable || caretOffset() == expectedOffset
+            }
+            assertFalse(isNavigationUnavailable, "Navigation should be available.")
+            assertEquals(expectedOffset, caretOffset())
         }
     }
 
@@ -139,7 +201,8 @@ class PreviewTests : PerTestSolutionTestBase() {
                     mainWindowFile,
                     projectFilePathProperty,
                     document,
-                    Property(AvaloniaPreviewerTheme.None)
+                    Property(AvaloniaPreviewerTheme.None),
+                    Property(AvaloniaPreviewerInteractionMode.Interactive)
                 ).apply {
                     frame.advise(lt) { frameMsg = it }
                 }

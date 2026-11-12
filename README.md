@@ -27,6 +27,8 @@ Make sure your Avalonia project is built, open an XAML file, and you'll see an X
 
 It's possible to interact with the previewer using the mouse, and zoom with `Ctrl+Scroll Wheel`.
 
+Enable **Design Mode** on the previewer toolbar to work with the preview as with a designer: it stops reacting to the mouse like the running application, and a click on an element moves the caret to this element in the XAML file. Clicking a tab also selects it, and the scroll wheel keeps working. An element inside another control or template resolves to the nearest element of the open file. Navigation requires Avalonia 12 or newer on .NET, and the **AvaloniaRemote** previewer method.
+
 There's a separate button to **debug** the previewer process for the current file, but it's hidden by default. To enable that feature, go to the **Avalonia** settings page in Rider and enable the **Developer mode** checkbox.
 
 ### File templates

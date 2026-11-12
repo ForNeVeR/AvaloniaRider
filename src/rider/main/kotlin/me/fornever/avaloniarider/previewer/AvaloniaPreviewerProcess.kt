@@ -53,7 +53,8 @@ data class AvaloniaPreviewerProcessResult(
 class AvaloniaPreviewerProcess(
     private val project: Project,
     private val lifetime: Lifetime,
-    private val parameters: AvaloniaPreviewerParameters
+    private val parameters: AvaloniaPreviewerParameters,
+    private val environment: Map<String, String> = emptyMap()
 ) {
 
     private fun getCommandLine(transport: PreviewerTransport, method: PreviewerMethod): GeneralCommandLine {
@@ -78,6 +79,7 @@ class AvaloniaPreviewerProcess(
             .withExePath(parameters.previewerBinary.toAbsolutePath().toString())
             .withParameters(previewerArguments)
             .withWorkDirectory(parameters.workingDirectory.toFile())
+            .withEnvironment(environment)
             .apply {
                 runtime.patchRunCommandLine(this, runtimeArguments)
             }

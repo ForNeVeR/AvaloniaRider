@@ -50,6 +50,18 @@ internal fun injectThemeIfNeeded(
     return builder.toString()
 }
 
+/**
+ * Converts a line number in the XAML returned from [injectThemeIfNeeded] to the corresponding line in the original XAML.
+ * The lines of the injected text itself get converted to the line of the injection point.
+ */
+internal fun mapInjectedLine(originalXaml: String, injectedXaml: String, line: Int): Int {
+    if (originalXaml == injectedXaml) return line
+
+    val insertionLine = originalXaml.commonPrefixWith(injectedXaml).count { it == '\n' } + 1
+    val addedLines = injectedXaml.count { it == '\n' } - originalXaml.count { it == '\n' }
+    return if (line >= insertionLine + addedLines) line - addedLines else minOf(line, insertionLine)
+}
+
 private fun readInjectionMetadata(xaml: String): InjectionMetadata? {
     return try {
         val reader = createXmlStreamReader(xaml)
