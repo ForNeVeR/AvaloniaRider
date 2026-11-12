@@ -18,6 +18,10 @@ class BsonStreamReader(private val typeRegistry: Map<UUID, Class<*>>, private va
         private val objectMapper = JsonMapper.builder(BsonFactory())
             .configure(MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES, true)
             .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+            // The messages are Kotlin data classes with `val` properties and defaults for every parameter, so Jackson
+            // creates them with the no-arg constructor and has to write the final fields. Jackson 3 disables that by
+            // default and then silently leaves every property at its default value.
+            .configure(MapperFeature.ALLOW_FINAL_FIELDS_AS_MUTATORS, true)
             .build()
     }
 
