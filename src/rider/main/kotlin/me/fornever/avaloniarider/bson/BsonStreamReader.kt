@@ -18,6 +18,7 @@ class BsonStreamReader(private val typeRegistry: Map<UUID, Class<*>>, private va
         private val objectMapper = JsonMapper.builder(BsonFactory())
             .configure(MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES, true)
             .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+            .enable(MapperFeature.ALLOW_FINAL_FIELDS_AS_MUTATORS)
             .build()
     }
 
