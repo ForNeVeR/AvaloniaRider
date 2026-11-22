@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 
 When considering version compatibility (and thus incrementing the major version), we only consider the configuration file major user experience changes. The host IDE version is not considered a version compatibility factor (since otherwise we'd have to increase the major version pretty often and that would make no sense).
 
+## [Unreleased]
+### Fixed
+- [#338: Unable to preview due to PlatformTarget set to x86](https://github.com/ForNeVeR/AvaloniaRider/issues/338). The previewer is now started using the .NET host matching the startup assembly architecture.
+
 ## [1.15.0] - 2026-11-13
 ### Changed
 - **(Requirement update!)** Update the minimal supported Rider version to 2026.3.
